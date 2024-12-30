@@ -1,0 +1,41 @@
+{{ block "login" . }}
+<div class="min-h-screen flex flex-col items-center justify-center py-6 px-4">
+	<div class="max-w-md w-full">
+		<div class="p-8 rounded-2xl bg-white shadow">
+			<h2 class="text-gray-800 text-center text-2xl font-bold">Кіру</h2>
+			<form class="mt-8 space-y-4" action="/login" method="POST">
+				<div>
+					<label class="text-gray-800 text-sm mb-2 block">Номер</label>
+					<div class="relative flex items-center">
+						<input id="phone_input" name="phone" type="tel" required
+							class="w-full text-gray-800 text-sm border border-gray-300 px-4 py-3 rounded-md outline-blue-600"
+							placeholder="Телефон номерін жазыңыз" value="+7" />
+					</div>
+				</div>
+				<div>
+					<label class="text-gray-800 text-sm mb-2 block">Құпиясөз</label>
+					<div class="relative flex items-center">
+						<input name="password" type="password" required
+							class="w-full text-gray-800 text-sm border border-gray-300 px-4 py-3 rounded-md outline-blue-600"
+							placeholder="Құпиясөзді жазыңыз" />
+					</div>
+				</div>
+				<!-- <div class="text-sm"> -->
+				<!-- 	<a href="jajvascript:void(0);" class="text-blue-600 hover:underline font-semibold"> -->
+				<!-- 		Құпиясөзді ұмыттым -->
+				<!-- 	</a> -->
+				<!-- </div> -->
+				<div class="text-red-600 {{ if eq .Error ""}} hidden {{ end }}">
+					{{ .Error }}
+				</div>
+				<div class="!mt-8">
+					<button type="submit"
+						class="w-full py-3 px-4 text-sm tracking-wide rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">
+						Кіру
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{ end }}

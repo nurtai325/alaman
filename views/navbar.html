@@ -1,0 +1,12 @@
+{{ block "navbar" . }}
+<div class="py-4 pl-4 pr-8 flex">
+	<h1 class="whitespace-nowrap font-medium text-2xl mr-auto mt-0.5">{{ .Page.Name }}</h1>
+	<form action="/logout" method="POST">
+		<button type="submit" class="bg-gray-300 rounded-lg px-2 py-1 mt-1.5">Шығу</button>
+	</form>
+	<div class="ml-2">
+		<div>{{ .User.Name }}</div>
+		<div class="text-xs font-thin pl-1">{{ .User.Role }}</div>
+	</div>
+</div>
+{{ end }}

@@ -1,0 +1,40 @@
+{{ block "layout" .}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Alaman</title>
+	<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+	<script src="/assets/tailwind.js"></script>
+</head>
+
+<body>
+	{{ if eq .Page.Slug "login" }}
+
+	{{ template "login" . }}
+
+	{{ else }}
+
+	<div class="flex h-screen w-screen">
+		<div>
+			{{ template "sidebar" . }}
+		</div>
+		<div class="w-full overflow-auto h-auto">
+			<div>
+				{{ template "navbar" . }}
+			</div>
+			<div class="bg-gray-50 h-full p-4">
+				{{ template "table" .TableData }}
+			</div>
+		</div>
+	</div>
+
+	{{ end }}
+
+	<script src="/assets/htmx.js"></script>
+</body>
+
+</html>
+{{ end }}
