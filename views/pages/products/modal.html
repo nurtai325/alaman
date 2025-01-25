@@ -1,0 +1,44 @@
+{{ block "product-modal" . }}
+<form hx-post="/products" hx-swap="afterbegin" hx-target="#products-table-body" class="bg-gray-100 p-5"
+	onsubmit="closeModal()">
+	<div class="flex">
+		<h1 class="text-lg mr-auto text-bold">Жаңа қызметкер</h1>
+		<button onclick="closeModal()">&#10060</button>
+	</div>
+	<h1></h1>
+	<div class="p-2">
+		<div>
+			<label for="name" class="">Аты:</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label>Қалды</label>
+		</div>
+		<div>
+			<input class="p-1   rounded-sm" type="number" name="in_stock" id="in_stock" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label>Бағасы</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="number" name="price" id="price" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label>Негізгі бағасы</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="number" name="stock_price" id="stock_price" required />
+		</div>
+	</div>
+	<div class="ml-2 text-red-600 text-sm" id="product-modal-errors"></div>
+	<button type="submit" class="ml-2 px-2 p-1 text-white bg-blue-600 rounded-md">қосу</button>
+</form>
+{{ end }}

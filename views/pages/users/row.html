@@ -1,0 +1,48 @@
+{{ block "user-row-edit" . }}
+<tr class="border-b">
+	<td scope="row" class="py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+		<input class="bg-gray-200 rounded-sm text-center" name="name" type="text" value="{{ .Name }}" />
+	</td>
+	<td class="py-4 text-center">
+		<input class="bg-gray-200 text-center" name="phone" type="tel" value="{{ .Phone }}" />
+	</td>
+	<td class="px-4 py-4 text-center">
+		<select class="bg-gray-200 rounded-sm" name="role" id="role" required>
+			<option class="text-center" {{ if eq .Role "менеджер" }} selected {{ end }} value="менеджер">менеджер
+			</option>
+			<option class="text-center" {{ if eq .Role "логист" }} selected {{ end }} value="логист">логист</option>
+			<option class="text-center" {{ if eq .Role "роп" }} selected {{ end }} value="роп">роп</option>
+			<option class="text-center" {{ if eq .Role "админ" }} selected {{ end }} value="админ">админ</option>
+		</select>
+	</td>
+	<td class="py-4 text-center">
+		<button hx-put="/users/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
+		<span id="user-row-errors"></span>
+	</td>
+	<td class="py-4 text-center items-center">
+		<button hx-confirm="{{ .Name }} қызметкерін базадан жоюға сенімдісіз бе?" hx-delete="/users/{{ .Id }}"
+			hx-swap="delete">&#10060</button>
+	</td>
+</tr>
+{{ end }}
+
+{{ block "user-row" . }}
+<tr class="border-b">
+	<td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+		{{ .Name }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		{{ .Phone }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		{{ .Role }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		<button hx-get="/users/{{ .Id }}/edit" class="p-1 text-blue-600 text-sm">өңдеу</button>
+	</td>
+	<td class="px-6 py-4 text-center items-center">
+		<button hx-confirm="{{ .Name }} қызметкерін базадан жоюға сенімдісіз бе?" hx-delete="/users/{{ .Id }}"
+			hx-swap="delete">&#10060</button>
+	</td>
+</tr>
+{{ end }}

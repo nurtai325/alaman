@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"sync"
 	"time"
@@ -12,6 +13,10 @@ const (
 	sessionExpDays      = 7
 )
 
+var (
+	ErrInvalidRole = errors.New("role doesn't exist")
+)
+
 type sessionsMap struct {
 	mu sync.Mutex
 	s  map[string]sessionInfo
@@ -21,8 +26,32 @@ type User struct {
 	Id    int
 	Phone string
 	Name  string
-	Role  string
+	Role  Role
 	Valid bool
+}
+
+type Role string
+
+const (
+	ManagerRole Role = "менеджер"
+	LogistRole  Role = "логист"
+	AdminRole   Role = "админ"
+	RopRole     Role = "роп"
+)
+
+func ToRole(role string) (Role, error) {
+	switch role {
+	case string(ManagerRole):
+		return ManagerRole, nil
+	case string(LogistRole):
+		return LogistRole, nil
+	case string(AdminRole):
+		return AdminRole, nil
+	case string(RopRole):
+		return RopRole, nil
+	default:
+		return "", ErrInvalidRole
+	}
 }
 
 type sessionInfo struct {

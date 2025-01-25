@@ -1,61 +1,131 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/nurtai325/alaman/internal/auth"
+	"github.com/nurtai325/alaman/internal/service"
 )
 
-var userColumns = []string{"Аты", "Номер", "Статус", "Енгізілді"}
+type userContent struct {
+	Rows []service.User
+}
 
 func (app *app) handleUsersGet(w http.ResponseWriter, r *http.Request) {
-	pageQ := r.URL.Query().Get("page")
-	page := 1
-	if pageQ != "" {
-		converted, err := strconv.Atoi(pageQ)
-		if err != nil {
-			app.execute(w, tLayout, layoutData{
-				Page:  pUsers,
-				User:  auth.GetUser(r),
-				Pages: pages,
-				Error: ErrPageNotFound.Error(),
-				TableData: tableData{
-					Error: ErrPageNotFound.Error(),
-				},
-			})
-			return
-		}
-		page = converted
-	}
-	minId := pageOffset*(page-1) + 1
-	maxId := minId + pageOffset - 1
-	users, err := app.service.GetUsers(r.Context(), minId, maxId)
+	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return
 	}
-	rows := make([]row, 0, len(users))
-	for _, user := range users {
-		rows = append(rows, row{
-			Id: int(user.ID),
-			Cells: []cell{
-				{inputCell, user.Name},
-				{inputCell, user.Phone},
-				{inputCell, user.Status.String},
-				{inputCell, user.CreatedAt.Time.String()},
-			},
-		})
-	}
-	app.execute(w, tLayout, layoutData{
-		Page:  pUsers,
-		User:  auth.GetUser(r),
-		Pages: pages,
-		TableData: tableData{
-			Resource: pUsers.Slug,
-			Columns:  userColumns,
-			Rows:     rows,
-			Page:     page,
+	app.execute(w, tUsers, "/pages/users", layoutData{
+		BarsData: barsData{
+			Page:     "users",
+			PageName: "Қызметкерлер",
+			Pages:    adminPages,
+		},
+		User: app.service.GetAuthUser(r),
+		Data: userContent{
+			Rows: users,
 		},
 	})
+}
+
+func (app *app) handleUsersPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	name := r.FormValue("name")
+	phone := r.FormValue("phone")
+	password := r.FormValue("password")
+	passwordCheck := r.FormValue("passwordCheck")
+	role, err := auth.ToRole(r.FormValue("role"))
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	user, err := app.service.InsertUser(r.Context(), name, phone, password, passwordCheck, role)
+	if err != nil {
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add("HX-Retarget", "#user-modal-errors")
+		w.Header().Add("HX-Reswap", "innerHTML")
+		w.Header().Add("HX-Trigger", openModalEvent)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	app.execute(w, tUserRow, "", user)
+	return
+}
+
+func (app *app) handleUsersPut(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	name := r.FormValue("name")
+	phone := r.FormValue("phone")
+	role, err := auth.ToRole(r.FormValue("role"))
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	user, err := app.service.UpdateUser(r.Context(), id, name, phone, role)
+	if err != nil {
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add("HX-Retarget", "#user-row-errors")
+		w.Header().Add("HX-Reswap", "innerHTML")
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		app.execute(w, tAlert, "", err.Error())
+		return
+	}
+	app.execute(w, tUserRow, "", user)
+}
+
+func (app *app) handleUsersEdit(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	user, err := app.service.GetUser(r.Context(), id)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	app.execute(w, tUserRowEdit, "", user)
+	return
+}
+
+func (app *app) handleUsersDelete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	_, err = app.service.DeleteUser(r.Context(), id)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return
 }

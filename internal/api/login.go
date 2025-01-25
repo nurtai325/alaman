@@ -8,39 +8,35 @@ import (
 	"github.com/nurtai325/alaman/internal/service"
 )
 
-func (app *app) handleLoginGet(w http.ResponseWriter, _ *http.Request) {
-	app.execute(w, tLayout, layoutData{
-		Page: pLogin,
-		Error: "",
-	})
-}
-
-func (app *app) handleLoginPost(w http.ResponseWriter, r *http.Request) {
+func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		app.execute(w, tLogin, "", layoutData{
+			Data: "",
+		})
+		return
+	}
 	err := r.ParseForm()
 	if err != nil {
 		app.error(w, err)
-		return
 	}
 	phone := r.FormValue("phone")
 	password := r.FormValue("password")
 	sessionCookie, err := app.service.Login(r.Context(), phone, password)
 	if err != nil {
-		if !errors.Is(err, service.ErrInvalidLoginInfo) {
+		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)
 			return
 		}
-		app.execute(w, tLayout, layoutData{
-			Page: pLogin,
-			Error: err.Error(),
-		})
+		w.Write([]byte(err.Error()))
 		return
 	}
 	http.SetCookie(w, sessionCookie)
-	http.Redirect(w, r, "/", http.StatusFound)
+	redirect(w, "/")
+	return
 }
 
 func (app *app) handleLogout(w http.ResponseWriter, r *http.Request) {
 	emptyCookie := auth.DeleteSession(r)
 	http.SetCookie(w, emptyCookie)
-	http.Redirect(w, r, "/login", http.StatusFound)
+	redirect(w, "/login")
 }

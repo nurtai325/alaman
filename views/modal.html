@@ -1,0 +1,28 @@
+{{ block "modal" . }}
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-10">
+	<div class="bg-white mx-auto my-20 border border-gray-300 w-4/5">
+		{{ block "modal-content" . }}
+		<span class="close text-gray-400 text-3xl font-bold float-right cursor-pointer">&times;</span>
+		{{end }}
+	</div>
+</div>
+
+<script>
+	var modal = document.getElementById("modal");
+	var span = document.getElementsByClassName("close")[0];
+	function openModal() {
+		modal.style.display = "block";
+	}
+	function closeModal() {
+		modal.style.display = "none";
+	}
+	window.onclick = function (event) {
+		if (event.target == modal) {
+			modal.style.display = "none";
+		}
+	}
+	document.body.addEventListener("openModal", function (evt) {
+		openModal()
+	})
+</script>
+{{ end }}

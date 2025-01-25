@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/nurtai325/alaman/internal/auth"
@@ -21,9 +22,9 @@ func (s *Service) Login(ctx context.Context, phone, password string) (*http.Cook
 	user, err := s.queries.GetUserByPhone(ctx, phone)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = ErrInvalidLoginInfo
+			return nil, ErrInvalidLoginInfo
 		}
-		return nil, err
+		return nil, errors.Join(err, ErrInternal)
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
@@ -34,11 +35,13 @@ func (s *Service) Login(ctx context.Context, phone, password string) (*http.Cook
 		Phone: user.Phone,
 		Name:  user.Name,
 		Valid: true,
+		Role:  auth.Role(user.Role),
 	})
 	return sessionCookie, nil
 }
 
 func validPhone(phone string) bool {
+	phone = filterPhone(phone)
 	if phone == "" {
 		return false
 	} else if len(phone) != 12 {
@@ -62,4 +65,23 @@ func validPassword(password string) bool {
 		return false
 	}
 	return true
+}
+
+func filterPhone(phone string) string {
+	filtered := strings.Builder{}
+Loop:
+	for _, r := range phone {
+		switch r {
+		case '-':
+			continue Loop
+		case ' ':
+			continue Loop
+		case '(':
+			continue Loop
+		case ')':
+			continue Loop
+		}
+		filtered.WriteRune(r)
+	}
+	return filtered.String()
 }

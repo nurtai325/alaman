@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
@@ -30,7 +31,7 @@ func main() {
 		panic("invalid password")
 	}
 	phoneNumbers := []string{
-		"+77051234501", "+77051234502", "+77051234503", "+77051234504", "+77051234505",
+		"+77052505839", "+77051234501", "+77051234502", "+77051234503", "+77051234504", "+77051234505",
 		"+77051234506", "+77051234507", "+77051234508", "+77051234509", "+77051234510",
 		"+77051234511", "+77051234512", "+77051234513", "+77051234514", "+77051234515",
 		"+77051234516", "+77051234517", "+77051234518", "+77051234519", "+77051234520",
@@ -41,12 +42,19 @@ func main() {
 		"+77051234541", "+77051234542", "+77051234543", "+77051234544", "+77051234545",
 		"+77051234546", "+77051234547", "+77051234548", "+77051234549", "+77051234550",
 	}
-	for _, phone := range phoneNumbers {
-		queries.InsertUser(context.Background(), repository.InsertUserParams{
+	for i, phone := range phoneNumbers {
+		if i != 0 {
+			break
+		}
+		_, err := queries.InsertUser(context.Background(), repository.InsertUserParams{
 			Name:     name,
 			Phone:    phone,
 			Password: string(hashed),
+			Role:     string(auth.AdminRole),
 		})
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

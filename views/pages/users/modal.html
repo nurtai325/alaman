@@ -1,0 +1,57 @@
+{{ block "user-modal" . }}
+<form hx-post="/users" hx-swap="afterbegin" hx-target="#users-table-body" class="bg-gray-100 p-5"
+	onsubmit="closeModal()">
+	<div class="flex">
+		<h1 class="text-lg mr-auto text-bold">Жаңа қызметкер</h1>
+		<button onclick="closeModal()">&#10060</button>
+	</div>
+	<h1></h1>
+	<div class="p-2">
+		<div>
+			<label for="name" class="">Аты:</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label for="phone">Номер: (+77473556792)</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="tel" name="phone" id="phone" value="+7" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label for="role">Қызметі: </label>
+		</div>
+		<div>
+			<select class="p-1 rounded-sm" name="role" id="role" required>
+				<option value="менеджер">менеджер</option>
+				<option value="логист">логист</option>
+				<option value="роп">роп</option>
+				<option value="админ">админ</option>
+			</select>
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label id="password">Құпиясөз: </label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="password" name="password" id="password" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label for="passwordCheck">Құпиясөзді қайталаңыз: </label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="password" name="passwordCheck" id="passwordCheck" required />
+		</div>
+	</div>
+	<div class="ml-2 text-red-600 text-sm" id="user-modal-errors"></div>
+	<button type="submit" class="ml-2 px-2 p-1 text-white bg-blue-600 rounded-md">қосу</button>
+</form>
+{{ end }}

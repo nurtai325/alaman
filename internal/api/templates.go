@@ -1,101 +1,76 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/nurtai325/alaman/internal/auth"
+	"github.com/nurtai325/alaman/internal/service"
 )
+
+// send whatsapp message to the worker to attach him to the lead
 
 type templateName string
 
-type pageMeta struct {
-	Name string
-	Slug string
-}
-
 const (
-	tLayout templateName = "layout"
+	tLayout    templateName = "layout.html"
+	tLogin     templateName = "login.html"
+	tDashboard templateName = "dashboard.html"
+	tAlert     templateName = "alert"
 
-	pageOffset = 15
-)
+	tUsers       templateName = "users.html"
+	tUserRow     templateName = "user-row"
+	tUserRowEdit templateName = "user-row-edit"
 
-var (
-	ErrPageNotFound = errors.New("Бет табылмады")
+	tProducts templateName = "products.html"
 
-	// pDashboard = pageMeta{
-	// 	Slug: "dashboard",
-	// 	Name: "Басты бет",
-	// }
-	pLeads = pageMeta{
-		Slug: "leads",
-		Name: "Лидтер",
-	}
-	pSales = pageMeta{
-		Slug: "sales",
-		Name: "Сатулар",
-	}
-	pRepors = pageMeta{
-		Slug: "reports",
-		Name: "Есеп",
-	}
-	pUsers = pageMeta{
-		Slug: "users",
-		Name: "Қызметкерлер",
-	}
-	pLogin = pageMeta{
-		Slug: "login",
-		Name: "Логин",
-	}
-	pages = []pageMeta{pLeads, pSales, pRepors, pUsers}
+	pagesLimit = 1000
+
+	openModalEvent = "openModal"
 )
 
 type layoutData struct {
-	Page      pageMeta
-	Pages     []pageMeta
-	User      auth.User
-	TableData tableData
-	Error     string
+	BarsData barsData
+	User     service.User
+	Data     any
 }
 
-type tableData struct {
-	Resource string
-	Columns  []string
-	Rows     []row
-	Page     int
-	Error    string
+type barsData struct {
+	Page     string
+	PageName string
+	Pages    []string
 }
 
-type row struct {
-	Id    int
-	Cells []cell
-}
-
-type cellType int
-
-const (
-	inputCell cellType = iota
-	selectCell
-	dateCell
+var (
+	adminPages = []string{"dashboard", "leads", "users"}
 )
 
-type cell struct {
-	Type    cellType
-	Content string
-}
-
-func (app *app) execute(w http.ResponseWriter, name templateName, data any) {
-	err := app.templates.ExecuteTemplate(w, string(name), data)
+func (app *app) execute(w http.ResponseWriter, name templateName, dir string, data any) {
+	t, err := app.templates.Clone()
 	if err != nil {
-		err = fmt.Errorf("executing template: %s data: %v: %w", name, data, err)
 		app.error(w, err)
 		return
+	}
+	if dir != "" {
+		path := fmt.Sprintf("./views%s/%s", dir, name)
+		t, err = t.ParseFiles(path)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+	}
+	err = t.ExecuteTemplate(w, string(name), data)
+	if err != nil {
+		app.error(w, err)
 	}
 }
 
 func (app *app) error(w http.ResponseWriter, err error) {
 	app.errLog.Println(err)
-	http.Error(w, "Сервер қатесі.", http.StatusInternalServerError)
-	return
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte("Сервер қатесі"))
+}
+
+func redirect(w http.ResponseWriter, location string) {
+	w.Header().Add("HX-Redirect", location)
+	w.WriteHeader(http.StatusOK)
 }

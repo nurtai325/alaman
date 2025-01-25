@@ -1,0 +1,12 @@
+{{ block "empty" . }}
+{{ end }}
+
+{{ block "text" . }}
+{{ . }}
+{{ end }}
+
+{{ block "alert" . }}
+<script>
+	alert("{{ . }}");
+</script>
+{{ end }}

@@ -36,6 +36,7 @@ func (app *app) register(pattern string, handler http.HandlerFunc, secured bool)
 		defer func() {
 			if err := recover(); err != nil {
 				app.errLog.Printf("unhandled panic: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
 			}
 		}()
 		app.accessLog.Printf("%s %v %s", r.Method, r.URL, r.Header.Get("User-Agent"))

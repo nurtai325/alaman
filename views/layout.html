@@ -1,4 +1,3 @@
-{{ block "layout" .}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,34 +6,34 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Alaman</title>
 	<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-	<script src="/assets/tailwind.js"></script>
+	<link rel="stylesheet" href="/assets/index.css" />
 </head>
 
 <body>
-	{{ if eq .Page.Slug "login" }}
-
-	{{ template "login" . }}
-
-	{{ else }}
-
 	<div class="flex h-screen w-screen">
 		<div>
-			{{ template "sidebar" . }}
+			{{ template "sidebar" .BarsData }}
 		</div>
-		<div class="w-full overflow-auto h-auto">
+		<div class="w-full h-auto ">
 			<div>
 				{{ template "navbar" . }}
 			</div>
 			<div class="bg-gray-50 h-full p-4">
-				{{ template "table" .TableData }}
+				{{ block "content" . }}{{ end }}
 			</div>
 		</div>
 	</div>
+	{{ template "modal" . }}
 
-	{{ end }}
-
+	<script>
+		document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
+			if (evt.detail.xhr.status === 422) {
+				evt.detail.shouldSwap = true;
+				evt.detail.isError = false;
+			}
+		});
+	</script>
 	<script src="/assets/htmx.js"></script>
 </body>
 
 </html>
-{{ end }}

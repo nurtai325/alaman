@@ -27,10 +27,12 @@ func openLog(name string, lFlags int) (*log.Logger, error) {
 
 func main() {
 	infoLog, err := openLog("info", log.Lshortfile)
-	errLog, err := openLog("error", log.Llongfile)
+	errLog, err := openLog("error", 0)
 	accessLog, err := openLog("access", 0)
 
 	templates := template.Must(template.ParseGlob("./views/*.html"))
+	templates = template.Must(templates.ParseGlob("./views/pages/users/*.html"))
+	templates = template.Must(templates.ParseGlob("./views/pages/dashboard/*.html"))
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

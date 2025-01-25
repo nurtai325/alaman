@@ -1,0 +1,24 @@
+{{ block "user-content" . }}
+<div class="p-1">
+	<div class="bg-white relative overflow-x-auto">
+		<table class="w-full text-sm text-left rtl:text-right">
+			<thead class="text-xs uppercase">
+				<tr>
+					<th scope="col" class="px-6 py-3 text-center">Аты</th>
+					<th scope="col" class="px-6 py-3 text-center">Номер</th>
+					<th scope="col" class="px-6 py-3 text-center">Қызметі</th>
+					<th scope="col" class="px-6 py-3 text-center items-center">
+						<button onclick="openModal()" id="modal-open" class="p-1 text-blue-600 text-sm">жаңа</button>
+					</th>
+					<th scope="col" class="px-6 py-3"></th>
+				</tr>
+			</thead>
+			<tbody id="users-table-body" hx-target="closest tr" hx-swap="outerHTML">
+				{{ range .Data.Rows }}
+				{{ template "user-row" . }}
+				{{ end }}
+			</tbody>
+		</table>
+	</div>
+</div>
+{{ end }}
