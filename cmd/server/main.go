@@ -33,6 +33,7 @@ func main() {
 	templates := template.Must(template.ParseGlob("./views/*.html"))
 	templates = template.Must(templates.ParseGlob("./views/pages/users/*.html"))
 	templates = template.Must(templates.ParseGlob("./views/pages/dashboard/*.html"))
+	templates = template.Must(templates.ParseGlob("./views/pages/products/*.html"))
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

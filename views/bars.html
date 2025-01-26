@@ -15,8 +15,10 @@
 <div class="p-4 pt-6">
 	{{ $page := .Page }}
 	{{ range .Pages }}
-	<div class="p-1.5 px-8 mb-4 {{ if eq . $page }} bg-gray-300 {{ end }} rounded-lg hover:bg-gray-300">
-		<span class=""><a class="whitespace-nowrap text-base antialiased" href="{{ . }}">{{ . }}</a></span>
+	<div class="p-1.5 mb-4 {{ if eq . $page }} bg-gray-300 {{ end }} rounded-lg hover:bg-gray-300">
+		<a class="whitespace-nowrap text-base antialiased" href="{{ . }}">
+			<img src="/assets/icons/{{ . }}.svg" width="35" height="35" />
+		</a>
 	</div>
 	{{ end }}
 </div>

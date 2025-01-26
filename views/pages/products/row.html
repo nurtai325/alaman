@@ -14,7 +14,9 @@
 	</td>
 	<td class="py-4 text-center">
 		<button hx-put="/products/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
-		<span id="product-row-errors"></span>
+		<span class="hidden" id="product-row-errors-{{ .Id }}"></span>
+	</td>
+	<td class="py-4 text-center items-center">
 	</td>
 	<td class="py-4 text-center items-center">
 		<button hx-confirm="{{ .Name }} қызметкерін базадан жоюға сенімдісіз бе?" hx-delete="/products/{{ .Id }}"
@@ -28,7 +30,7 @@
 	<td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
 		{{ .Name }}
 	</td>
-	<td class="px-6 py-4 text-center">
+	<td id="product-in-stock-{{ .Id }}" class="px-6 py-4 text-center">
 		{{ .InStock }}
 	</td>
 	<td class="px-6 py-4 text-center">
@@ -36,6 +38,15 @@
 	</td>
 	<td class="px-6 py-4 text-center">
 		{{ .StockPrice }}
+	</td>
+	<td class="px-6 py-4">
+		<div class="text-center items-center flex">
+			<input id="add-product-input-{{ .Id }}" class="bg-gray-100 ml-[40px] w-14 mr-2" name="quantity"
+				type="number" />
+			<button hx-put="/products/{{ .Id }}/add" hx-target="#product-in-stock-{{ .Id }}" hx-swap="innerHTML"
+				hx-include="#add-product-input-{{ .Id }}">&#10133</button>
+			<span class="hidden" id="product-row-errors-{{ .Id }}"></span>
+		</div>
 	</td>
 	<td class="px-6 py-4 text-center">
 		<button hx-get="/products/{{ .Id }}/edit" class="p-1 text-blue-600 text-sm">өңдеу</button>

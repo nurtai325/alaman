@@ -19,4 +19,13 @@ func (app *app) registerHandlers() {
 	app.register("PUT /users/{id}", app.handleUsersPut, true)
 	app.register("GET /users/{id}/edit", app.handleUsersEdit, true)
 	app.register("DELETE /users/{id}", app.handleUsersDelete, true)
+
+	app.register("GET /products", app.handleProductsGet, true)
+	app.register("POST /products", app.handleProductsPost, true)
+	app.register("PUT /products/{id}", app.handleProductsPut, true)
+	app.register("GET /products/{id}/edit", app.handleProductsEdit, true)
+	app.register("DELETE /products/{id}", app.handleProductsDelete, true)
+	app.register("PUT /products/{id}/add", app.handleProductsAdd, true)
+
+	app.register("GET /leads", app.handleLeadsGet, true)
 }

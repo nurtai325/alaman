@@ -19,13 +19,13 @@ SELECT COUNT(*)
 FROM products;
 
 -- name: InsertProduct :one
-INSERT INTO products(name, price, stock_price)
-VALUES($1, $2, $3)
+INSERT INTO products(name, in_stock, price, stock_price)
+VALUES($1, $2, $3, $4)
 RETURNING *;
 
 -- name: UpdateProduct :one
 UPDATE products
-SET name = $2, price = $3, stock_price = $4, in_stock = $5
+SET name = $2, price = $3, stock_price = $4
 WHERE id = $1
 RETURNING *;
 
@@ -33,3 +33,9 @@ RETURNING *;
 DELETE FROM products
 WHERE id = $1
 RETURNING *;
+
+-- name: AddStockProduct :one
+UPDATE products
+SET in_stock = $2
+WHERE id = $1
+RETURNING in_stock;

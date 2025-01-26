@@ -16,12 +16,16 @@ const (
 	tLogin     templateName = "login.html"
 	tDashboard templateName = "dashboard.html"
 	tAlert     templateName = "alert"
+	tText      templateName = "text"
+	tEmpty     templateName = "empty"
 
 	tUsers       templateName = "users.html"
 	tUserRow     templateName = "user-row"
 	tUserRowEdit templateName = "user-row-edit"
 
-	tProducts templateName = "products.html"
+	tProducts       templateName = "products.html"
+	tProductRow     templateName = "product-row"
+	tProductRowEdit templateName = "product-row-edit"
 
 	pagesLimit = 1000
 
@@ -41,7 +45,7 @@ type barsData struct {
 }
 
 var (
-	adminPages = []string{"dashboard", "leads", "users"}
+	adminPages = []string{"dashboard", "leads", "products", "users"}
 )
 
 func (app *app) execute(w http.ResponseWriter, name templateName, dir string, data any) {

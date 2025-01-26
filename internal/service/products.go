@@ -46,3 +46,60 @@ func (s *Service) GetProducts(ctx context.Context, offset, limit int) ([]Product
 	}
 	return sProducts, nil
 }
+
+func (s *Service) GetProduct(ctx context.Context, id int) (Product, error) {
+	p, err := s.queries.GetProduct(ctx, int32(id))
+	if err != nil {
+		return Product{}, err
+	}
+	return getSProduct(p), nil
+}
+
+func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price, stockPrice int) (Product, error) {
+	p, err := s.queries.InsertProduct(ctx, repository.InsertProductParams{
+		Name:       name,
+		InStock:    int32(inStock),
+		Price:      int32(price),
+		StockPrice: int32(stockPrice),
+	})
+	if err != nil {
+		return Product{}, err
+	}
+	return getSProduct(p), nil
+}
+
+func (s *Service) UpdateProduct(ctx context.Context, name string, id, price, stockPrice int) (Product, error) {
+	p, err := s.queries.UpdateProduct(ctx, repository.UpdateProductParams{
+		ID:         int32(id),
+		Name:       name,
+		Price:      int32(price),
+		StockPrice: int32(stockPrice),
+	})
+	if err != nil {
+		return Product{}, err
+	}
+	return getSProduct(p), nil
+}
+
+func (s *Service) DeleteProduct(ctx context.Context, id int) (Product, error) {
+	if err := validId(id); err != nil {
+		return Product{}, err
+	}
+	p, err := s.queries.DeleteProduct(ctx, int32(id))
+	if err != nil {
+		return Product{}, err
+	}
+	return getSProduct(p), nil
+}
+
+func (s *Service) AddStockProduct(ctx context.Context, id, quantity int) (int, error) {
+	p, err := s.GetProduct(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	inStock, err := s.queries.AddStockProduct(ctx, repository.AddStockProductParams{
+		ID:      int32(id),
+		InStock: int32(p.InStock) + int32(quantity),
+	})
+	return int(inStock), err
+}

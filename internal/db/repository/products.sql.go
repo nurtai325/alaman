@@ -9,6 +9,25 @@ import (
 	"context"
 )
 
+const addStockProduct = `-- name: AddStockProduct :one
+UPDATE products
+SET in_stock = $2
+WHERE id = $1
+RETURNING in_stock
+`
+
+type AddStockProductParams struct {
+	ID      int32
+	InStock int32
+}
+
+func (q *Queries) AddStockProduct(ctx context.Context, arg AddStockProductParams) (int32, error) {
+	row := q.db.QueryRow(ctx, addStockProduct, arg.ID, arg.InStock)
+	var in_stock int32
+	err := row.Scan(&in_stock)
+	return in_stock, err
+}
+
 const deleteProduct = `-- name: DeleteProduct :one
 DELETE FROM products
 WHERE id = $1
@@ -121,19 +140,25 @@ func (q *Queries) GetProductsCount(ctx context.Context) (int64, error) {
 }
 
 const insertProduct = `-- name: InsertProduct :one
-INSERT INTO products(name, price, stock_price)
-VALUES($1, $2, $3)
+INSERT INTO products(name, in_stock, price, stock_price)
+VALUES($1, $2, $3, $4)
 RETURNING id, name, in_stock, price, stock_price, created_at
 `
 
 type InsertProductParams struct {
 	Name       string
+	InStock    int32
 	Price      int32
 	StockPrice int32
 }
 
 func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (Product, error) {
-	row := q.db.QueryRow(ctx, insertProduct, arg.Name, arg.Price, arg.StockPrice)
+	row := q.db.QueryRow(ctx, insertProduct,
+		arg.Name,
+		arg.InStock,
+		arg.Price,
+		arg.StockPrice,
+	)
 	var i Product
 	err := row.Scan(
 		&i.ID,
@@ -148,7 +173,7 @@ func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (P
 
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
-SET name = $2, price = $3, stock_price = $4, in_stock = $5
+SET name = $2, price = $3, stock_price = $4
 WHERE id = $1
 RETURNING id, name, in_stock, price, stock_price, created_at
 `
@@ -158,7 +183,6 @@ type UpdateProductParams struct {
 	Name       string
 	Price      int32
 	StockPrice int32
-	InStock    int32
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -167,7 +191,6 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Name,
 		arg.Price,
 		arg.StockPrice,
-		arg.InStock,
 	)
 	var i Product
 	err := row.Scan(
