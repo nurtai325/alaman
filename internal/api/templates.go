@@ -27,9 +27,12 @@ const (
 	tProductRow     templateName = "product-row"
 	tProductRowEdit templateName = "product-row-edit"
 
+	tLeads templateName = "leads.html"
+
 	pagesLimit = 1000
 
-	openModalEvent = "openModal"
+	openModalEvent  = "openModal"
+	closeModalEvent = "closeModal"
 )
 
 type layoutData struct {
@@ -72,6 +75,13 @@ func (app *app) error(w http.ResponseWriter, err error) {
 	app.errLog.Println(err)
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write([]byte("Сервер қатесі"))
+}
+
+func (app *app) errorHx(w http.ResponseWriter, template templateName, elemId, msg string) {
+	w.Header().Add("HX-Retarget", elemId)
+	w.Header().Add("HX-Reswap", "innerHTML")
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	app.execute(w, template, "", msg)
 }
 
 func redirect(w http.ResponseWriter, location string) {

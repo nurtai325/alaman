@@ -1,11 +1,20 @@
 package api
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/nurtai325/alaman/internal/service"
+)
+
+var (
+	ErrNotNumber = errors.New("сан жазыңыз")
+)
+
+const (
+	productModalErrs = "#product-modal-errors"
+	productRowErrs   = "#product-row-errors"
 )
 
 type productContent struct {
@@ -38,29 +47,47 @@ func (app *app) handleProductsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := r.FormValue("name")
+	code := r.FormValue("code")
 	inStockStr := r.FormValue("in_stock")
 	inStock, err := strconv.Atoi(inStockStr)
 	if err != nil {
-		app.error(w, err)
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		app.errorHx(w, tText, productModalErrs, ErrNotNumber.Error())
 		return
 	}
 	priceStr := r.FormValue("price")
 	price, err := strconv.Atoi(priceStr)
 	if err != nil {
-		app.error(w, err)
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		app.errorHx(w, tText, productModalErrs, ErrNotNumber.Error())
 		return
 	}
 	stockPriceStr := r.FormValue("stock_price")
 	stockPrice, err := strconv.Atoi(stockPriceStr)
 	if err != nil {
-		app.error(w, err)
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		app.errorHx(w, tText, productModalErrs, ErrNotNumber.Error())
 		return
 	}
-	product, err := app.service.InsertProduct(r.Context(), name, inStock, price, stockPrice)
+	product, err := app.service.InsertProduct(r.Context(), name, code, inStock, price, stockPrice)
 	if err != nil {
-		app.error(w, err)
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		app.errorHx(w, tText, productModalErrs, err.Error())
 		return
 	}
+	w.Header().Add("HX-Trigger", closeModalEvent)
 	app.execute(w, tProductRow, "", product)
 	return
 }
@@ -72,27 +99,32 @@ func (app *app) handleProductsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := r.FormValue("name")
+	code := r.FormValue("code")
 	idStr := r.PathValue("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		app.error(w, err)
+		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
 		return
 	}
 	priceStr := r.FormValue("price")
 	price, err := strconv.Atoi(priceStr)
 	if err != nil {
-		app.error(w, err)
+		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
 		return
 	}
 	stockPriceStr := r.FormValue("stock_price")
 	stockPrice, err := strconv.Atoi(stockPriceStr)
 	if err != nil {
-		app.error(w, err)
+		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
 		return
 	}
-	product, err := app.service.UpdateProduct(r.Context(), name, id, price, stockPrice)
+	product, err := app.service.UpdateProduct(r.Context(), name, code, id, price, stockPrice)
 	if err != nil {
-		app.error(w, err)
+		if errors.Is(err, service.ErrInternal) {
+			app.error(w, err)
+			return
+		}
+		app.errorHx(w, tAlert, productRowErrs, err.Error())
 		return
 	}
 	app.execute(w, tProductRow, "", product)
@@ -132,24 +164,8 @@ func (app *app) handleProductsDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) handleProductsAdd(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := strconv.Atoi(idStr)
+	id, quantity, err := app.validStockParams(w, r)
 	if err != nil {
-		app.error(w, err)
-		return
-	}
-	err = r.ParseForm()
-	if err != nil {
-		app.error(w, err)
-		return
-	}
-	quantityStr := r.FormValue("quantity")
-	quantity, err := strconv.Atoi(quantityStr)
-	if err != nil {
-		w.Header().Add("HX-Retarget", fmt.Sprintf("#product-row-errors-%d", id))
-		w.Header().Add("HX-Reswap", "innerHTML")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		app.execute(w, tAlert, "", "сан жазыңыз")
 		return
 	}
 	inStock, err := app.service.AddStockProduct(r.Context(), id, quantity)
@@ -159,4 +175,39 @@ func (app *app) handleProductsAdd(w http.ResponseWriter, r *http.Request) {
 	}
 	app.execute(w, tText, "", inStock)
 	return
+}
+
+func (app *app) handleProductsRemove(w http.ResponseWriter, r *http.Request) {
+	id, quantity, err := app.validStockParams(w, r)
+	if err != nil {
+		return
+	}
+	inStock, err := app.service.RemoveStockProduct(r.Context(), id, quantity)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	app.execute(w, tText, "", inStock)
+	return
+}
+
+func (app *app) validStockParams(w http.ResponseWriter, r *http.Request) (int, int, error) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, err)
+		return 0, 0, ErrNotNumber
+	}
+	err = r.ParseForm()
+	if err != nil {
+		app.error(w, err)
+		return 0, 0, ErrNotNumber
+	}
+	quantityStr := r.FormValue("quantity")
+	quantity, err := strconv.Atoi(quantityStr)
+	if err != nil {
+		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
+		return 0, 0, ErrNotNumber
+	}
+	return id, quantity, nil
 }

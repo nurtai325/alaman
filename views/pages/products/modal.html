@@ -1,8 +1,7 @@
 {{ block "product-modal" . }}
-<form hx-post="/products" hx-swap="afterbegin" hx-target="#products-table-body" class="bg-gray-100 p-5"
-	onsubmit="closeModal()">
+<form hx-post="/products" hx-swap="afterbegin" hx-target="#products-table-body" class="bg-gray-100 p-5">
 	<div class="flex">
-		<h1 class="text-lg mr-auto text-bold">Жаңа қызметкер</h1>
+		<h1 class="text-lg mr-auto text-bold">Жаңа өнім</h1>
 		<button onclick="closeModal()">&#10060</button>
 	</div>
 	<h1></h1>
@@ -12,6 +11,14 @@
 		</div>
 		<div>
 			<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label for="code" class="">Штрих код:</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="number" name="code" id="code" required />
 		</div>
 	</div>
 	<div class="p-2">

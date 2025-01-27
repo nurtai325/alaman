@@ -53,13 +53,10 @@ func (app *app) handleUsersPost(w http.ResponseWriter, r *http.Request) {
 			app.error(w, err)
 			return
 		}
-		w.Header().Add("HX-Retarget", "#user-modal-errors")
-		w.Header().Add("HX-Reswap", "innerHTML")
-		w.Header().Add("HX-Trigger", openModalEvent)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write([]byte(err.Error()))
+		app.errorHx(w, tText, "#user-modal-errors", err.Error())
 		return
 	}
+	w.Header().Add("HX-Trigger", closeModalEvent)
 	app.execute(w, tUserRow, "", user)
 	return
 }
@@ -89,10 +86,7 @@ func (app *app) handleUsersPut(w http.ResponseWriter, r *http.Request) {
 			app.error(w, err)
 			return
 		}
-		w.Header().Add("HX-Retarget", "#user-row-errors")
-		w.Header().Add("HX-Reswap", "innerHTML")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		app.execute(w, tAlert, "", err.Error())
+		app.errorHx(w, tAlert, "#user-row-errors", err.Error())
 		return
 	}
 	app.execute(w, tUserRow, "", user)

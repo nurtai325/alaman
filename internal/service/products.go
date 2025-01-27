@@ -2,9 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/nurtai325/alaman/internal/db/repository"
+)
+
+var (
+	ErrInvalidProductCode = errors.New("штрих код тек сандардан тұруы керек")
 )
 
 type Product struct {
@@ -13,6 +18,7 @@ type Product struct {
 	InStock    int
 	Price      int
 	StockPrice int
+	Code       string
 	CreatedAt  time.Time
 }
 
@@ -23,6 +29,7 @@ func getSProduct(p repository.Product) Product {
 		InStock:    int(p.InStock),
 		Price:      int(p.Price),
 		StockPrice: int(p.StockPrice),
+		Code:       p.Code,
 		CreatedAt:  p.CreatedAt.Time,
 	}
 }
@@ -55,28 +62,36 @@ func (s *Service) GetProduct(ctx context.Context, id int) (Product, error) {
 	return getSProduct(p), nil
 }
 
-func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price, stockPrice int) (Product, error) {
+func (s *Service) InsertProduct(ctx context.Context, name, code string, inStock, price, stockPrice int) (Product, error) {
+	if !validProductCode(code) {
+		return Product{}, ErrInvalidProductCode
+	}
 	p, err := s.queries.InsertProduct(ctx, repository.InsertProductParams{
 		Name:       name,
 		InStock:    int32(inStock),
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
+		Code:       code,
 	})
 	if err != nil {
-		return Product{}, err
+		return Product{}, errors.Join(ErrInternal, err)
 	}
 	return getSProduct(p), nil
 }
 
-func (s *Service) UpdateProduct(ctx context.Context, name string, id, price, stockPrice int) (Product, error) {
+func (s *Service) UpdateProduct(ctx context.Context, name, code string, id, price, stockPrice int) (Product, error) {
+	if !validProductCode(code) {
+		return Product{}, ErrInvalidProductCode
+	}
 	p, err := s.queries.UpdateProduct(ctx, repository.UpdateProductParams{
 		ID:         int32(id),
 		Name:       name,
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
+		Code:       code,
 	})
 	if err != nil {
-		return Product{}, err
+		return Product{}, errors.Join(ErrInternal, err)
 	}
 	return getSProduct(p), nil
 }
@@ -93,13 +108,26 @@ func (s *Service) DeleteProduct(ctx context.Context, id int) (Product, error) {
 }
 
 func (s *Service) AddStockProduct(ctx context.Context, id, quantity int) (int, error) {
-	p, err := s.GetProduct(ctx, id)
-	if err != nil {
-		return 0, err
-	}
 	inStock, err := s.queries.AddStockProduct(ctx, repository.AddStockProductParams{
 		ID:      int32(id),
-		InStock: int32(p.InStock) + int32(quantity),
+		InStock: int32(quantity),
 	})
 	return int(inStock), err
+}
+
+func (s *Service) RemoveStockProduct(ctx context.Context, id, quantity int) (int, error) {
+	inStock, err := s.queries.RemoveStockProduct(ctx, repository.RemoveStockProductParams{
+		ID:      int32(id),
+		InStock: int32(quantity),
+	})
+	return int(inStock), err
+}
+
+func validProductCode(code string) bool {
+	for _, r := range code {
+		if r < 48 || r > 57 {
+			return false
+		}
+	}
+	return true
 }

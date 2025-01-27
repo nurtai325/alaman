@@ -8,6 +8,7 @@
 					<th scope="col" class="px-6 py-3 text-center">Қалды</th>
 					<th scope="col" class="px-6 py-3 text-center">Бағасы</th>
 					<th scope="col" class="px-6 py-3 text-center">Негізгі бағасы</th>
+					<th scope="col" class="px-6 py-3 text-center">Штрих код</th>
 					<th scope="col" class="px-6 py-3 text-center">Тауар қосу</th>
 					<th scope="col" class="px-6 py-3 text-center items-center">
 						<button onclick="openModal()" id="modal-open" class="p-1 text-blue-600 text-sm">жаңа</button>
@@ -21,6 +22,7 @@
 				{{ end }}
 			</tbody>
 		</table>
+		<span class="hidden" id="product-row-errors"></span>
 	</div>
 </div>
 {{ end }}

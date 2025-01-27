@@ -17,7 +17,6 @@
 	</td>
 	<td class="py-4 text-center">
 		<button hx-put="/users/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
-		<span id="user-row-errors"></span>
 	</td>
 	<td class="py-4 text-center items-center">
 		<button hx-confirm="{{ .Name }} қызметкерін базадан жоюға сенімдісіз бе?" hx-delete="/users/{{ .Id }}"

@@ -1,0 +1,48 @@
+{{ block "leads-content" . }}
+<div class="p-1">
+	<section class="flex justify-around">
+		<h4 class="text-lg w-full text-center font-semibold text-blue-400" id="new-header">Жаңа</h4>
+		<h4 class="text-lg w-full text-center font-semibold text-yellow-400" id="assigned-header">Тағайындалды</h4>
+		<h4 class="text-lg w-full text-center font-semibold text-orange-400" id="in-progress-header">Жеткізілуде</h4>
+		<h4 class="text-lg w-full text-center font-semibold text-green-400" id="ready-header">Дайын</h4>
+	</section>
+	<section class="flex h-full">
+		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="new"
+			ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="task mx-4 my-2 bg-blue-500 p-4 text-center rounded-2xl text-lg text-white" id="task1"
+				draggable="true" ondragstart="drag(event)">Task 1 (New)</div>
+		</section>
+		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="assigned"
+			ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="task mx-4 my-2 bg-yellow-500 p-4 text-center rounded-2xl text-lg text-white" id="task2"
+				draggable="true" ondragstart="drag(event)">Task 2 (Assigned)</div>
+		</section>
+		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="in-progress"
+			ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="task mx-4 my-2 bg-orange-500 p-4 text-center rounded-2xl text-lg text-white" id="task3"
+				draggable="true" ondragstart="drag(event)">Task 3 (In Progress)</div>
+		</section>
+		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="ready"
+			ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="task mx-4 my-2 bg-green-500 p-4 text-center rounded-2xl text-lg text-white" id="task4"
+				draggable="true" ondragstart="drag(event)">Task 4 (Ready)</div>
+		</section>
+	</section>
+</div>
+<script>
+	const drop = (event) => {
+		event.preventDefault();
+		let taskID = event.dataTransfer.getData("text");
+		if (event.target.id.includes("task")) {
+			return;
+		}
+		event.target.appendChild(document.getElementById(taskID));
+	}
+	const allowdrop = (event) => {
+		event.preventDefault();
+	}
+	const drag = (event) => {
+		event.dataTransfer.setData("text", event.target.id);
+	}
+</script>
+{{ end }}

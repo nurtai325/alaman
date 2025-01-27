@@ -8,13 +8,33 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Lead struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+}
+
 type Product struct {
 	ID         int32
 	Name       string
 	InStock    int32
 	Price      int32
+	Code       string
 	StockPrice int32
 	CreatedAt  pgtype.Timestamptz
+}
+
+type Sale struct {
+	ID        int32
+	FullPrice pgtype.Numeric
+	Type      pgtype.Text
+	Items     []int32
+	CreatedAt pgtype.Timestamptz
 }
 
 type User struct {

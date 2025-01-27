@@ -1,0 +1,26 @@
+{{ block "leads-modal" . }}
+<form hx-post="/products" hx-swap="afterbegin" hx-target="#products-table-body" class="bg-gray-100 p-5">
+	<div class="flex">
+		<h1 class="text-lg mr-auto text-bold">Қызметкерге тағайындау</h1>
+		<button onclick="closeModal()">&#10060</button>
+	</div>
+	<div class="p-2">
+		<div>
+			<label>Қызметкерді таңдаңыз:</label>
+		</div>
+		<div>
+			<select class="p-1 rounded-sm" name="user" required>
+				<option value="менеджер">менеджер</option>
+				<option value="логист">логист</option>
+				<option value="роп">роп</option>
+				<option value="админ">админ</option>
+			</select>
+		</div>
+	</div>
+	<div class="ml-2 text-red-600 text-sm" id="product-modal-errors"></div>
+	<button type="submit" class="ml-2 px-2 p-1 text-white bg-blue-600 rounded-md">сақтау</button>
+</form>
+<script>
+
+</script>
+{{ end }}

@@ -11,7 +11,7 @@ import (
 
 const addStockProduct = `-- name: AddStockProduct :one
 UPDATE products
-SET in_stock = $2
+SET in_stock = in_stock + $2
 WHERE id = $1
 RETURNING in_stock
 `
@@ -31,7 +31,7 @@ func (q *Queries) AddStockProduct(ctx context.Context, arg AddStockProductParams
 const deleteProduct = `-- name: DeleteProduct :one
 DELETE FROM products
 WHERE id = $1
-RETURNING id, name, in_stock, price, stock_price, created_at
+RETURNING id, name, in_stock, price, code, stock_price, created_at
 `
 
 func (q *Queries) DeleteProduct(ctx context.Context, id int32) (Product, error) {
@@ -42,6 +42,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int32) (Product, error) 
 		&i.Name,
 		&i.InStock,
 		&i.Price,
+		&i.Code,
 		&i.StockPrice,
 		&i.CreatedAt,
 	)
@@ -49,7 +50,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int32) (Product, error) 
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, name, in_stock, price, stock_price, created_at FROM products 
+SELECT id, name, in_stock, price, code, stock_price, created_at FROM products 
 WHERE id = $1 
 LIMIT 1
 `
@@ -62,6 +63,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
 		&i.Name,
 		&i.InStock,
 		&i.Price,
+		&i.Code,
 		&i.StockPrice,
 		&i.CreatedAt,
 	)
@@ -69,7 +71,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
 }
 
 const getProductByName = `-- name: GetProductByName :one
-SELECT id, name, in_stock, price, stock_price, created_at FROM products
+SELECT id, name, in_stock, price, code, stock_price, created_at FROM products
 WHERE name = $1 
 LIMIT 1
 `
@@ -82,6 +84,7 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 		&i.Name,
 		&i.InStock,
 		&i.Price,
+		&i.Code,
 		&i.StockPrice,
 		&i.CreatedAt,
 	)
@@ -89,7 +92,7 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, in_stock, price, stock_price, created_at FROM products 
+SELECT id, name, in_stock, price, code, stock_price, created_at FROM products 
 ORDER BY created_at DESC 
 LIMIT $2 
 OFFSET $1
@@ -114,6 +117,7 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Pro
 			&i.Name,
 			&i.InStock,
 			&i.Price,
+			&i.Code,
 			&i.StockPrice,
 			&i.CreatedAt,
 		); err != nil {
@@ -140,9 +144,9 @@ func (q *Queries) GetProductsCount(ctx context.Context) (int64, error) {
 }
 
 const insertProduct = `-- name: InsertProduct :one
-INSERT INTO products(name, in_stock, price, stock_price)
-VALUES($1, $2, $3, $4)
-RETURNING id, name, in_stock, price, stock_price, created_at
+INSERT INTO products(name, in_stock, price, stock_price, code)
+VALUES($1, $2, $3, $4, $5)
+RETURNING id, name, in_stock, price, code, stock_price, created_at
 `
 
 type InsertProductParams struct {
@@ -150,6 +154,7 @@ type InsertProductParams struct {
 	InStock    int32
 	Price      int32
 	StockPrice int32
+	Code       string
 }
 
 func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (Product, error) {
@@ -158,6 +163,7 @@ func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (P
 		arg.InStock,
 		arg.Price,
 		arg.StockPrice,
+		arg.Code,
 	)
 	var i Product
 	err := row.Scan(
@@ -165,17 +171,37 @@ func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (P
 		&i.Name,
 		&i.InStock,
 		&i.Price,
+		&i.Code,
 		&i.StockPrice,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
+const removeStockProduct = `-- name: RemoveStockProduct :one
+UPDATE products
+SET in_stock = in_stock - $2
+WHERE id = $1
+RETURNING in_stock
+`
+
+type RemoveStockProductParams struct {
+	ID      int32
+	InStock int32
+}
+
+func (q *Queries) RemoveStockProduct(ctx context.Context, arg RemoveStockProductParams) (int32, error) {
+	row := q.db.QueryRow(ctx, removeStockProduct, arg.ID, arg.InStock)
+	var in_stock int32
+	err := row.Scan(&in_stock)
+	return in_stock, err
+}
+
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
-SET name = $2, price = $3, stock_price = $4
+SET name = $2, price = $3, stock_price = $4, code = $5
 WHERE id = $1
-RETURNING id, name, in_stock, price, stock_price, created_at
+RETURNING id, name, in_stock, price, code, stock_price, created_at
 `
 
 type UpdateProductParams struct {
@@ -183,6 +209,7 @@ type UpdateProductParams struct {
 	Name       string
 	Price      int32
 	StockPrice int32
+	Code       string
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -191,6 +218,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.Name,
 		arg.Price,
 		arg.StockPrice,
+		arg.Code,
 	)
 	var i Product
 	err := row.Scan(
@@ -198,6 +226,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.Name,
 		&i.InStock,
 		&i.Price,
+		&i.Code,
 		&i.StockPrice,
 		&i.CreatedAt,
 	)
