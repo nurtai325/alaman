@@ -70,6 +70,27 @@ func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
 	return i, err
 }
 
+const getProductByCode = `-- name: GetProductByCode :one
+SELECT id, name, in_stock, price, code, stock_price, created_at FROM products 
+WHERE code = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetProductByCode(ctx context.Context, code string) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductByCode, code)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.InStock,
+		&i.Price,
+		&i.Code,
+		&i.StockPrice,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getProductByName = `-- name: GetProductByName :one
 SELECT id, name, in_stock, price, code, stock_price, created_at FROM products
 WHERE name = $1 

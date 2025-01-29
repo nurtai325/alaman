@@ -9,6 +9,11 @@ SELECT * FROM products
 WHERE id = $1 
 LIMIT 1;
 
+-- name: GetProductByCode :one
+SELECT * FROM products 
+WHERE code = $1 
+LIMIT 1;
+
 -- name: GetProductByName :one
 SELECT * FROM products
 WHERE name = $1 

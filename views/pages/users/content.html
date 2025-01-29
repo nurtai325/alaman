@@ -14,7 +14,7 @@
 				</tr>
 			</thead>
 			<tbody id="users-table-body" hx-target="closest tr" hx-swap="outerHTML">
-				{{ range .Data.Rows }}
+				{{ range .Rows }}
 				{{ template "user-row" . }}
 				{{ end }}
 			</tbody>

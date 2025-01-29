@@ -1,33 +1,61 @@
 {{ block "leads-content" . }}
+{{ $users := .Users }}
 <div class="p-1">
 	<section class="flex justify-around">
-		<h4 class="text-lg w-full text-center font-semibold text-blue-400" id="new-header">Жаңа</h4>
+		<h4 class="items-center text-lg flex w-full text-center font-semibold text-blue-400" id="new-header">
+			<span class="w-36"></span>
+			<div class="items-center text-lg flex text-center font-semibold text-blue-400">
+				Жаңа
+			</div>
+			<button hx-get="/leads/new" hx-swap="afterbegin" hx-target="#new"
+				class="ml-2 rounded-lg p-1 bg-blue-400 text-white text-sm">қосу</button>
+		</h4>
 		<h4 class="text-lg w-full text-center font-semibold text-yellow-400" id="assigned-header">Тағайындалды</h4>
 		<h4 class="text-lg w-full text-center font-semibold text-orange-400" id="in-progress-header">Жеткізілуде</h4>
 		<h4 class="text-lg w-full text-center font-semibold text-green-400" id="ready-header">Дайын</h4>
 	</section>
 	<section class="flex h-full">
-		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="new"
-			ondrop="drop(event)" ondragover="allowdrop(event)">
-			<div class="task mx-4 my-2 bg-blue-500 p-4 text-center rounded-2xl text-lg text-white" id="task1"
-				draggable="true" ondragstart="drag(event)">Task 1 (New)</div>
+		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+			id="new">
+			{{ range .New }}
+			<div id="lead-cell-{{ .Id }}"
+				class="lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+				<div>{{ .Phone }}</div>
+				<div class="flex mt-1 mb-1">
+					<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
+						<option class="hidden" disabled selected value></option>
+						{{ range $users }}
+						<option class="text-center" value="{{ .Id }}">
+							{{ .Name }}
+						</option>
+						{{ end }}
+					</select>
+					<button hx-put="/leads/{{ .Id }}/assign" hx-include="closest div" hx-swap="afterbegin"
+						hx-target="#assigned" class="p-1 bg-green-600 text-white text-sm">сақтау</button>
+				</div>
+			</div>
+			{{ end }}
 		</section>
-		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="assigned"
-			ondrop="drop(event)" ondragover="allowdrop(event)">
-			<div class="task mx-4 my-2 bg-yellow-500 p-4 text-center rounded-2xl text-lg text-white" id="task2"
-				draggable="true" ondragstart="drag(event)">Task 2 (Assigned)</div>
+		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+			id="assigned">
+			{{ range .Assigned }}
+			{{ template "lead-cell-assigned" . }}
+			{{ end }}
 		</section>
-		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="in-progress"
-			ondrop="drop(event)" ondragover="allowdrop(event)">
-			<div class="task mx-4 my-2 bg-orange-500 p-4 text-center rounded-2xl text-lg text-white" id="task3"
-				draggable="true" ondragstart="drag(event)">Task 3 (In Progress)</div>
+		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+			id="in-progress">
+			<div class="task mx-4 my-3 bg-orange-500 p-4 text-center rounded-2xl text-lg text-white" draggable="true"
+				ondragstart="drag(event)">
+			</div>
 		</section>
-		<section class="bg-blue-100 h-screen w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl" id="ready"
-			ondrop="drop(event)" ondragover="allowdrop(event)">
-			<div class="task mx-4 my-2 bg-green-500 p-4 text-center rounded-2xl text-lg text-white" id="task4"
-				draggable="true" ondragstart="drag(event)">Task 4 (Ready)</div>
+		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+			id="ready" ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="task mx-4 my-3 bg-green-500 p-4 text-center rounded-2xl text-lg text-white">
+				<div></div>
+			</div>
 		</section>
 	</section>
+	<span id="lead-cell-errors"></span>
 </div>
 <script>
 	const drop = (event) => {
@@ -35,6 +63,9 @@
 		let taskID = event.dataTransfer.getData("text");
 		if (event.target.id.includes("task")) {
 			return;
+		}
+		if (!confirm("Тапсырыстың жеткізілгеніне сенімдісіз бе?")) {
+			return
 		}
 		event.target.appendChild(document.getElementById(taskID));
 	}
@@ -44,5 +75,14 @@
 	const drag = (event) => {
 		event.dataTransfer.setData("text", event.target.id);
 	}
+	document.addEventListener('DOMContentLoaded', () => {
+		const leadCells = document.querySelectorAll('.lead-cell');
+		leadCells.forEach(cell => {
+			document.addEventListener(cell.id, () => {
+				cell.remove();
+			});
+		});
+	});
+	let element;
 </script>
 {{ end }}

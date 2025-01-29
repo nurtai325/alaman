@@ -7,23 +7,66 @@ package repository
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignLead = `-- name: AssignLead :one
+UPDATE leads
+SET user_id = $2
+WHERE id = $1
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+`
+
+type AssignLeadParams struct {
+	ID     int32
+	UserID pgtype.Int4
+}
+
+func (q *Queries) AssignLead(ctx context.Context, arg AssignLeadParams) (Lead, error) {
+	row := q.db.QueryRow(ctx, assignLead, arg.ID, arg.UserID)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getAssignedLeads = `-- name: GetAssignedLeads :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads
-WHERE user_id != NULL AND sale_id = NULL
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC
 `
 
-func (q *Queries) GetAssignedLeads(ctx context.Context) ([]Lead, error) {
+type GetAssignedLeadsRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, error) {
 	rows, err := q.db.Query(ctx, getAssignedLeads)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Lead
+	var items []GetAssignedLeadsRow
 	for rows.Next() {
-		var i Lead
+		var i GetAssignedLeadsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -33,6 +76,7 @@ func (q *Queries) GetAssignedLeads(ctx context.Context) ([]Lead, error) {
 			&i.UserID,
 			&i.SaleID,
 			&i.CreatedAt,
+			&i.UserName,
 		); err != nil {
 			return nil, err
 		}
@@ -79,9 +123,31 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 	return items, nil
 }
 
+const getFullLead = `-- name: GetFullLead :one
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at FROM leads AS l
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetFullLead(ctx context.Context, id int32) (Lead, error) {
+	row := q.db.QueryRow(ctx, getFullLead, id)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getInDeliveryLeads = `-- name: GetInDeliveryLeads :many
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads
-WHERE user_id != NULL AND sale_id != NULL AND completed = false
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
 ORDER BY created_at DESC
 `
 
@@ -116,7 +182,7 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 
 const getNewLeads = `-- name: GetNewLeads :many
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads AS l
-WHERE user_id = NULL
+WHERE user_id IS NULL
 ORDER BY created_at DESC
 `
 
@@ -147,4 +213,143 @@ func (q *Queries) GetNewLeads(ctx context.Context) ([]Lead, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertLead = `-- name: InsertLead :one
+INSERT INTO leads(phone)
+VALUES ($1)
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+`
+
+func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
+	row := q.db.QueryRow(ctx, insertLead, phone)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const insertSale = `-- name: InsertSale :one
+INSERT INTO sales(type, full_sum, delivery_cost, loan_cost, items_sum)
+VALUES($1, $2, $3, $4, $5)
+RETURNING id, type, full_sum, delivery_cost, loan_cost, items_sum, created_at
+`
+
+type InsertSaleParams struct {
+	Type         string
+	FullSum      float32
+	DeliveryCost float32
+	LoanCost     float32
+	ItemsSum     float32
+}
+
+func (q *Queries) InsertSale(ctx context.Context, arg InsertSaleParams) (Sale, error) {
+	row := q.db.QueryRow(ctx, insertSale,
+		arg.Type,
+		arg.FullSum,
+		arg.DeliveryCost,
+		arg.LoanCost,
+		arg.ItemsSum,
+	)
+	var i Sale
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.FullSum,
+		&i.DeliveryCost,
+		&i.LoanCost,
+		&i.ItemsSum,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const insertSaleItem = `-- name: InsertSaleItem :one
+INSERT INTO sale_items(product_id, sale_id, quantity)
+VALUES($1, $2, $3)
+RETURNING id, product_id, sale_id, quantity, created_at
+`
+
+type InsertSaleItemParams struct {
+	ProductID int32
+	SaleID    int32
+	Quantity  int32
+}
+
+func (q *Queries) InsertSaleItem(ctx context.Context, arg InsertSaleItemParams) (SaleItem, error) {
+	row := q.db.QueryRow(ctx, insertSaleItem, arg.ProductID, arg.SaleID, arg.Quantity)
+	var i SaleItem
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.SaleID,
+		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const sellLead = `-- name: SellLead :one
+UPDAte leads
+SET sale_id = $2
+WHERE id = $1
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+`
+
+type SellLeadParams struct {
+	ID     int32
+	SaleID pgtype.Int4
+}
+
+func (q *Queries) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error) {
+	row := q.db.QueryRow(ctx, sellLead, arg.ID, arg.SaleID)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const setLeadInfo = `-- name: SetLeadInfo :one
+UPDATE leads
+SET name = $2, address = $3
+WHERE id = $1
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+`
+
+type SetLeadInfoParams struct {
+	ID      int32
+	Name    pgtype.Text
+	Address pgtype.Text
+}
+
+func (q *Queries) SetLeadInfo(ctx context.Context, arg SetLeadInfoParams) (Lead, error) {
+	row := q.db.QueryRow(ctx, setLeadInfo, arg.ID, arg.Name, arg.Address)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+	)
+	return i, err
 }

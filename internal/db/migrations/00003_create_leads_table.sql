@@ -2,9 +2,23 @@
 -- +goose StatementBegin
 CREATE TABLE sales(
 	id SERIAL PRIMARY KEY,
-	full_price NUMERIC(15, 2),
-	type VARCHAR(100),
-	items INT[],
+	type VARCHAR(100) NOT NULL,
+	full_sum REAL NOT NULL,
+	delivery_cost REAL NOT NULL,
+	loan_cost REAL NOT NULL,
+	items_sum REAL NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE sale_items(
+	id SERIAL PRIMARY KEY,
+	product_id INT NOT NULL,
+	sale_id INT NOT NULL,
+	quantity INT NOT NULL,
+	FOREIGN KEY(product_id)
+	REFERENCES products(id),
+	FOREIGN KEY(sale_id)
+	REFERENCES sales(id),
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -26,6 +40,7 @@ CREATE TABLE leads(
 
 -- +goose Down
 -- +goose StatementBegin
+DROP TABLE IF EXISTS sale_items;
 DROP TABLE IF EXISTS leads;
 DROP TABLE IF EXISTS sales;
 -- +goose StatementEnd

@@ -29,4 +29,7 @@ func (app *app) registerHandlers() {
 	app.register("PUT /products/{id}/remove", app.handleProductsRemove, true)
 
 	app.register("GET /leads", app.handleLeadsGet, true)
+	app.register("GET /leads/new", app.handleLeadsNew, true)
+	app.register("POST /leads", app.handleLeadsPost, true)
+	app.register("PUT /leads/{id}/assign", app.handleLeadsAssign, true)
 }

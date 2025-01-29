@@ -30,10 +30,20 @@ type Product struct {
 }
 
 type Sale struct {
+	ID           int32
+	Type         string
+	FullSum      float32
+	DeliveryCost float32
+	LoanCost     float32
+	ItemsSum     float32
+	CreatedAt    pgtype.Timestamptz
+}
+
+type SaleItem struct {
 	ID        int32
-	FullPrice pgtype.Numeric
-	Type      pgtype.Text
-	Items     []int32
+	ProductID int32
+	SaleID    int32
+	Quantity  int32
 	CreatedAt pgtype.Timestamptz
 }
 

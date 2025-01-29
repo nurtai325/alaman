@@ -17,7 +17,7 @@
 				</tr>
 			</thead>
 			<tbody id="products-table-body" hx-target="closest tr" hx-swap="outerHTML">
-				{{ range .Data.Rows }}
+				{{ range .Rows }}
 				{{ template "product-row" . }}
 				{{ end }}
 			</tbody>

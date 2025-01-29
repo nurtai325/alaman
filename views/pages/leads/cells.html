@@ -1,0 +1,52 @@
+{{ block "new-lead-form" . }}
+<div id="new-lead-form" class="task mx-4 my-3 items-center bg-blue-500 p-4 rounded-2xl text-lg text-white">
+	<div>
+		<input class="w-full text-black pl-4" name="phone" type="tel" value="+77" />
+	</div>
+	<div class="mt-2">
+		<button hx-post="/leads" hx-include="#new-lead-form" hx-target="#new-lead-form" hx-swap="outerHTML"
+			class="p-1 bg-green-600 text-white text-md">сақтау</button>
+	</div>
+</div>
+{{ end }}
+
+{{ block "lead-cell-new" . }}
+<div id="lead-cell-{{ .Id }}" class="lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+	<div>{{ .Phone }}</div>
+	<div class="flex mt-1 mb-1">
+		<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
+			<option class="hidden" disabled selected value></option>
+			{{ range .Users }}
+			<option class="text-center" value="{{ .Id }}">
+				{{ .Name }}
+			</option>
+			{{ end }}
+		</select>
+		<button hx-put="/leads/{{ .Id }}/assign" hx-include="closest div" hx-swap="afterbegin" hx-target="#assigned"
+			class="p-1 bg-green-600 text-white text-sm">сақтау</button>
+	</div>
+</div>
+{{ template "lead-remove-script" .Id }}
+{{ end }}
+
+{{ block "lead-cell-assigned" . }}
+<div id="lead-cell-{{ .Id }}" class="task flex mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+	<div>
+		<div>{{ .Phone }}</div>
+		<div class="mt-1 font-bold">{{ .UserName }}</div>
+	</div>
+	<div class="ml-auto mt-[13px] mr-2">
+		<button class="p-1 rounded-lg bg-green-600 text-white text-lg">сату</button>
+	</div>
+</div>
+{{ template "lead-remove-script" .Id }}
+{{ end }}
+
+{{ block "lead-remove-script" . }}
+<script>
+	leadCellElement = document.getElementById('lead-cell-{{ . }}');
+	document.addEventListener(leadCellElement.id, () => {
+		leadCellElement.remove();
+	});
+</script>
+{{ end }}
