@@ -15,3 +15,7 @@ func (app *app) handleDashBoard(w http.ResponseWriter, r *http.Request) {
 		Data: "",
 	})
 }
+
+func (app *app) handleEmpty(w http.ResponseWriter, r *http.Request) {
+	app.execute(w, tEmpty, "", nil)
+}

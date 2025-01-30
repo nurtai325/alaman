@@ -30,13 +30,14 @@
 {{ end }}
 
 {{ block "lead-cell-assigned" . }}
-<div id="lead-cell-{{ .Id }}" class="task flex mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
-	<div>
+<div id="lead-cell-{{ .Id }}" class="lead-cell task flex mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+	<div class="ml-2">
 		<div>{{ .Phone }}</div>
 		<div class="mt-1 font-bold">{{ .UserName }}</div>
 	</div>
 	<div class="ml-auto mt-[13px] mr-2">
-		<button class="p-1 rounded-lg bg-green-600 text-white text-lg">сату</button>
+		<button onclick="openLeadModal({{ .Id }})"
+			class="p-1 px-3 rounded-lg bg-green-600 text-white text-lg">сату</button>
 	</div>
 </div>
 {{ template "lead-remove-script" .Id }}
@@ -49,4 +50,70 @@
 		leadCellElement.remove();
 	});
 </script>
+{{ end }}
+
+{{ block "lead-cell-in-delivery" . }}
+<div id="lead-cell-{{ .Id }}" lead-id="{{ .Id }}"
+	class="task lead-cell mx-4 my-3 bg-orange-500 py-6 px-8 rounded-2xl text-lg text-white" draggable="true"
+	ondragstart="drag(event)">
+	<div class="flex font-light w-full">
+		<div class="mr-auto">Аты:</div>
+		<button class="ml-auto mr-3 font-bold bg-blue-500 text-center rounded-full w-8 h-8 text-white relative group">
+			!
+			<span
+				class="absolute top-[-1.75rem] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 bg-gray-100 text-gray-800 px-2 py-1 rounded border border-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-300 inline-block">
+				{{ range .Items }}
+				<p class="w-full whitespace-nowrap">
+					{{ .Quantity }} {{ .ProductName }}
+				</p>
+				{{ end }}
+			</span>
+		</button>
+	</div>
+	<div class="font-bold">{{ .Name }}</div>
+	<div class="font-light mt-3">Мекенжай:</div>
+	<div class="font-bold">{{ .Address }}</div>
+	<div class="font-light mt-3">Номер:</div>
+	<div class="font-bold">{{ .Phone }}</div>
+	<div class="font-light mt-3">Кеңесші маман:</div>
+	<div class="font-bold">{{ .UserName }}</div>
+</div>
+{{ end }}
+
+{{ block "lead-cell-completed" . }}
+<div lead-id="{{ .Id }}" class="task mx-4 my-3 bg-green-500 py-6 px-8 rounded-2xl text-lg text-white">
+	<div class="flex font-light w-full">
+		<div class="mr-auto">Аты:</div>
+		<button class="ml-auto mr-3 font-bold bg-blue-500 text-center rounded-full w-8 h-8 text-white relative group">
+			!
+			<span
+				class="absolute top-[-1.75rem] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 bg-gray-100 text-gray-800 px-2 py-1 rounded border border-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-300 inline-block">
+				{{ range .Items }}
+				<p class="w-full whitespace-nowrap">
+					{{ .Quantity }} {{ .ProductName }}
+				</p>
+				{{ end }}
+			</span>
+		</button>
+	</div>
+	<div class="font-bold">{{ .Name }}</div>
+	<div class="font-light mt-3">Мекенжай:</div>
+	<div class="font-bold">{{ .Address }}</div>
+	<div class="font-light mt-3">Номер:</div>
+	<div class="font-bold">{{ .Phone }}</div>
+	<div class="font-light mt-3">Кеңесші маман:</div>
+	<div class="font-bold">{{ .UserName }}</div>
+</div>
+{{ end }}
+
+{{ block "leads-product" . }}
+<div class="flex mt-2">
+	<select price="{{ .Price }}" class="p-1 rounded-sm" disabled>
+		<option value="{{ .Id }}">{{ .Name }}</option>
+	</select>
+	<input class="ml-2 w-16 p-1 rounded-sm" type="number" value="0" onchange="calcSaleSum()" />
+	<button hx-get="/empty" hx-swap="outerHTML" hx-target="closest div" class="ml-2 rounded-sm">
+		&#10060
+	</button>
+</div>
 {{ end }}

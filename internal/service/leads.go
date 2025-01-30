@@ -3,12 +3,17 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
+)
+
+var (
+	ErrInvalidSaleType = errors.New("invalid sale type")
 )
 
 type Lead struct {
@@ -22,6 +27,7 @@ type Lead struct {
 	FullPrice    float32
 	DeliveryCost float32
 	LoanCost     float32
+	Items        []SaleItem
 	UserId       int
 	SaleId       int
 	CreatedAt    time.Time
@@ -34,6 +40,7 @@ const (
 	cash          saleType = "cash"
 	kaspiRed      saleType = "red"
 	kaspiTransfer saleType = "kaspi-transfer"
+	kaspiQr       saleType = "kaspi-qr"
 )
 
 func getSLead(lead repository.Lead) Lead {
@@ -90,7 +97,31 @@ func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 	}
 	sLeads := make([]Lead, 0, len(leads))
 	for _, lead := range leads {
-		sLeads = append(sLeads, getSLead(lead))
+		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+		if err != nil {
+			return nil, err
+		}
+		sItems := make([]SaleItem, 0, len(items))
+		for _, item := range items {
+			sItems = append(sItems, SaleItem{
+				Id:          int(item.ID),
+				ProductName: item.ProductName,
+				ProductId:   int(item.ProductID),
+				Quantity:    int(item.Quantity),
+			})
+		}
+		sLeads = append(sLeads, Lead{
+			Id:        int(lead.ID),
+			Name:      lead.Name.String,
+			UserName:  lead.UserName,
+			Address:   lead.Address.String,
+			Phone:     lead.Phone,
+			Completed: lead.Completed,
+			UserId:    int(lead.UserID.Int32),
+			SaleId:    int(lead.SaleID.Int32),
+			Items:     sItems,
+			CreatedAt: lead.CreatedAt.Time,
+		})
 	}
 	return sLeads, nil
 }
@@ -102,7 +133,31 @@ func (s *Service) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 	}
 	sLeads := make([]Lead, 0, len(leads))
 	for _, lead := range leads {
-		sLeads = append(sLeads, getSLead(lead))
+		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+		if err != nil {
+			return nil, err
+		}
+		sItems := make([]SaleItem, 0, len(items))
+		for _, item := range items {
+			sItems = append(sItems, SaleItem{
+				Id:          int(item.ID),
+				ProductName: item.ProductName,
+				ProductId:   int(item.ProductID),
+				Quantity:    int(item.Quantity),
+			})
+		}
+		sLeads = append(sLeads, Lead{
+			Id:        int(lead.ID),
+			Name:      lead.Name.String,
+			UserName:  lead.UserName,
+			Address:   lead.Address.String,
+			Phone:     lead.Phone,
+			Completed: lead.Completed,
+			UserId:    int(lead.UserID.Int32),
+			SaleId:    int(lead.SaleID.Int32),
+			Items:     sItems,
+			CreatedAt: lead.CreatedAt.Time,
+		})
 	}
 	return sLeads, nil
 }
@@ -132,17 +187,23 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 	return getSLead(lead), nil
 }
 
+func (s *Service) CompleteLead(ctx context.Context, id int) error {
+	_, err := s.queries.CompleteLead(ctx, int32(id))
+	return err
+}
+
 type SaleItem struct {
-	Id        int
-	ProductId int
-	SaleId    int
-	Quantity  int
+	Id          int
+	ProductName string
+	ProductId   int
+	Quantity    int
 }
 
 type SellLeadParams struct {
+	Id           int
 	Name         string
 	Address      string
-	Type         saleType
+	Type         string
 	FullSum      float32
 	DeliveryCost float32
 	LoanCost     float32
@@ -150,7 +211,10 @@ type SellLeadParams struct {
 	Items        []SaleItem
 }
 
-func (s *Service) SellLead(ctx context.Context, id int, arg SellLeadParams) (Lead, error) {
+func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error) {
+	if !validSaleType(arg.Type) {
+		return Lead{}, fmt.Errorf("%w: %s", ErrInvalidSaleType, arg.Type)
+	}
 	conf, err := config.New()
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
@@ -166,7 +230,7 @@ func (s *Service) SellLead(ctx context.Context, id int, arg SellLeadParams) (Lea
 	defer tx.Rollback(ctx)
 	q := s.queries.WithTx(tx)
 	_, err = q.SetLeadInfo(ctx, repository.SetLeadInfoParams{
-		ID: int32(id),
+		ID: int32(arg.Id),
 		Name: pgtype.Text{
 			String: arg.Name,
 			Valid:  true,
@@ -190,7 +254,7 @@ func (s *Service) SellLead(ctx context.Context, id int, arg SellLeadParams) (Lea
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
 	for _, item := range arg.Items {
-		_, err := s.queries.InsertSaleItem(ctx, repository.InsertSaleItemParams{
+		_, err := q.InsertSaleItem(ctx, repository.InsertSaleItemParams{
 			SaleID:    sale.ID,
 			ProductID: int32(item.ProductId),
 			Quantity:  int32(item.Quantity),
@@ -198,9 +262,16 @@ func (s *Service) SellLead(ctx context.Context, id int, arg SellLeadParams) (Lea
 		if err != nil {
 			return Lead{}, errors.Join(ErrInternal, err)
 		}
+		_, err = q.RemoveStockProduct(ctx, repository.RemoveStockProductParams{
+			ID:      int32(item.ProductId),
+			InStock: int32(item.Quantity),
+		})
+		if err != nil {
+			return Lead{}, errors.Join(ErrInternal, err)
+		}
 	}
 	lead, err := q.SellLead(ctx, repository.SellLeadParams{
-		ID: int32(id),
+		ID: int32(arg.Id),
 		SaleID: pgtype.Int4{
 			Int32: sale.ID,
 			Valid: true,
@@ -209,11 +280,44 @@ func (s *Service) SellLead(ctx context.Context, id int, arg SellLeadParams) (Lea
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
-	fullLead, err := s.queries.GetFullLead(ctx, lead.ID)
+	fullLead, err := q.GetFullLead(ctx, lead.ID)
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
+	items, err := q.GetSaleItems(ctx, fullLead.SaleID.Int32)
+	sItems := make([]SaleItem, 0, len(items))
+	for _, item := range items {
+		sItems = append(sItems, SaleItem{
+			Id:          int(item.ID),
+			ProductName: item.ProductName,
+			ProductId:   int(item.ProductID),
+			Quantity:    int(item.Quantity),
+		})
+	}
 	return Lead{
-		Id: int(fullLead.ID),
+		Id:       int(fullLead.ID),
+		Phone:    fullLead.Phone,
+		Address:  fullLead.Address.String,
+		Name:     fullLead.Name.String,
+		UserName: fullLead.UserName,
+		Items:    sItems,
 	}, tx.Commit(ctx)
+}
+
+func validSaleType(saletypeStr string) bool {
+	saletype := saleType(saletypeStr)
+	switch saletype {
+	case kaspiLoan:
+		return true
+	case cash:
+		return true
+	case kaspiRed:
+		return true
+	case kaspiTransfer:
+		return true
+	case kaspiQr:
+		return true
+	default:
+		return false
+	}
 }

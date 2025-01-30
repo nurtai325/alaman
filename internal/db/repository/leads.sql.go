@@ -15,7 +15,7 @@ const assignLead = `-- name: AssignLead :one
 UPDATE leads
 SET user_id = $2
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
 `
 
 type AssignLeadParams struct {
@@ -35,12 +35,37 @@ func (q *Queries) AssignLead(ctx context.Context, arg AssignLeadParams) (Lead, e
 		&i.UserID,
 		&i.SaleID,
 		&i.CreatedAt,
+		&i.SoldAt,
+	)
+	return i, err
+}
+
+const completeLead = `-- name: CompleteLead :one
+UPDAte leads
+SET completed = true
+WHERE id = $1
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+`
+
+func (q *Queries) CompleteLead(ctx context.Context, id int32) (Lead, error) {
+	row := q.db.QueryRow(ctx, completeLead, id)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+		&i.SoldAt,
 	)
 	return i, err
 }
 
 const getAssignedLeads = `-- name: GetAssignedLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC
@@ -55,6 +80,7 @@ type GetAssignedLeadsRow struct {
 	UserID    pgtype.Int4
 	SaleID    pgtype.Int4
 	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
 	UserName  string
 }
 
@@ -76,6 +102,7 @@ func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, 
 			&i.UserID,
 			&i.SaleID,
 			&i.CreatedAt,
+			&i.SoldAt,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -89,20 +116,34 @@ func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, 
 }
 
 const getCompletedLeads = `-- name: GetCompletedLeads :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads
-WHERE completed = true
-ORDER BY created_at DESC
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
+ORDER BY sold_at ASC
 `
 
-func (q *Queries) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
+type GetCompletedLeadsRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow, error) {
 	rows, err := q.db.Query(ctx, getCompletedLeads)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Lead
+	var items []GetCompletedLeadsRow
 	for rows.Next() {
-		var i Lead
+		var i GetCompletedLeadsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -112,6 +153,8 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 			&i.UserID,
 			&i.SaleID,
 			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
 		); err != nil {
 			return nil, err
 		}
@@ -124,14 +167,28 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 }
 
 const getFullLead = `-- name: GetFullLead :one
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at FROM leads AS l
-WHERE id = $1
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE l.id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetFullLead(ctx context.Context, id int32) (Lead, error) {
+type GetFullLeadRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetFullLead(ctx context.Context, id int32) (GetFullLeadRow, error) {
 	row := q.db.QueryRow(ctx, getFullLead, id)
-	var i Lead
+	var i GetFullLeadRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -141,25 +198,41 @@ func (q *Queries) GetFullLead(ctx context.Context, id int32) (Lead, error) {
 		&i.UserID,
 		&i.SaleID,
 		&i.CreatedAt,
+		&i.SoldAt,
+		&i.UserName,
 	)
 	return i, err
 }
 
 const getInDeliveryLeads = `-- name: GetInDeliveryLeads :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
-ORDER BY created_at DESC
+ORDER BY sold_at ASC
 `
 
-func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
+type GetInDeliveryLeadsRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsRow, error) {
 	rows, err := q.db.Query(ctx, getInDeliveryLeads)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Lead
+	var items []GetInDeliveryLeadsRow
 	for rows.Next() {
-		var i Lead
+		var i GetInDeliveryLeadsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -169,6 +242,8 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 			&i.UserID,
 			&i.SaleID,
 			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
 		); err != nil {
 			return nil, err
 		}
@@ -181,7 +256,7 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 }
 
 const getNewLeads = `-- name: GetNewLeads :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at FROM leads AS l
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
 WHERE user_id IS NULL
 ORDER BY created_at DESC
 `
@@ -204,6 +279,49 @@ func (q *Queries) GetNewLeads(ctx context.Context) ([]Lead, error) {
 			&i.UserID,
 			&i.SaleID,
 			&i.CreatedAt,
+			&i.SoldAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSaleItems = `-- name: GetSaleItems :many
+SELECT s.id, s.product_id, s.sale_id, s.quantity, s.created_at, p.name AS product_name FROM sale_items AS s
+INNER JOIN products p ON s.product_id = p.id
+WHERE s.sale_id = $1
+`
+
+type GetSaleItemsRow struct {
+	ID          int32
+	ProductID   int32
+	SaleID      int32
+	Quantity    int32
+	CreatedAt   pgtype.Timestamptz
+	ProductName string
+}
+
+func (q *Queries) GetSaleItems(ctx context.Context, saleID int32) ([]GetSaleItemsRow, error) {
+	rows, err := q.db.Query(ctx, getSaleItems, saleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSaleItemsRow
+	for rows.Next() {
+		var i GetSaleItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.SaleID,
+			&i.Quantity,
+			&i.CreatedAt,
+			&i.ProductName,
 		); err != nil {
 			return nil, err
 		}
@@ -218,7 +336,7 @@ func (q *Queries) GetNewLeads(ctx context.Context) ([]Lead, error) {
 const insertLead = `-- name: InsertLead :one
 INSERT INTO leads(phone)
 VALUES ($1)
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
 `
 
 func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
@@ -233,6 +351,7 @@ func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
 		&i.UserID,
 		&i.SaleID,
 		&i.CreatedAt,
+		&i.SoldAt,
 	)
 	return i, err
 }
@@ -299,9 +418,9 @@ func (q *Queries) InsertSaleItem(ctx context.Context, arg InsertSaleItemParams) 
 
 const sellLead = `-- name: SellLead :one
 UPDAte leads
-SET sale_id = $2
+SET sale_id = $2, sold_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
 `
 
 type SellLeadParams struct {
@@ -321,6 +440,7 @@ func (q *Queries) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		&i.UserID,
 		&i.SaleID,
 		&i.CreatedAt,
+		&i.SoldAt,
 	)
 	return i, err
 }
@@ -329,7 +449,7 @@ const setLeadInfo = `-- name: SetLeadInfo :one
 UPDATE leads
 SET name = $2, address = $3
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
 `
 
 type SetLeadInfoParams struct {
@@ -350,6 +470,7 @@ func (q *Queries) SetLeadInfo(ctx context.Context, arg SetLeadInfoParams) (Lead,
 		&i.UserID,
 		&i.SaleID,
 		&i.CreatedAt,
+		&i.SoldAt,
 	)
 	return i, err
 }

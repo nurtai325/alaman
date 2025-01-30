@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/nurtai325/alaman/internal/service"
 )
 
 var (
-	ErrChooseUser = errors.New("қызметкерді таңдаңыз")
+	ErrChooseUser       = errors.New("қызметкерді таңдаңыз")
+	ErrInvalidCartItems = errors.New("invalid cart items format")
 )
 
 const (
@@ -23,6 +25,7 @@ type leadsContent struct {
 	InDelivery []service.Lead
 	Completed  []service.Lead
 	Users      []service.User
+	Products   []service.Product
 }
 
 func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +54,11 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
+	products, err := app.service.GetProducts(r.Context(), 0, pagesLimit)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
 	app.execute(w, tLeads, "/pages/leads", layoutData{
 		BarsData: barsData{
 			Page:     "leads",
@@ -64,6 +72,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			InDelivery: inDeliveryLeads,
 			Completed:  completedLeads,
 			Users:      users,
+			Products:   products,
 		},
 	})
 }
@@ -133,4 +142,125 @@ func (app *app) handleLeadsAssign(w http.ResponseWriter, r *http.Request) {
 	lead.UserName = user.Name
 	w.Header().Add("HX-Trigger", fmt.Sprintf("lead-cell-%d", lead.Id))
 	app.execute(w, tLeadsAssignedCell, "", lead)
+}
+
+func (app *app) handleLeadsComplete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, fmt.Errorf("%w: %s", service.ErrInvalidId, idStr))
+		return
+	}
+	err = app.service.CompleteLead(r.Context(), id)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	idStr := r.FormValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		app.error(w, fmt.Errorf("%w: %s", service.ErrInvalidId, idStr))
+		return
+	}
+	name := r.FormValue("name")
+	address := r.FormValue("address")
+	saletype := r.FormValue("saletype")
+	deliveryCostStr := r.FormValue("deliverycost")
+	deliveryCost, err := strconv.ParseFloat(deliveryCostStr, 32)
+	if err != nil {
+		app.errorHx(w, tText, "#product-modal-errors", "жеткізу құны сан болуы тиіс")
+		return
+	}
+	loanCostStr := r.FormValue("loancost")
+	loanCost, err := strconv.ParseFloat(loanCostStr, 32)
+	if err != nil {
+		app.errorHx(w, tText, "#leads-modal-errors", "несие құны сан болуы тиіс")
+		return
+	}
+	fullSumStr := r.FormValue("fullsum")
+	fullSum, err := strconv.ParseFloat(fullSumStr, 32)
+	if err != nil {
+		app.error(w, fmt.Errorf("full sum isn't number: %s", fullSumStr))
+		return
+	}
+	itemsSumStr := r.FormValue("itemsum")
+	itemsSum, err := strconv.ParseFloat(itemsSumStr, 32)
+	if err != nil {
+		app.error(w, fmt.Errorf("items sum isn't number: %s", fullSumStr))
+		return
+	}
+	items, err := parseCartItems(r.FormValue("items"))
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	lead, err := app.service.SellLead(r.Context(), service.SellLeadParams{
+		Id:           id,
+		Name:         name,
+		Address:      address,
+		Type:         saletype,
+		DeliveryCost: float32(deliveryCost),
+		LoanCost:     float32(loanCost),
+		FullSum:      float32(fullSum),
+		ItemsSum:     float32(itemsSum),
+		Items:        items,
+	})
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	w.Header().Add("HX-Trigger", "closeModal")
+	w.Header().Add("HX-Trigger", fmt.Sprintf("lead-cell-%d", lead.Id))
+	app.execute(w, tLeadsInDeliveryCell, "", lead)
+}
+
+func parseCartItems(itemsStr string) ([]service.SaleItem, error) {
+	itemsSplit := strings.Split(itemsStr, ";")
+	items := make([]service.SaleItem, 0, len(itemsSplit))
+	if len(itemsSplit) == 0 {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidCartItems, itemsStr)
+	}
+	for _, itemStr := range itemsSplit {
+		if itemStr == "" {
+			continue
+		}
+		temp := strings.Split(itemStr, ",")
+		if len(temp) != 2 {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidCartItems, itemsStr)
+		}
+		productIdStr, quantityStr := temp[0], temp[1]
+		productId, err := strconv.Atoi(productIdStr)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidCartItems, itemsStr)
+		}
+		quantity, err := strconv.Atoi(quantityStr)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidCartItems, itemsStr)
+		}
+		items = append(items, service.SaleItem{
+			ProductId: productId,
+			Quantity:  quantity,
+		})
+	}
+	return items, nil
+}
+
+func (app *app) handleLeadsProduct(w http.ResponseWriter, r *http.Request) {
+	productIdStr := r.FormValue("select-product")
+	productId, err := strconv.Atoi(productIdStr)
+	if err != nil {
+		app.error(w, fmt.Errorf("%w: %s", service.ErrInvalidId, productIdStr))
+		return
+	}
+	p, err := app.service.GetProduct(r.Context(), productId)
+	app.execute(w, tLeadsProduct, "", p)
 }

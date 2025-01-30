@@ -10,14 +10,16 @@ WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC;
 
 -- name: GetInDeliveryLeads :many
-SELECT * FROM leads
+SELECT l.*, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
-ORDER BY created_at DESC;
+ORDER BY sold_at ASC;
 
 -- name: GetCompletedLeads :many
-SELECT * FROM leads
-WHERE completed = true
-ORDER BY created_at DESC;
+SELECT l.*, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
+ORDER BY sold_at ASC;
 
 -- name: InsertLead :one
 INSERT INTO leads(phone)
@@ -48,11 +50,23 @@ RETURNING *;
 
 -- name: SellLead :one
 UPDAte leads
-SET sale_id = $2
+SET sale_id = $2, sold_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
 
 -- name: GetFullLead :one
-SELECT l.* FROM leads AS l
-WHERE id = $1
+SELECT l.*, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE l.id = $1
 LIMIT 1;
+
+-- name: GetSaleItems :many
+SELECT s.*, p.name AS product_name FROM sale_items AS s
+INNER JOIN products p ON s.product_id = p.id
+WHERE s.sale_id = $1;
+
+-- name: CompleteLead :one
+UPDAte leads
+SET completed = true
+WHERE id = $1
+RETURNING *;

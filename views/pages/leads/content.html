@@ -44,15 +44,15 @@
 		</section>
 		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="in-progress">
-			<div class="task mx-4 my-3 bg-orange-500 p-4 text-center rounded-2xl text-lg text-white" draggable="true"
-				ondragstart="drag(event)">
-			</div>
+			{{ range .InDelivery }}
+			{{ template "lead-cell-in-delivery" . }}
+			{{ end }}
 		</section>
 		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="ready" ondrop="drop(event)" ondragover="allowdrop(event)">
-			<div class="task mx-4 my-3 bg-green-500 p-4 text-center rounded-2xl text-lg text-white">
-				<div></div>
-			</div>
+			{{ range .Completed }}
+			{{ template "lead-cell-completed" . }}
+			{{ end }}
 		</section>
 	</section>
 	<span id="lead-cell-errors"></span>
@@ -61,19 +61,35 @@
 	const drop = (event) => {
 		event.preventDefault();
 		let taskID = event.dataTransfer.getData("text");
+		let leadId = event.dataTransfer.getData("lead_id");
 		if (event.target.id.includes("task")) {
 			return;
 		}
 		if (!confirm("Тапсырыстың жеткізілгеніне сенімдісіз бе?")) {
 			return
 		}
-		event.target.appendChild(document.getElementById(taskID));
+		const url = `/leads/${leadId}/complete`;
+		fetch(url, {
+			method: 'POST',
+		})
+			.then(response => {
+				if (response.ok) {
+					let task = document.getElementById(taskID)
+					task.classList.remove('bg-orange-500');
+					task.classList.add('bg-green-500');
+					event.target.appendChild(task);
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
 	}
 	const allowdrop = (event) => {
 		event.preventDefault();
 	}
 	const drag = (event) => {
 		event.dataTransfer.setData("text", event.target.id);
+		event.dataTransfer.setData("lead_id", event.target.getAttribute('lead-id'));
 	}
 	document.addEventListener('DOMContentLoaded', () => {
 		const leadCells = document.querySelectorAll('.lead-cell');
@@ -84,5 +100,9 @@
 		});
 	});
 	let element;
+	const openLeadModal = (id) => {
+		document.getElementById("leads-modal-id").value = id
+		openModal()
+	}
 </script>
 {{ end }}

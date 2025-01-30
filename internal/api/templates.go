@@ -27,10 +27,13 @@ const (
 	tProductRow     templateName = "product-row"
 	tProductRowEdit templateName = "product-row-edit"
 
-	tLeads             templateName = "leads.html"
-	tLeadsNewForm      templateName = "new-lead-form"
-	tLeadsNewCell      templateName = "lead-cell-new"
-	tLeadsAssignedCell templateName = "lead-cell-assigned"
+	tLeads               templateName = "leads.html"
+	tLeadsNewForm        templateName = "new-lead-form"
+	tLeadsNewCell        templateName = "lead-cell-new"
+	tLeadsAssignedCell   templateName = "lead-cell-assigned"
+	tLeadsInDeliveryCell templateName = "lead-cell-in-delivery"
+	tLeadsCompleted      templateName = "lead-cell-completed"
+	tLeadsProduct        templateName = "leads-product"
 
 	pagesLimit = 1000
 

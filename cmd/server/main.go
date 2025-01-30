@@ -25,16 +25,21 @@ func openLog(name string, lFlags int) (*log.Logger, error) {
 	return logger, nil
 }
 
+func parsePages(templ *template.Template, pages ...string) *template.Template {
+	for _, page := range pages {
+		glob := fmt.Sprintf("./views/pages/%s/*.html", page)
+		templ = template.Must(templ.ParseGlob(glob))
+	}
+	return templ
+}
+
 func main() {
 	infoLog, err := openLog("info", log.Lshortfile)
 	errLog, err := openLog("error", 0)
 	accessLog, err := openLog("access", 0)
 
 	templates := template.Must(template.ParseGlob("./views/*.html"))
-	templates = template.Must(templates.ParseGlob("./views/pages/users/*.html"))
-	templates = template.Must(templates.ParseGlob("./views/pages/dashboard/*.html"))
-	templates = template.Must(templates.ParseGlob("./views/pages/products/*.html"))
-	templates = template.Must(templates.ParseGlob("./views/pages/leads/*.html"))
+	templates = parsePages(templates, "users", "dashboard", "products", "leads")
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

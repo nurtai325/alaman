@@ -17,6 +17,7 @@ type Lead struct {
 	UserID    pgtype.Int4
 	SaleID    pgtype.Int4
 	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
 }
 
 type Product struct {

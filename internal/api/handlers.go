@@ -13,6 +13,7 @@ func (app *app) registerHandlers() {
 	app.register("GET /login", app.handleLogin, false)
 	app.register("POST /login", app.handleLogin, false)
 	app.register("POST /logout", app.handleLogout, true)
+	app.register("GET /empty", app.handleEmpty, true)
 
 	app.register("GET /users", app.handleUsersGet, true)
 	app.register("POST /users", app.handleUsersPost, true)
@@ -32,4 +33,7 @@ func (app *app) registerHandlers() {
 	app.register("GET /leads/new", app.handleLeadsNew, true)
 	app.register("POST /leads", app.handleLeadsPost, true)
 	app.register("PUT /leads/{id}/assign", app.handleLeadsAssign, true)
+	app.register("POST /leads/sell", app.handleLeadsSell, true)
+	app.register("POST /leads/{id}/complete", app.handleLeadsComplete, true)
+	app.register("GET /leads/product", app.handleLeadsProduct, true)
 }
