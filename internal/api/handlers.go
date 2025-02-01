@@ -36,4 +36,6 @@ func (app *app) registerHandlers() {
 	app.register("POST /leads/sell", app.handleLeadsSell, true)
 	app.register("POST /leads/{id}/complete", app.handleLeadsComplete, true)
 	app.register("GET /leads/product", app.handleLeadsProduct, true)
+
+	app.register("GET /qr", app.HandleQr, true)
 }

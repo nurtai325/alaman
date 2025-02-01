@@ -29,7 +29,6 @@ func getSProduct(p repository.Product) Product {
 		InStock:    int(p.InStock),
 		Price:      int(p.Price),
 		StockPrice: int(p.StockPrice),
-		Code:       p.Code,
 		CreatedAt:  p.CreatedAt.Time,
 	}
 }
@@ -62,16 +61,12 @@ func (s *Service) GetProduct(ctx context.Context, id int) (Product, error) {
 	return getSProduct(p), nil
 }
 
-func (s *Service) InsertProduct(ctx context.Context, name, code string, inStock, price, stockPrice int) (Product, error) {
-	if !validProductCode(code) {
-		return Product{}, ErrInvalidProductCode
-	}
+func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price, stockPrice int) (Product, error) {
 	p, err := s.queries.InsertProduct(ctx, repository.InsertProductParams{
 		Name:       name,
 		InStock:    int32(inStock),
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
-		Code:       code,
 	})
 	if err != nil {
 		return Product{}, errors.Join(ErrInternal, err)
@@ -79,16 +74,12 @@ func (s *Service) InsertProduct(ctx context.Context, name, code string, inStock,
 	return getSProduct(p), nil
 }
 
-func (s *Service) UpdateProduct(ctx context.Context, name, code string, id, price, stockPrice int) (Product, error) {
-	if !validProductCode(code) {
-		return Product{}, ErrInvalidProductCode
-	}
+func (s *Service) UpdateProduct(ctx context.Context, name string, id, price, stockPrice int) (Product, error) {
 	p, err := s.queries.UpdateProduct(ctx, repository.UpdateProductParams{
 		ID:         int32(id),
 		Name:       name,
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
-		Code:       code,
 	})
 	if err != nil {
 		return Product{}, errors.Join(ErrInternal, err)

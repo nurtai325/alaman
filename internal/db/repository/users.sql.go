@@ -30,6 +30,27 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
+const getLogist = `-- name: GetLogist :one
+SELECT id, name, phone, password, role, active, created_at FROM users 
+WHERE role = 'логист'
+LIMIT 1
+`
+
+func (q *Queries) GetLogist(ctx context.Context) (User, error) {
+	row := q.db.QueryRow(ctx, getLogist)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Phone,
+		&i.Password,
+		&i.Role,
+		&i.Active,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, name, phone, password, role, active, created_at FROM users 
 WHERE id = $1 

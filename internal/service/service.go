@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrInternal      = errors.New("internal err")
+	ErrNotFound      = errors.New("resource not found")
 	ErrInvalidId     = errors.New("id is equal or less than zero")
 	ErrInvalidArgs   = errors.New("invalid args")
 	ErrInvalidOffset = errors.New("offset is less than 0")

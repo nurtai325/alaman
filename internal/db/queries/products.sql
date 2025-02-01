@@ -9,11 +9,6 @@ SELECT * FROM products
 WHERE id = $1 
 LIMIT 1;
 
--- name: GetProductByCode :one
-SELECT * FROM products 
-WHERE code = $1 
-LIMIT 1;
-
 -- name: GetProductByName :one
 SELECT * FROM products
 WHERE name = $1 
@@ -24,13 +19,13 @@ SELECT COUNT(*)
 FROM products;
 
 -- name: InsertProduct :one
-INSERT INTO products(name, in_stock, price, stock_price, code)
-VALUES($1, $2, $3, $4, $5)
+INSERT INTO products(name, in_stock, price, stock_price)
+VALUES($1, $2, $3, $4)
 RETURNING *;
 
 -- name: UpdateProduct :one
 UPDATE products
-SET name = $2, price = $3, stock_price = $4, code = $5
+SET name = $2, price = $3, stock_price = $4
 WHERE id = $1
 RETURNING *;
 

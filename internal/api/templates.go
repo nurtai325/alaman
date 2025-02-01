@@ -35,6 +35,8 @@ const (
 	tLeadsCompleted      templateName = "lead-cell-completed"
 	tLeadsProduct        templateName = "leads-product"
 
+	tQrTempl templateName = "qr"
+
 	pagesLimit = 1000
 
 	openModalEvent  = "openModal"

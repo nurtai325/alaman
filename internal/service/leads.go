@@ -6,34 +6,42 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
+	"github.com/nurtai325/alaman/internal/wh"
 )
 
 var (
-	ErrInvalidSaleType = errors.New("invalid sale type")
+	ErrInvalidSaleType     = errors.New("invalid sale type")
+	ErrInvalidDeliveryType = errors.New("invalid delivery type")
 )
 
 type Lead struct {
-	Id           int
-	Name         string
-	UserName     string
-	Address      string
-	Phone        string
-	Completed    bool
-	SaleType     saleType
-	FullPrice    float32
-	DeliveryCost float32
-	LoanCost     float32
-	Items        []SaleItem
-	UserId       int
-	SaleId       int
-	CreatedAt    time.Time
+	Id                 int
+	Name               string
+	UserName           string
+	Address            string
+	Phone              string
+	Completed          bool
+	SaleType           saleType
+	FullPrice          float32
+	DeliveryCost       float32
+	LoanCost           float32
+	Items              []SaleItem
+	UserId             int
+	SaleId             int
+	DeliveryType       deliveryType
+	DeliveryTypeName   string
+	PaymentAt          time.Time
+	PaymentAtFormatted string
+	CreatedAt          time.Time
 }
 
 type saleType string
+type deliveryType string
 
 const (
 	kaspiLoan     saleType = "kaspi-loan"
@@ -41,6 +49,11 @@ const (
 	kaspiRed      saleType = "red"
 	kaspiTransfer saleType = "kaspi-transfer"
 	kaspiQr       saleType = "kaspi-qr"
+
+	noDelivery deliveryType = "no"
+	mail       deliveryType = "mail"
+	train      deliveryType = "train"
+	taxi       deliveryType = "taxi"
 )
 
 func getSLead(lead repository.Lead) Lead {
@@ -54,6 +67,17 @@ func getSLead(lead repository.Lead) Lead {
 		SaleId:    int(lead.SaleID.Int32),
 		CreatedAt: lead.CreatedAt.Time,
 	}
+}
+
+func (s *Service) GetLeadByPhone(ctx context.Context, phone string) (Lead, error) {
+	lead, err := s.queries.GetLeadByPhone(ctx, phone)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Lead{}, ErrNotFound
+		}
+		return Lead{}, err
+	}
+	return getSLead(lead), err
 }
 
 func (s *Service) GetNewLeads(ctx context.Context) ([]Lead, error) {
@@ -111,16 +135,21 @@ func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 			})
 		}
 		sLeads = append(sLeads, Lead{
-			Id:        int(lead.ID),
-			Name:      lead.Name.String,
-			UserName:  lead.UserName,
-			Address:   lead.Address.String,
-			Phone:     lead.Phone,
-			Completed: lead.Completed,
-			UserId:    int(lead.UserID.Int32),
-			SaleId:    int(lead.SaleID.Int32),
-			Items:     sItems,
-			CreatedAt: lead.CreatedAt.Time,
+			Id:                 int(lead.ID),
+			Name:               lead.Name.String,
+			UserName:           lead.UserName,
+			Address:            lead.Address.String,
+			Phone:              lead.Phone,
+			Completed:          lead.Completed,
+			UserId:             int(lead.UserID.Int32),
+			SaleId:             int(lead.SaleID.Int32),
+			Items:              sItems,
+			CreatedAt:          lead.CreatedAt.Time,
+			FullPrice:          lead.FullSum,
+			PaymentAt:          lead.PaymentAt.Time,
+			DeliveryType:       deliveryType(lead.DeliveryType.String),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format("2006/01/02 03:04"),
+			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 		})
 	}
 	return sLeads, nil
@@ -147,16 +176,21 @@ func (s *Service) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 			})
 		}
 		sLeads = append(sLeads, Lead{
-			Id:        int(lead.ID),
-			Name:      lead.Name.String,
-			UserName:  lead.UserName,
-			Address:   lead.Address.String,
-			Phone:     lead.Phone,
-			Completed: lead.Completed,
-			UserId:    int(lead.UserID.Int32),
-			SaleId:    int(lead.SaleID.Int32),
-			Items:     sItems,
-			CreatedAt: lead.CreatedAt.Time,
+			Id:                 int(lead.ID),
+			Name:               lead.Name.String,
+			UserName:           lead.UserName,
+			Address:            lead.Address.String,
+			Phone:              lead.Phone,
+			Completed:          lead.Completed,
+			UserId:             int(lead.UserID.Int32),
+			SaleId:             int(lead.SaleID.Int32),
+			Items:              sItems,
+			CreatedAt:          lead.CreatedAt.Time,
+			FullPrice:          lead.FullSum,
+			PaymentAt:          lead.PaymentAt.Time,
+			DeliveryType:       deliveryType(lead.DeliveryType.String),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format("2006/01/02 03:04"),
+			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 		})
 	}
 	return sLeads, nil
@@ -181,6 +215,14 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 			Valid: true,
 		},
 	})
+	if err != nil {
+		return Lead{}, err
+	}
+	user, err := s.queries.GetUser(ctx, int32(userId))
+	if err != nil {
+		return Lead{}, err
+	}
+	err = wh.Message(ctx, user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone))
 	if err != nil {
 		return Lead{}, err
 	}
@@ -209,11 +251,16 @@ type SellLeadParams struct {
 	LoanCost     float32
 	ItemsSum     float32
 	Items        []SaleItem
+	PaymentAt    time.Time
+	DeliveryType string
 }
 
 func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error) {
 	if !validSaleType(arg.Type) {
 		return Lead{}, fmt.Errorf("%w: %s", ErrInvalidSaleType, arg.Type)
+	}
+	if !validDeliveryType(arg.DeliveryType) {
+		return Lead{}, fmt.Errorf("%w: %s", ErrInvalidDeliveryType, arg.Type)
 	}
 	conf, err := config.New()
 	if err != nil {
@@ -249,6 +296,14 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		DeliveryCost: arg.DeliveryCost,
 		LoanCost:     arg.LoanCost,
 		ItemsSum:     arg.ItemsSum,
+		PaymentAt: pgtype.Timestamptz{
+			Time:  arg.PaymentAt,
+			Valid: true,
+		},
+		DeliveryType: pgtype.Text{
+			String: arg.DeliveryType,
+			Valid:  true,
+		},
 	})
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
@@ -270,7 +325,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 			return Lead{}, errors.Join(ErrInternal, err)
 		}
 	}
-	lead, err := q.SellLead(ctx, repository.SellLeadParams{
+	soldLead, err := q.SellLead(ctx, repository.SellLeadParams{
 		ID: int32(arg.Id),
 		SaleID: pgtype.Int4{
 			Int32: sale.ID,
@@ -280,12 +335,17 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
-	fullLead, err := q.GetFullLead(ctx, lead.ID)
+	err = tx.Commit(ctx)
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
-	items, err := q.GetSaleItems(ctx, fullLead.SaleID.Int32)
+	fullLead, err := s.queries.GetFullLead(ctx, soldLead.ID)
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
+	items, err := s.queries.GetSaleItems(ctx, fullLead.SaleID.Int32)
 	sItems := make([]SaleItem, 0, len(items))
+	itemsStr := ""
 	for _, item := range items {
 		sItems = append(sItems, SaleItem{
 			Id:          int(item.ID),
@@ -293,15 +353,38 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 			ProductId:   int(item.ProductID),
 			Quantity:    int(item.Quantity),
 		})
+		itemsStr += fmt.Sprintf("%d %s", item.Quantity, item.ProductName)
 	}
-	return Lead{
-		Id:       int(fullLead.ID),
-		Phone:    fullLead.Phone,
-		Address:  fullLead.Address.String,
-		Name:     fullLead.Name.String,
-		UserName: fullLead.UserName,
-		Items:    sItems,
-	}, tx.Commit(ctx)
+	lead := Lead{
+		Id:                 int(fullLead.ID),
+		Phone:              fullLead.Phone,
+		Address:            fullLead.Address.String,
+		Name:               fullLead.Name.String,
+		UserName:           fullLead.UserName,
+		FullPrice:          fullLead.FullSum,
+		DeliveryCost:       fullLead.DeliveryCost,
+		LoanCost:           fullLead.LoanCost,
+		SaleType:           saleType(fullLead.SaleType),
+		Items:              sItems,
+		PaymentAt:          fullLead.PaymentAt.Time,
+		PaymentAtFormatted: fullLead.PaymentAt.Time.Format("2006/01/02 03:04"),
+		DeliveryType:       deliveryType(fullLead.DeliveryType.String),
+		DeliveryTypeName:   getDeliveryTypeName(deliveryType(fullLead.DeliveryType.String)),
+	}
+	msg := fmt.Sprintf(`Кеңесші маман: %s
+Аты: %s
+Номер: %s
+Адрес: %s
+Төлем түрі: %s
+Жеткізу түрі: %s
+Төлем уақыты: %s
+%s
+`, lead.UserName, lead.Name, lead.Phone, lead.Address, lead.SaleType, lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
+	err = wh.GroupMessage(ctx, msg)
+	if err != nil {
+		return Lead{}, err
+	}
+	return lead, nil
 }
 
 func validSaleType(saletypeStr string) bool {
@@ -319,5 +402,36 @@ func validSaleType(saletypeStr string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func validDeliveryType(deliveryTypeStr string) bool {
+	deliveryType := deliveryType(deliveryTypeStr)
+	switch deliveryType {
+	case noDelivery:
+		return true
+	case mail:
+		return true
+	case train:
+		return true
+	case taxi:
+		return true
+	default:
+		return false
+	}
+}
+
+func getDeliveryTypeName(dType deliveryType) string {
+	switch dType {
+	case noDelivery:
+		return "жоқ"
+	case mail:
+		return "почта"
+	case train:
+		return "пойыз"
+	case taxi:
+		return "такси"
+	default:
+		return ""
 	}
 }

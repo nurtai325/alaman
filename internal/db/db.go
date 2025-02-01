@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/nurtai325/alaman/internal/config"
 )
 
@@ -46,4 +48,25 @@ func New(conf config.Config) (*pgxpool.Pool, error) {
 		}
 	}
 	return pool, nil
+}
+
+func NewSql(conf config.Config) (*sql.DB, error) {
+	dbUrl := fmt.Sprintf(
+		"%s://%s:%s@%s:%s/%s",
+		driver,
+		conf.POSTGRES_USER,
+		conf.POSTGRES_PASSWORD,
+		conf.POSTGRES_HOST,
+		conf.POSTGRES_PORT,
+		conf.POSTGRES_DB,
+	)
+	dbSql, err := sql.Open("pgx", dbUrl)
+	if err != nil {
+		return nil, err
+	}
+	err = dbSql.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return dbSql, nil
 }

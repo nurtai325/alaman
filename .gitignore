@@ -7,4 +7,5 @@ tmp
 build
 tailwindcss
 assets/index.css
+assets/qr
 ./server

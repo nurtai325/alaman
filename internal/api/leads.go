@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nurtai325/alaman/internal/service"
 )
@@ -174,6 +175,13 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	address := r.FormValue("address")
 	saletype := r.FormValue("saletype")
+	deliveryType := r.FormValue("delivery-type")
+	paymentAtStr := r.FormValue("payment-at")
+	paymentAt, err := time.Parse("2006-01-02T15:04", paymentAtStr)
+	if err != nil {
+		app.error(w, fmt.Errorf("error parsing payment at: %s: %w", paymentAtStr, err))
+		return
+	}
 	deliveryCostStr := r.FormValue("deliverycost")
 	deliveryCost, err := strconv.ParseFloat(deliveryCostStr, 32)
 	if err != nil {
@@ -213,6 +221,8 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 		FullSum:      float32(fullSum),
 		ItemsSum:     float32(itemsSum),
 		Items:        items,
+		DeliveryType: deliveryType,
+		PaymentAt:    paymentAt,
 	})
 	if err != nil {
 		app.error(w, err)

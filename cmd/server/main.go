@@ -14,6 +14,7 @@ import (
 	"github.com/nurtai325/alaman/internal/db/repository"
 	"github.com/nurtai325/alaman/internal/service"
 	_ "github.com/nurtai325/alaman/internal/timezone"
+	"github.com/nurtai325/alaman/internal/wh"
 )
 
 func openLog(name string, lFlags int) (*log.Logger, error) {
@@ -33,10 +34,12 @@ func parsePages(templ *template.Template, pages ...string) *template.Template {
 	return templ
 }
 
+// TODO: roles, lead sort, report, diagrams
 func main() {
 	infoLog, err := openLog("info", log.Lshortfile)
-	errLog, err := openLog("error", 0)
 	accessLog, err := openLog("access", 0)
+	errLog, err := openLog("error", 0)
+	log.SetOutput(errLog.Writer())
 
 	templates := template.Must(template.ParseGlob("./views/*.html"))
 	templates = parsePages(templates, "users", "dashboard", "products", "leads")
@@ -48,7 +51,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	newSqlDb, err := db.NewSql(conf)
+	err = wh.Connect(newSqlDb)
+	if err != nil {
+		panic(err)
+	}
 	newService := service.New(repository.New(newDB))
+	go service.ListenNewLeads(newService)
 	app := api.New(http.NewServeMux(), templates, newService, infoLog, accessLog, errLog)
 	go auth.Cleanup()
 

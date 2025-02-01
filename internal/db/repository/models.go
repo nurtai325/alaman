@@ -25,7 +25,6 @@ type Product struct {
 	Name       string
 	InStock    int32
 	Price      int32
-	Code       string
 	StockPrice int32
 	CreatedAt  pgtype.Timestamptz
 }
@@ -33,6 +32,8 @@ type Product struct {
 type Sale struct {
 	ID           int32
 	Type         string
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
 	FullSum      float32
 	DeliveryCost float32
 	LoanCost     float32

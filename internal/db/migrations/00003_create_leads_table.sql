@@ -3,6 +3,8 @@
 CREATE TABLE sales(
 	id SERIAL PRIMARY KEY,
 	type VARCHAR(100) NOT NULL,
+	delivery_type VARCHAR(100),
+	payment_at TIMESTAMPTZ,
 	full_sum REAL NOT NULL,
 	delivery_cost REAL NOT NULL,
 	loan_cost REAL NOT NULL,

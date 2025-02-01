@@ -3,6 +3,12 @@ SELECT * FROM leads AS l
 WHERE user_id IS NULL
 ORDER BY created_at DESC;
 
+-- name: GetLeadByPhone :one
+SELECT * FROM leads 
+WHERE phone = $1 
+ORDER BY created_at DESC
+LIMIT 1;
+
 -- name: GetAssignedLeads :many
 SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
@@ -10,16 +16,18 @@ WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC;
 
 -- name: GetInDeliveryLeads :many
-SELECT l.*, u.name AS user_name FROM leads AS l
+SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
-ORDER BY sold_at ASC;
+ORDER BY sold_at DESC;
 
 -- name: GetCompletedLeads :many
-SELECT l.*, u.name AS user_name FROM leads AS l
+SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
-ORDER BY sold_at ASC;
+ORDER BY sold_at DESC;
 
 -- name: InsertLead :one
 INSERT INTO leads(phone)
@@ -39,8 +47,8 @@ WHERE id = $1
 RETURNING *;
 
 -- name: InsertSale :one
-INSERT INTO sales(type, full_sum, delivery_cost, loan_cost, items_sum)
-VALUES($1, $2, $3, $4, $5)
+INSERT INTO sales(type, full_sum, delivery_cost, loan_cost, items_sum, delivery_type, payment_at)
+VALUES($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: InsertSaleItem :one
@@ -55,8 +63,10 @@ WHERE id = $1
 RETURNING *;
 
 -- name: GetFullLead :one
-SELECT l.*, u.name AS user_name FROM leads AS l
+SELECT l.*, u.name AS user_name, u.phone AS user_phone, s.full_sum, s.delivery_cost, s.loan_cost, s.delivery_type, s.payment_at, s.type AS sale_type
+FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE l.id = $1
 LIMIT 1;
 
@@ -66,7 +76,7 @@ INNER JOIN products p ON s.product_id = p.id
 WHERE s.sale_id = $1;
 
 -- name: CompleteLead :one
-UPDAte leads
+UPDATE leads
 SET completed = true
 WHERE id = $1
 RETURNING *;

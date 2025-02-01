@@ -10,6 +10,11 @@ SELECT * FROM users
 WHERE id = $1 
 LIMIT 1;
 
+-- name: GetLogist :one
+SELECT * FROM users 
+WHERE role = 'логист'
+LIMIT 1;
+
 -- name: GetUserByPhone :one
 SELECT * FROM users 
 WHERE phone = $1 

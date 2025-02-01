@@ -41,7 +41,7 @@ func (q *Queries) AssignLead(ctx context.Context, arg AssignLeadParams) (Lead, e
 }
 
 const completeLead = `-- name: CompleteLead :one
-UPDAte leads
+UPDATE leads
 SET completed = true
 WHERE id = $1
 RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
@@ -116,23 +116,27 @@ func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, 
 }
 
 const getCompletedLeads = `-- name: GetCompletedLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
 ORDER BY sold_at ASC
 `
 
 type GetCompletedLeadsRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
 }
 
 func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow, error) {
@@ -155,6 +159,9 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow
 			&i.CreatedAt,
 			&i.SoldAt,
 			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
 		); err != nil {
 			return nil, err
 		}
@@ -167,23 +174,32 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow
 }
 
 const getFullLead = `-- name: GetFullLead :one
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, u.phone AS user_phone, s.full_sum, s.delivery_cost, s.loan_cost, s.delivery_type, s.payment_at, s.type AS sale_type
+FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE l.id = $1
 LIMIT 1
 `
 
 type GetFullLeadRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	UserPhone    string
+	FullSum      float32
+	DeliveryCost float32
+	LoanCost     float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
+	SaleType     string
 }
 
 func (q *Queries) GetFullLead(ctx context.Context, id int32) (GetFullLeadRow, error) {
@@ -200,28 +216,39 @@ func (q *Queries) GetFullLead(ctx context.Context, id int32) (GetFullLeadRow, er
 		&i.CreatedAt,
 		&i.SoldAt,
 		&i.UserName,
+		&i.UserPhone,
+		&i.FullSum,
+		&i.DeliveryCost,
+		&i.LoanCost,
+		&i.DeliveryType,
+		&i.PaymentAt,
+		&i.SaleType,
 	)
 	return i, err
 }
 
 const getInDeliveryLeads = `-- name: GetInDeliveryLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
 ORDER BY sold_at ASC
 `
 
 type GetInDeliveryLeadsRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
 }
 
 func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsRow, error) {
@@ -244,6 +271,9 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsR
 			&i.CreatedAt,
 			&i.SoldAt,
 			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
 		); err != nil {
 			return nil, err
 		}
@@ -253,6 +283,30 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsR
 		return nil, err
 	}
 	return items, nil
+}
+
+const getLeadByPhone = `-- name: GetLeadByPhone :one
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
+WHERE phone = $1 
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLeadByPhone(ctx context.Context, phone string) (Lead, error) {
+	row := q.db.QueryRow(ctx, getLeadByPhone, phone)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+		&i.SoldAt,
+	)
+	return i, err
 }
 
 const getNewLeads = `-- name: GetNewLeads :many
@@ -357,9 +411,9 @@ func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
 }
 
 const insertSale = `-- name: InsertSale :one
-INSERT INTO sales(type, full_sum, delivery_cost, loan_cost, items_sum)
-VALUES($1, $2, $3, $4, $5)
-RETURNING id, type, full_sum, delivery_cost, loan_cost, items_sum, created_at
+INSERT INTO sales(type, full_sum, delivery_cost, loan_cost, items_sum, delivery_type, payment_at)
+VALUES($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, type, delivery_type, payment_at, full_sum, delivery_cost, loan_cost, items_sum, created_at
 `
 
 type InsertSaleParams struct {
@@ -368,6 +422,8 @@ type InsertSaleParams struct {
 	DeliveryCost float32
 	LoanCost     float32
 	ItemsSum     float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
 }
 
 func (q *Queries) InsertSale(ctx context.Context, arg InsertSaleParams) (Sale, error) {
@@ -377,11 +433,15 @@ func (q *Queries) InsertSale(ctx context.Context, arg InsertSaleParams) (Sale, e
 		arg.DeliveryCost,
 		arg.LoanCost,
 		arg.ItemsSum,
+		arg.DeliveryType,
+		arg.PaymentAt,
 	)
 	var i Sale
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
+		&i.DeliveryType,
+		&i.PaymentAt,
 		&i.FullSum,
 		&i.DeliveryCost,
 		&i.LoanCost,

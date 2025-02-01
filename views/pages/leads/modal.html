@@ -26,6 +26,19 @@
 	</div>
 	<div class="p-2">
 		<div>
+			<label>Жеткізу түрі:</label>
+		</div>
+		<div>
+			<select class="p-1 rounded-sm" name="delivery-type" id="delivery-type" required>
+				<option value="no">жоқ</option>
+				<option value="mail">почта</option>
+				<option value="train">пойыз</option>
+				<option value="taxi">такси</option>
+			</select>
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
 			<label>Төлем түрі:</label>
 		</div>
 		<div>
@@ -36,6 +49,25 @@
 				<option value="kaspi-transfer">kaspi аударым</option>
 				<option value="kaspi-qr">kaspi qr</option>
 			</select>
+		</div>
+	</div>
+	<div class="p-2">
+		<div>
+			<label>Төлем уақыты:</label>
+		</div>
+		<div>
+			<input class="p-1 rounded-sm" type="datetime-local" name="payment-at" id="payment-at" required />
+			<script>
+				let now = new Date();
+				let year = now.getFullYear();
+				let month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+				let day = String(now.getDate()).padStart(2, '0');
+				let hours = String(now.getHours()).padStart(2, '0');
+				let minutes = String(now.getMinutes()).padStart(2, '0');
+
+				let datetimeNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+				document.getElementById('payment-at').value = datetimeNow;
+			</script>
 		</div>
 	</div>
 	<div class="p-2">
