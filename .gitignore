@@ -1,3 +1,4 @@
+.env
 .git
 logs
 temp.js
@@ -10,4 +11,3 @@ assets/index.css
 assets/qr
 ./server
 *.pem
-.env
