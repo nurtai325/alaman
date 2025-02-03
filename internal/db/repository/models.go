@@ -25,8 +25,18 @@ type Product struct {
 	Name       string
 	InStock    int32
 	Price      int32
+	SaleCount  int32
 	StockPrice int32
 	CreatedAt  pgtype.Timestamptz
+}
+
+type Report struct {
+	ID        int32
+	Name      string
+	Path      string
+	StartAt   pgtype.Timestamptz
+	EndAt     pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
 }
 
 type Sale struct {

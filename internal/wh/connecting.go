@@ -17,9 +17,6 @@ type pairingData struct {
 func GetQr() (pairingData, error) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	if client.c != nil {
-		return pairingData{}, nil
-	}
 	device, err := container.GetFirstDevice()
 	if err != nil || device == nil {
 		return pairingData{}, err
@@ -27,7 +24,10 @@ func GetQr() (pairingData, error) {
 	newClient := whatsmeow.NewClient(device, nil)
 	newClient.AddEventHandler(handleEvents)
 	client.c = newClient
-	qrCh, _ := client.c.GetQRChannel(context.Background())
+	qrCh, err := client.c.GetQRChannel(context.Background())
+	if err != nil {
+		return pairingData{}, fmt.Errorf("error getting qr channel: %w", err)
+	}
 	err = client.c.Connect()
 	if err != nil {
 		return pairingData{}, fmt.Errorf("error connecting to whatsapp websocket: %w", err)

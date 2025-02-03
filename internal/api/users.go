@@ -23,7 +23,7 @@ func (app *app) handleUsersGet(w http.ResponseWriter, r *http.Request) {
 		BarsData: barsData{
 			Page:     "users",
 			PageName: "Қызметкерлер",
-			Pages:    adminPages,
+			Pages:    getPage(r),
 		},
 		User: app.service.GetAuthUser(r),
 		Data: userContent{

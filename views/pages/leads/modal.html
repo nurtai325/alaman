@@ -8,66 +8,92 @@
 		<button onclick="closeModal()">&#10060</button>
 	</div>
 	<h1></h1>
-	<div class="p-2">
-		<div>
-			<label for="name">Аты:</label>
+	<div class="flex">
+		<div class="p-2">
+			<div>
+				<label for="name">Аты:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+			</div>
 		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+		<div class="p-2">
+			<div>
+				<label for="address">Мекенжай:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="text" name="address" id="address" required />
+			</div>
+		</div>
+		<div class="p-2">
+			<div>
+				<label>Жеткізу түрі:</label>
+			</div>
+			<div>
+				<select class="p-1 rounded-sm" name="delivery-type" id="delivery-type" required>
+					<option value="no">жоқ</option>
+					<option value="mail">почта</option>
+					<option value="train">пойыз</option>
+					<option selected value="taxi">такси</option>
+				</select>
+			</div>
+		</div>
+		<div class="p-2">
+			<div>
+				<label>Төлем түрі:</label>
+			</div>
+			<div>
+				<select class="p-1 rounded-sm" name="saletype" id="saletype" required onchange="calcSaleSum()">
+					<option value="kaspi-loan">бөліп төлеу</option>
+					<option value="cash">қолма-қол</option>
+					<option value="red">kaspi red</option>
+					<option value="kaspi-transfer">kaspi аударым</option>
+					<option value="kaspi-qr">kaspi qr</option>
+				</select>
+			</div>
+		</div>
+		<div class="p-2">
+			<div>
+				<label>Төлем уақыты:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="datetime-local" name="payment-at" id="payment-at" required />
+			</div>
 		</div>
 	</div>
-	<div class="p-2">
-		<div>
-			<label for="address">Мекенжай:</label>
+	<div class="flex">
+		<div class="p-2" id="delivery-cost-div">
+			<div>
+				<label for="deliverycost">Жеткізу құны:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="number" name="deliverycost" id="deliverycost" value="0" required
+					onchange="calcSaleSum()" />
+			</div>
 		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="text" name="address" id="address" required />
+		<div class="p-2" id="loancostdiv">
+			<div>
+				<label for="loancost">Несие құны:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="number" name="loancost" id="loancost" value="0" readonly required />
+			</div>
 		</div>
-	</div>
-	<div class="p-2">
-		<div>
-			<label>Жеткізу түрі:</label>
+		<div class="p-2">
+			<div>
+				<label for="itemsum">Өнімдер құны:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="number" name="itemsum" id="itemsum" value="0" readonly required />
+			</div>
 		</div>
-		<div>
-			<select class="p-1 rounded-sm" name="delivery-type" id="delivery-type" required>
-				<option value="no">жоқ</option>
-				<option value="mail">почта</option>
-				<option value="train">пойыз</option>
-				<option value="taxi">такси</option>
-			</select>
-		</div>
-	</div>
-	<div class="p-2">
-		<div>
-			<label>Төлем түрі:</label>
-		</div>
-		<div>
-			<select class="p-1 rounded-sm" name="saletype" id="saletype" required onchange="calcSaleSum()">
-				<option value="kaspi-loan">бөліп төлеу</option>
-				<option value="cash">қолма-қол</option>
-				<option value="red">kaspi red</option>
-				<option value="kaspi-transfer">kaspi аударым</option>
-				<option value="kaspi-qr">kaspi qr</option>
-			</select>
-		</div>
-	</div>
-	<div class="p-2">
-		<div>
-			<label>Төлем уақыты:</label>
-		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="datetime-local" name="payment-at" id="payment-at" required />
-			<script>
-				let now = new Date();
-				let year = now.getFullYear();
-				let month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-				let day = String(now.getDate()).padStart(2, '0');
-				let hours = String(now.getHours()).padStart(2, '0');
-				let minutes = String(now.getMinutes()).padStart(2, '0');
-
-				let datetimeNow = `${year}-${month}-${day}T${hours}:${minutes}`;
-				document.getElementById('payment-at').value = datetimeNow;
-			</script>
+		<div class="p-2">
+			<div>
+				<label for="fullsum">Толық құны:</label>
+			</div>
+			<div>
+				<input class="p-1 rounded-sm" type="number" name="fullsum" id="fullsum" value="0" readonly required />
+			</div>
 		</div>
 	</div>
 	<div class="p-2">
@@ -85,99 +111,8 @@
 				hx-include="#select-product">&#10133</button>
 		</div>
 	</div>
-	<div class="p-2">
-		<div>
-			<label for="deliverycost">Жеткізу құны:</label>
-		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="number" name="deliverycost" id="deliverycost" value="0" required
-				onchange="calcSaleSum()" />
-		</div>
-	</div>
-	<div class="p-2" id="loancostdiv">
-		<div>
-			<label for="loancost">Несие құны:</label>
-		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="number" name="loancost" id="loancost" value="0" readonly required />
-		</div>
-	</div>
-	<div class="p-2">
-		<div>
-			<label for="itemsum">Өнімдер құны:</label>
-		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="number" name="itemsum" id="itemsum" value="0" readonly required />
-		</div>
-	</div>
-	<div class="p-2">
-		<div>
-			<label for="fullsum">Толық құны:</label>
-		</div>
-		<div>
-			<input class="p-1 rounded-sm" type="number" name="fullsum" id="fullsum" value="0" readonly required />
-		</div>
-	</div>
 	<div class="ml-2 text-red-600 text-sm" id="leads-modal-errors"></div>
 	<button type="submit" class="ml-2 px-2 p-1 text-white bg-blue-600 rounded-md">сақтау</button>
 </form>
-<script>
-	let saletype = document.getElementById('saletype');
-	let deliverycostInput = document.getElementById('deliverycost');
-	let loancostInput = document.getElementById("loancost")
-	let items = document.getElementById('items');
-	let itemsumInput = document.getElementById("itemsum")
-	let fullsumInput = document.getElementById("fullsum")
-	const itemsElement = document.getElementById('items');
-	function calcSaleSum() {
-		let fullcost = parseFloat(deliverycostInput.value)
-		let itemscost = 0
-		for (let child of itemsElement.children) {
-			let selectElement = child.querySelector('select');
-			let itemPrice = parseFloat(selectElement.getAttribute('price'));
-			let inputElement = child.querySelector('input');
-			let inputValue = parseFloat(inputElement.value);
-			itemscost += itemPrice * inputValue;
-		}
-		itemsumInput.value = itemscost
-		fullcost += itemscost
-		let loancost = 0
-		if (saletype.value === 'kaspi-loan') {
-			loancost = fullcost * 0.15
-		}
-		console.log(itemscost)
-		console.log(fullcost)
-		console.log(loancost)
-		loancostInput.value = loancost
-		fullsumInput.value = fullcost + loancost
-	}
-	let loancostdiv = document.getElementById("loancostdiv")
-	saletype.addEventListener('change', function () {
-		const selectedValue = this.value;
-		if (selectedValue === 'kaspi-loan') {
-			loancostdiv.style.display = 'block';
-		} else {
-			loancostdiv.style.display = 'none';
-			loancost.value = '0';
-		}
-	});
-	document.addEventListener('htmx:afterSwap', function (event) {
-		if (event.target.id === 'items') {
-			calcSaleSum();
-		}
-	});
-	let itemsInput = document.getElementById("items-input")
-	function parseCartItems() {
-		let parsedItems = ""
-		for (let child of itemsElement.children) {
-			let selectElement = child.querySelector('select');
-			let inputElement = child.querySelector('input');
-			let inputValue = parseFloat(inputElement.value);
-			let productId = selectElement.value
-			let quantity = inputElement.value
-			parsedItems += `${productId},${quantity};`
-		}
-		itemsInput.value = parsedItems
-	}
-</script>
+<script src="/assets/js/leads.js"></script>
 {{ end }}

@@ -2,6 +2,7 @@
 {{ $users := .Users }}
 <div class="p-1">
 	<section class="flex justify-around">
+		{{if or (eq .Role "админ") (eq .Role "роп")}}
 		<h4 class="items-center text-lg flex w-full text-center font-semibold text-blue-400" id="new-header">
 			<span class="w-36"></span>
 			<div class="items-center text-lg flex text-center font-semibold text-blue-400">
@@ -10,12 +11,14 @@
 			<button hx-get="/leads/new" hx-swap="afterbegin" hx-target="#new"
 				class="ml-2 rounded-lg p-1 bg-blue-400 text-white text-sm">қосу</button>
 		</h4>
+		{{ end }}
 		<h4 class="text-lg w-full text-center font-semibold text-yellow-400" id="assigned-header">Тағайындалды</h4>
 		<h4 class="text-lg w-full text-center font-semibold text-orange-400" id="in-progress-header">Жеткізілуде</h4>
 		<h4 class="text-lg w-full text-center font-semibold text-green-400" id="ready-header">Дайын</h4>
 	</section>
 	<section class="flex h-full">
-		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		{{ if or (eq .Role "админ") (eq .Role "роп") }}
+		<section class="overflow-auto bg-blue-100 h-[84lvh] {{if or (eq .Role "админ") (eq .Role "роп")}} w-1/4 {{ else }} w-96 ml-24 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="new">
 			{{ range .New }}
 			<div id="lead-cell-{{ .Id }}"
@@ -36,19 +39,20 @@
 			</div>
 			{{ end }}
 		</section>
-		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		{{ end }}
+		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-20 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="assigned">
 			{{ range .Assigned }}
 			{{ template "lead-cell-assigned" . }}
 			{{ end }}
 		</section>
-		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-32 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="in-progress">
 			{{ range .InDelivery }}
 			{{ template "lead-cell-in-delivery" . }}
 			{{ end }}
 		</section>
-		<section class="overflow-auto bg-blue-100 h-[84lvh] w-1/4 mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-32 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="ready" ondrop="drop(event)" ondragover="allowdrop(event)">
 			{{ range .Completed }}
 			{{ template "lead-cell-completed" . }}
@@ -57,52 +61,4 @@
 	</section>
 	<span id="lead-cell-errors"></span>
 </div>
-<script>
-	const drop = (event) => {
-		event.preventDefault();
-		let taskID = event.dataTransfer.getData("text");
-		let leadId = event.dataTransfer.getData("lead_id");
-		if (event.target.id.includes("task")) {
-			return;
-		}
-		if (!confirm("Тапсырыстың жеткізілгеніне сенімдісіз бе?")) {
-			return
-		}
-		const url = `/leads/${leadId}/complete`;
-		fetch(url, {
-			method: 'POST',
-		})
-			.then(response => {
-				if (response.ok) {
-					let task = document.getElementById(taskID)
-					task.classList.remove('bg-orange-500');
-					task.classList.add('bg-green-500');
-					event.target.appendChild(task);
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
-			});
-	}
-	const allowdrop = (event) => {
-		event.preventDefault();
-	}
-	const drag = (event) => {
-		event.dataTransfer.setData("text", event.target.id);
-		event.dataTransfer.setData("lead_id", event.target.getAttribute('lead-id'));
-	}
-	document.addEventListener('DOMContentLoaded', () => {
-		const leadCells = document.querySelectorAll('.lead-cell');
-		leadCells.forEach(cell => {
-			document.addEventListener(cell.id, () => {
-				cell.remove();
-			});
-		});
-	});
-	let element;
-	const openLeadModal = (id) => {
-		document.getElementById("leads-modal-id").value = id
-		openModal()
-	}
-</script>
 {{ end }}

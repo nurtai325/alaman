@@ -8,7 +8,7 @@ func (app *app) registerHandlers() {
 	fs := http.FileServer(http.Dir("./assets"))
 	app.mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
-	app.register("/", app.handleDashBoard, true)
+	app.register("/", app.handleRoot, true)
 	app.register("/dashboard", app.handleDashBoard, true)
 	app.register("GET /login", app.handleLogin, false)
 	app.register("POST /login", app.handleLogin, false)
@@ -36,6 +36,12 @@ func (app *app) registerHandlers() {
 	app.register("POST /leads/sell", app.handleLeadsSell, true)
 	app.register("POST /leads/{id}/complete", app.handleLeadsComplete, true)
 	app.register("GET /leads/product", app.handleLeadsProduct, true)
+
+	app.register("GET /reports", app.handleReportsGet, true)
+	app.register("POST /reports", app.handleReportsPost, true)
+	app.register("PUT /reports/{id}", app.handleReportsPut, true)
+	app.register("GET /reports/{id}/edit", app.handleReportsEdit, true)
+	app.register("DELETE /reports/{id}", app.handleReportsDelete, true)
 
 	app.register("GET /qr", app.HandleQr, true)
 }

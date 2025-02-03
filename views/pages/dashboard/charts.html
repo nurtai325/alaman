@@ -1,0 +1,68 @@
+{{ block "charts" . }}
+(async function() {
+	let weekData = {{ .Week }};
+	new Chart(
+		document.getElementById('week-sales'),
+		{
+			type: 'bar',
+			data: {
+				labels: weekData.map(row => row.Label),
+				datasets: [
+					{
+						label: 'күннің кассасы',
+						data: weekData.map(row => row.Amount)
+					}
+				]
+			}
+		}
+	);
+	let monthData = {{ .Month }};
+	new Chart(
+		document.getElementById('month-sales'),
+		{
+			type: 'bar',
+			data: {
+				labels: monthData.map(row => row.Label),
+				datasets: [
+					{
+						label: 'күннің кассасы',
+						data: monthData.map(row => row.Amount)
+					}
+				]
+			}
+		}
+	);
+    let managerData = {{ .Manager}}
+	new Chart(
+		document.getElementById('manager-sales'),
+		{
+			type: 'bar',
+			data: {
+				labels: managerData.map(row => row.Label),
+				datasets: [
+					{
+						label: 'осы айдағы кассасы',
+						data: managerData.map(row => row.Amount)
+					}
+				]
+			}
+		}
+	);
+    let productData = {{ .Product }}
+	new Chart(
+		document.getElementById('product-sales'),
+		{
+			type: 'bar',
+			data: {
+				labels: productData.map(row => row.Label),
+				datasets: [
+					{
+						label: 'осы аптадағы кассасы',
+						data: productData.map(row => row.Amount)
+					}
+				]
+			}
+		}
+	);
+})();
+{{ end }}

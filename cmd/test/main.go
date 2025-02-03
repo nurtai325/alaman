@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
@@ -11,6 +12,10 @@ import (
 )
 
 func main() {
+	if 0 == 0 {
+		password, _ := bcrypt.GenerateFromPassword([]byte("adminadmin"), bcrypt.DefaultCost)
+		fmt.Println(string(password))
+	}
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

@@ -26,7 +26,7 @@ func openLog(name string, lFlags int) (*log.Logger, error) {
 	return logger, nil
 }
 
-func parsePages(templ *template.Template, pages ...string) *template.Template {
+func parseTemplPages(templ *template.Template, pages ...string) *template.Template {
 	for _, page := range pages {
 		glob := fmt.Sprintf("./views/pages/%s/*.html", page)
 		templ = template.Must(templ.ParseGlob(glob))
@@ -34,7 +34,7 @@ func parsePages(templ *template.Template, pages ...string) *template.Template {
 	return templ
 }
 
-// TODO: roles, lead sort, report, diagrams
+// TODO: report, lead sort
 func main() {
 	infoLog, err := openLog("info", log.Lshortfile)
 	accessLog, err := openLog("access", 0)
@@ -42,7 +42,7 @@ func main() {
 	log.SetOutput(errLog.Writer())
 
 	templates := template.Must(template.ParseGlob("./views/*.html"))
-	templates = parsePages(templates, "users", "dashboard", "products", "leads")
+	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports")
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

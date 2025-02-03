@@ -7,6 +7,9 @@
 		{{ .InStock }}
 	</td>
 	<td class="px-4 py-4 text-center">
+		<input class="bg-gray-200 text-center" name="sale_count" type="number" value="{{ .SaleCount }}" />
+	</td>
+	<td class="px-4 py-4 text-center">
 		<input class="bg-gray-200 text-center" name="price" type="number" value="{{ .Price }}" />
 	</td>
 	<td class="px-4 py-4 text-center">
@@ -18,7 +21,7 @@
 		<button hx-put="/products/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
 	</td>
 	<td class="py-4 text-center items-center">
-		<button hx-confirm="{{ .Name }} қызметкерін базадан жоюға сенімдісіз бе?" hx-delete="/products/{{ .Id }}"
+		<button hx-confirm="{{ .Name }} өнімін базадан жоюға сенімдісіз бе?" hx-delete="/products/{{ .Id }}"
 			hx-swap="delete">&#10060</button>
 	</td>
 </tr>
@@ -31,6 +34,9 @@
 	</td>
 	<td id="product-in-stock-{{ .Id }}" class="px-6 py-4 text-center">
 		{{ .InStock }}
+	</td>
+	<td id="product-in-stock-{{ .Id }}" class="px-6 py-4 text-center">
+		{{ .SaleCount }}
 	</td>
 	<td class="px-6 py-4 text-center">
 		{{ .Price }}

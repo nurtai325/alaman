@@ -1,0 +1,13 @@
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-count-up {
+  animation: count-up 1s ease-out forwards;
+}

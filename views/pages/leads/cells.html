@@ -26,7 +26,6 @@
 			class="p-1 bg-green-600 text-white text-sm">сақтау</button>
 	</div>
 </div>
-{{ template "lead-remove-script" .Id }}
 {{ end }}
 
 {{ block "lead-cell-assigned" . }}
@@ -40,16 +39,6 @@
 			class="p-1 px-3 rounded-lg bg-green-600 text-white text-lg">сату</button>
 	</div>
 </div>
-{{ template "lead-remove-script" .Id }}
-{{ end }}
-
-{{ block "lead-remove-script" . }}
-<script>
-	leadCellElement = document.getElementById('lead-cell-{{ . }}');
-	document.addEventListener(leadCellElement.id, () => {
-		leadCellElement.remove();
-	});
-</script>
 {{ end }}
 
 {{ block "lead-cell-in-delivery" . }}
@@ -80,7 +69,7 @@
 	<div class="font-light mt-3">Құны:</div>
 	<div class="font-bold">{{ .FullPrice }}</div>
 	<div class="font-light mt-3">Жеткізу түрі:</div>
-	<div class="font-bold">{{ .DeliveryType }}</div>
+	<div class="font-bold">{{ .DeliveryTypeName }}</div>
 	<div class="font-light mt-3">Төлем уақыты:</div>
 	<div class="font-bold">{{ .PaymentAtFormatted }}</div>
 </div>

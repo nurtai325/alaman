@@ -1,0 +1,9 @@
+{{ template "layout.html" . }}
+
+{{ define "content" }}
+{{ template "reports-content" .Data }}
+{{ end }}
+
+{{ define "modal-content" }}
+{{ template "reports-modal" .Data }}
+{{ end }}

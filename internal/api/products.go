@@ -31,7 +31,7 @@ func (app *app) handleProductsGet(w http.ResponseWriter, r *http.Request) {
 		BarsData: barsData{
 			Page:     "products",
 			PageName: "Өнімдер",
-			Pages:    adminPages,
+			Pages:    getPage(r),
 		},
 		User: app.service.GetAuthUser(r),
 		Data: productContent{
@@ -47,14 +47,16 @@ func (app *app) handleProductsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := r.FormValue("name")
+	saleCountStr := r.FormValue("sale_count")
+	saleCount, err := strconv.Atoi(saleCountStr)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
 	inStockStr := r.FormValue("in_stock")
 	inStock, err := strconv.Atoi(inStockStr)
 	if err != nil {
-		if errors.Is(err, service.ErrInternal) {
-			app.error(w, err)
-			return
-		}
-		app.errorHx(w, tText, productModalErrs, ErrNotNumber.Error())
+		app.error(w, err)
 		return
 	}
 	priceStr := r.FormValue("price")
@@ -77,7 +79,7 @@ func (app *app) handleProductsPost(w http.ResponseWriter, r *http.Request) {
 		app.errorHx(w, tText, productModalErrs, ErrNotNumber.Error())
 		return
 	}
-	product, err := app.service.InsertProduct(r.Context(), name, inStock, price, stockPrice)
+	product, err := app.service.InsertProduct(r.Context(), name, inStock, price, stockPrice, saleCount)
 	if err != nil {
 		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)
@@ -104,6 +106,12 @@ func (app *app) handleProductsPut(w http.ResponseWriter, r *http.Request) {
 		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
 		return
 	}
+	saleCountStr := r.FormValue("sale_count")
+	saleCount, err := strconv.Atoi(saleCountStr)
+	if err != nil {
+		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
+		return
+	}
 	priceStr := r.FormValue("price")
 	price, err := strconv.Atoi(priceStr)
 	if err != nil {
@@ -116,7 +124,7 @@ func (app *app) handleProductsPut(w http.ResponseWriter, r *http.Request) {
 		app.errorHx(w, tAlert, productRowErrs, ErrNotNumber.Error())
 		return
 	}
-	product, err := app.service.UpdateProduct(r.Context(), name, id, price, stockPrice)
+	product, err := app.service.UpdateProduct(r.Context(), name, id, price, stockPrice, saleCount)
 	if err != nil {
 		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)

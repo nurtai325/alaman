@@ -15,6 +15,11 @@ var (
 	ErrInvalidLimit  = errors.New("limit is less than or equal to 0")
 )
 
+const (
+	dateTimeFormat = "2006/01/02 15:04"
+	dateFormat     = "2006/01/02"
+)
+
 type Service struct {
 	queries *repository.Queries
 }

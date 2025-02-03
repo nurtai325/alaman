@@ -115,12 +115,63 @@ func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, 
 	return items, nil
 }
 
+const getAssignedLeadsByUser = `-- name: GetAssignedLeadsByUser :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NULL AND user_id = $1
+ORDER BY created_at DESC
+`
+
+type GetAssignedLeadsByUserRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetAssignedLeadsByUser(ctx context.Context, userID pgtype.Int4) ([]GetAssignedLeadsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getAssignedLeadsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAssignedLeadsByUserRow
+	for rows.Next() {
+		var i GetAssignedLeadsByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCompletedLeads = `-- name: GetCompletedLeads :many
 SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
-ORDER BY sold_at ASC
+ORDER BY sold_at DESC
 `
 
 type GetCompletedLeadsRow struct {
@@ -148,6 +199,64 @@ func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow
 	var items []GetCompletedLeadsRow
 	for rows.Next() {
 		var i GetCompletedLeadsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCompletedLeadsByUser = `-- name: GetCompletedLeadsByUser :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND user_id = $1
+ORDER BY sold_at DESC
+`
+
+type GetCompletedLeadsByUserRow struct {
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
+}
+
+func (q *Queries) GetCompletedLeadsByUser(ctx context.Context, userID pgtype.Int4) ([]GetCompletedLeadsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getCompletedLeadsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCompletedLeadsByUserRow
+	for rows.Next() {
+		var i GetCompletedLeadsByUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -232,7 +341,7 @@ SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.cr
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
-ORDER BY sold_at ASC
+ORDER BY sold_at DESC
 `
 
 type GetInDeliveryLeadsRow struct {
@@ -260,6 +369,64 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsR
 	var items []GetInDeliveryLeadsRow
 	for rows.Next() {
 		var i GetInDeliveryLeadsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getInDeliveryLeadsByUser = `-- name: GetInDeliveryLeadsByUser :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND user_id = $1
+ORDER BY sold_at DESC
+`
+
+type GetInDeliveryLeadsByUserRow struct {
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
+}
+
+func (q *Queries) GetInDeliveryLeadsByUser(ctx context.Context, userID pgtype.Int4) ([]GetInDeliveryLeadsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getInDeliveryLeadsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetInDeliveryLeadsByUserRow
+	for rows.Next() {
+		var i GetInDeliveryLeadsByUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

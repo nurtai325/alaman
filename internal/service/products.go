@@ -19,6 +19,7 @@ type Product struct {
 	Price      int
 	StockPrice int
 	Code       string
+	SaleCount  int
 	CreatedAt  time.Time
 }
 
@@ -29,6 +30,7 @@ func getSProduct(p repository.Product) Product {
 		InStock:    int(p.InStock),
 		Price:      int(p.Price),
 		StockPrice: int(p.StockPrice),
+		SaleCount:  int(p.SaleCount),
 		CreatedAt:  p.CreatedAt.Time,
 	}
 }
@@ -61,12 +63,13 @@ func (s *Service) GetProduct(ctx context.Context, id int) (Product, error) {
 	return getSProduct(p), nil
 }
 
-func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price, stockPrice int) (Product, error) {
+func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price, stockPrice, saleCount int) (Product, error) {
 	p, err := s.queries.InsertProduct(ctx, repository.InsertProductParams{
 		Name:       name,
 		InStock:    int32(inStock),
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
+		SaleCount:  int32(saleCount),
 	})
 	if err != nil {
 		return Product{}, errors.Join(ErrInternal, err)
@@ -74,12 +77,13 @@ func (s *Service) InsertProduct(ctx context.Context, name string, inStock, price
 	return getSProduct(p), nil
 }
 
-func (s *Service) UpdateProduct(ctx context.Context, name string, id, price, stockPrice int) (Product, error) {
+func (s *Service) UpdateProduct(ctx context.Context, name string, id, price, stockPrice, saleCount int) (Product, error) {
 	p, err := s.queries.UpdateProduct(ctx, repository.UpdateProductParams{
 		ID:         int32(id),
 		Name:       name,
 		Price:      int32(price),
 		StockPrice: int32(stockPrice),
+		SaleCount:  int32(saleCount),
 	})
 	if err != nil {
 		return Product{}, errors.Join(ErrInternal, err)

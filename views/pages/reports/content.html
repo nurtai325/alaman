@@ -1,28 +1,25 @@
-{{ block "product-content" . }}
+{{ block "reports-content" . }}
 <div class="p-1">
 	<div class="bg-white relative overflow-x-auto">
 		<table class="table-fixed w-full text-sm text-left rtl:text-right">
 			<thead class="text-xs uppercase">
 				<tr>
 					<th scope="col" class="px-6 py-3 text-center">Аты</th>
-					<th scope="col" class="px-6 py-3 text-center">Қалды</th>
-					<th scope="col" class="px-6 py-3 text-center">Сатылым</th>
-					<th scope="col" class="px-6 py-3 text-center">Бағасы</th>
-					<th scope="col" class="px-6 py-3 text-center">Негізгі бағасы</th>
-					<th scope="col" class="px-6 py-3 text-center">Тауар қосу</th>
+					<th scope="col" class="px-6 py-3 text-center">Аралық</th>
+					<th scope="col" class="px-6 py-3 text-center">Жасалды</th>
 					<th scope="col" class="px-6 py-3 text-center items-center">
 						<button onclick="openModal()" id="modal-open" class="p-1 text-blue-600 text-sm">жаңа</button>
 					</th>
 					<th scope="col" class="px-6 py-3"></th>
 				</tr>
 			</thead>
-			<tbody id="products-table-body" hx-target="closest tr" hx-swap="outerHTML">
+			<tbody id="reports-table-body" hx-target="closest tr" hx-swap="outerHTML">
 				{{ range .Rows }}
-				{{ template "product-row" . }}
+				{{ template "reports-row" . }}
 				{{ end }}
 			</tbody>
 		</table>
-		<span class="hidden" id="product-row-errors"></span>
+		<span class="hidden" id="reports-row-errors"></span>
 	</div>
 </div>
 {{ end }}

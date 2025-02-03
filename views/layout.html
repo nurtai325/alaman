@@ -18,21 +18,14 @@
 			<div>
 				{{ template "navbar" . }}
 			</div>
-			<div class="bg-gray-50 h-full p-4">
+			<div class="bg-gray-50 p-4">
 				{{ block "content" . }}{{ end }}
 			</div>
 		</div>
 	</div>
 	{{ template "modal" . }}
-
-	<script>
-		document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
-			if (evt.detail.xhr.status === 422) {
-				evt.detail.shouldSwap = true;
-				evt.detail.isError = false;
-			}
-		});
-	</script>
+	<script src="/assets/js/layout.js"></script>
+	<script src="/assets/js/modal.js"></script>
 	<script src="/assets/htmx.js"></script>
 </body>
 

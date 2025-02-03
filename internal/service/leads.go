@@ -114,6 +114,31 @@ func (s *Service) GetAssignedLeads(ctx context.Context) ([]Lead, error) {
 	return sLeads, nil
 }
 
+func (s *Service) GetAssignedLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
+	leads, err := s.queries.GetAssignedLeadsByUser(ctx, pgtype.Int4{
+		Int32: int32(userId),
+		Valid: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	sLeads := make([]Lead, 0, len(leads))
+	for _, lead := range leads {
+		sLeads = append(sLeads, Lead{
+			Id:        int(lead.ID),
+			Name:      lead.Name.String,
+			UserName:  lead.UserName,
+			Address:   lead.Address.String,
+			Phone:     lead.Phone,
+			Completed: lead.Completed,
+			UserId:    int(lead.UserID.Int32),
+			SaleId:    int(lead.SaleID.Int32),
+			CreatedAt: lead.CreatedAt.Time,
+		})
+	}
+	return sLeads, nil
+}
+
 func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 	leads, err := s.queries.GetInDeliveryLeads(ctx)
 	if err != nil {
@@ -148,7 +173,51 @@ func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 			FullPrice:          lead.FullSum,
 			PaymentAt:          lead.PaymentAt.Time,
 			DeliveryType:       deliveryType(lead.DeliveryType.String),
-			PaymentAtFormatted: lead.PaymentAt.Time.Format("2006/01/02 03:04"),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+		})
+	}
+	return sLeads, nil
+}
+
+func (s *Service) GetInDeliveryLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
+	leads, err := s.queries.GetInDeliveryLeadsByUser(ctx, pgtype.Int4{
+		Int32: int32(userId),
+		Valid: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	sLeads := make([]Lead, 0, len(leads))
+	for _, lead := range leads {
+		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+		if err != nil {
+			return nil, err
+		}
+		sItems := make([]SaleItem, 0, len(items))
+		for _, item := range items {
+			sItems = append(sItems, SaleItem{
+				Id:          int(item.ID),
+				ProductName: item.ProductName,
+				ProductId:   int(item.ProductID),
+				Quantity:    int(item.Quantity),
+			})
+		}
+		sLeads = append(sLeads, Lead{
+			Id:                 int(lead.ID),
+			Name:               lead.Name.String,
+			UserName:           lead.UserName,
+			Address:            lead.Address.String,
+			Phone:              lead.Phone,
+			Completed:          lead.Completed,
+			UserId:             int(lead.UserID.Int32),
+			SaleId:             int(lead.SaleID.Int32),
+			Items:              sItems,
+			CreatedAt:          lead.CreatedAt.Time,
+			FullPrice:          lead.FullSum,
+			PaymentAt:          lead.PaymentAt.Time,
+			DeliveryType:       deliveryType(lead.DeliveryType.String),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
 			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 		})
 	}
@@ -189,7 +258,51 @@ func (s *Service) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 			FullPrice:          lead.FullSum,
 			PaymentAt:          lead.PaymentAt.Time,
 			DeliveryType:       deliveryType(lead.DeliveryType.String),
-			PaymentAtFormatted: lead.PaymentAt.Time.Format("2006/01/02 03:04"),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+		})
+	}
+	return sLeads, nil
+}
+
+func (s *Service) GetCompletedLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
+	leads, err := s.queries.GetCompletedLeadsByUser(ctx, pgtype.Int4{
+		Int32: int32(userId),
+		Valid: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	sLeads := make([]Lead, 0, len(leads))
+	for _, lead := range leads {
+		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+		if err != nil {
+			return nil, err
+		}
+		sItems := make([]SaleItem, 0, len(items))
+		for _, item := range items {
+			sItems = append(sItems, SaleItem{
+				Id:          int(item.ID),
+				ProductName: item.ProductName,
+				ProductId:   int(item.ProductID),
+				Quantity:    int(item.Quantity),
+			})
+		}
+		sLeads = append(sLeads, Lead{
+			Id:                 int(lead.ID),
+			Name:               lead.Name.String,
+			UserName:           lead.UserName,
+			Address:            lead.Address.String,
+			Phone:              lead.Phone,
+			Completed:          lead.Completed,
+			UserId:             int(lead.UserID.Int32),
+			SaleId:             int(lead.SaleID.Int32),
+			Items:              sItems,
+			CreatedAt:          lead.CreatedAt.Time,
+			FullPrice:          lead.FullSum,
+			PaymentAt:          lead.PaymentAt.Time,
+			DeliveryType:       deliveryType(lead.DeliveryType.String),
+			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
 			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 		})
 	}

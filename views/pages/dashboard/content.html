@@ -1,3 +1,65 @@
 {{ block "dashboard-content" . }}
-dashboard
+<div class="ml-2 w-[98%]">
+	<link rel="stylesheet" href="/assets/dashboard.css" />
+	<div class="font-semibold text-lg">Жалпы статистика:</div>
+	<div class="flex p-8 w-full">
+		<div class="bg-orange-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6">
+			<div class="text-lg font-semibold">Апталық касса</div>
+			<div class="text-2xl font-bold mt-4 week-sum number" data-target="{{ .WeekSum }}">0 тг.</div>
+		</div>
+		<div class="bg-blue-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-8">
+			<div class="text-lg font-semibold">Айлық касса</div>
+			<div class="text-2xl font-bold mt-4 month-sum number" data-target="{{ .MonthSum }}">0 тг.</div>
+		</div>
+		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+			<div class="text-lg font-semibold">Орташа чек</div>
+			<div class="text-2xl font-bold mt-4 avg-sum number" data-target="{{ .AverageSum }}">0 тг.</div>
+		</div>
+		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+			<div class="text-lg font-semibold">Жаңа лидтер</div>
+			<div class="text-2xl font-bold mt-4 new-lead number" data-target="{{ .NewLeads }}">0</div>
+		</div>
+		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+			<div class="text-lg font-semibold">Сатылым саны</div>
+			<div class="text-2xl font-bold mt-4 sale-count number" data-target="{{ .SalesCount }}">0</div>
+		</div>
+		<div class="bg-red-200 rounded-lg p-8 flex flex-col items-center justify-center text-center px-12">
+			<div class="text-lg font-semibold">Сату кф.</div>
+			<div class="text-2xl font-bold mt-4 scr number" data-target="{{ .Scr }}">0%</div>
+		</div>
+	</div>
+	<div class="flex w-full">
+		<div class="w-full">
+			<div class="font-semibold text-lg">Апта бойынша:</div>
+			<div class="w-[100%]">
+				<canvas id="week-sales"></canvas>
+			</div>
+		</div>
+		<div class="w-full ml-8">
+			<div class="font-semibold text-lg">Ай бойынша:</div>
+			<div class="w-[100%]">
+				<canvas id="month-sales"></canvas>
+			</div>
+		</div>
+	</div>
+	<div class="flex w-full mt-8">
+		<div class="w-full">
+			<div class="font-semibold text-lg">Менеждерлер көрсеткіші:</div>
+			<div class="w-[100%]">
+				<canvas id="manager-sales"></canvas>
+			</div>
+		</div>
+		<div class="w-full ml-8">
+			<div class="font-semibold text-lg">Тауар бойынша:</div>
+			<div class="w-[100%]">
+				<canvas id="product-sales"></canvas>
+			</div>
+		</div>
+	</div>
+	<script src="/assets/js/dashboard.js"></script>
+	<script src="/assets/charts.js"></script>
+	<script>
+		{{ template "charts". }}
+	</script>
+</div>
 {{ end }}

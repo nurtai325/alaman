@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/service"
 )
 
@@ -27,28 +28,67 @@ type leadsContent struct {
 	Completed  []service.Lead
 	Users      []service.User
 	Products   []service.Product
+	Role       string
 }
 
 func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
-	newLeads, err := app.service.GetNewLeads(r.Context())
-	if err != nil {
-		app.error(w, err)
-		return
+	var newLeads []service.Lead
+	var assignedLeads []service.Lead
+	var inDeliveryLeads []service.Lead
+	var completedLeads []service.Lead
+	user := auth.GetUser(r)
+	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetNewLeads(r.Context())
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		newLeads = leads
 	}
-	assignedLeads, err := app.service.GetAssignedLeads(r.Context())
-	if err != nil {
-		app.error(w, err)
-		return
+	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetAssignedLeads(r.Context())
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		assignedLeads = leads
+	} else {
+		leads, err := app.service.GetAssignedLeadsUser(r.Context(), user.Id)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		assignedLeads = leads
 	}
-	inDeliveryLeads, err := app.service.GetInDeliveryLeads(r.Context())
-	if err != nil {
-		app.error(w, err)
-		return
+	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetInDeliveryLeads(r.Context())
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		inDeliveryLeads = leads
+	} else {
+		leads, err := app.service.GetInDeliveryLeadsUser(r.Context(), user.Id)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		inDeliveryLeads = leads
 	}
-	completedLeads, err := app.service.GetCompletedLeads(r.Context())
-	if err != nil {
-		app.error(w, err)
-		return
+	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetCompletedLeads(r.Context())
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		completedLeads = leads
+	} else {
+		leads, err := app.service.GetCompletedLeadsUser(r.Context(), user.Id)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		completedLeads = leads
 	}
 	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
 	if err != nil {
@@ -64,7 +104,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		BarsData: barsData{
 			Page:     "leads",
 			PageName: "Лидтер",
-			Pages:    adminPages,
+			Pages:    getPage(r),
 		},
 		User: app.service.GetAuthUser(r),
 		Data: leadsContent{
@@ -74,6 +114,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			Completed:  completedLeads,
 			Users:      users,
 			Products:   products,
+			Role:       string(user.Role),
 		},
 	})
 }

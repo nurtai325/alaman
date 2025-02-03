@@ -7,14 +7,13 @@ import (
 	"github.com/nurtai325/alaman/internal/service"
 )
 
-// send whatsapp message to the worker to attach him to the lead
-
 type templateName string
 
 const (
 	tLayout    templateName = "layout.html"
 	tLogin     templateName = "login.html"
 	tDashboard templateName = "dashboard.html"
+	tCharts    templateName = "charts"
 	tAlert     templateName = "alert"
 	tText      templateName = "text"
 	tEmpty     templateName = "empty"
@@ -34,6 +33,10 @@ const (
 	tLeadsInDeliveryCell templateName = "lead-cell-in-delivery"
 	tLeadsCompleted      templateName = "lead-cell-completed"
 	tLeadsProduct        templateName = "leads-product"
+
+	tReports        templateName = "reports.html"
+	tReportsRow     templateName = "reports-row"
+	tReportsRowEdit templateName = "reports-row-edit"
 
 	tQrTempl templateName = "qr"
 
@@ -56,7 +59,8 @@ type barsData struct {
 }
 
 var (
-	adminPages = []string{"dashboard", "leads", "products", "users"}
+	adminPages = []string{"dashboard", "leads", "products", "reports", "users"}
+	normPages  = []string{"leads"}
 )
 
 func (app *app) execute(w http.ResponseWriter, name templateName, dir string, data any) {
