@@ -1,4 +1,5 @@
 {{ block "charts" . }}
+import { Chart } from './assets/charts.js';
 (async function() {
 	let weekData = {{ .Week }};
 	new Chart(
