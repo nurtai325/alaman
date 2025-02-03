@@ -10,3 +10,4 @@ assets/index.css
 assets/qr
 ./server
 *.pem
+.env
