@@ -96,6 +96,9 @@ func (s *Service) GetScr(ctx context.Context) (float32, error) {
 	if leadCount == 0 || soldLeadCount == 0 {
 		return 0, nil
 	}
+	if leadCount == 0 || soldLeadCount == 0 {
+		return 0, nil
+	}
 	return float32(soldLeadCount) / float32(leadCount) * 100, nil
 }
 
