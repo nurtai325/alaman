@@ -14,7 +14,7 @@
 <div id="lead-cell-{{ .Id }}" class="lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
 	<div>{{ .Phone }}</div>
 	<div class="flex mt-1 mb-1">
-		<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
+		<select class="bg-white text-sm text-black rounded-sm mr-1" name="user_id" required>
 			<option class="hidden" disabled selected value></option>
 			{{ range .Users }}
 			<option class="text-center" value="{{ .Id }}">
