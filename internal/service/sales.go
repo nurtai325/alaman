@@ -96,7 +96,7 @@ func (s *Service) GetScr(ctx context.Context) (float32, error) {
 	if leadCount == 0 || soldLeadCount == 0 {
 		return 0, nil
 	}
-	if leadCount == 0 || soldLeadCount == 0 {
+	if leadCount == 0 {
 		return 0, nil
 	}
 	return float32(soldLeadCount) / float32(leadCount) * 100, nil
@@ -212,7 +212,11 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 			})
 		}
 	}
-	chartsData.AverageSum = chartsData.WeekSum / checkCount
+	if checkCount == 0 {
+		chartsData.AverageSum = 0
+	} else {
+		chartsData.AverageSum = chartsData.WeekSum / checkCount
+	}
 	salesItems, err := s.queries.GetSaleItemsByTime(ctx, pgtype.Timestamptz{
 		Time:  weekStart,
 		Valid: true,
