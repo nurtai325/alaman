@@ -321,7 +321,21 @@ func (s *Service) InsertLead(ctx context.Context, phone string) (Lead, error) {
 }
 
 func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) {
-	lead, err := s.queries.AssignLead(ctx, repository.AssignLeadParams{
+	conf, err := config.New()
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
+	pool, err := db.New(conf)
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
+	defer tx.Rollback(ctx)
+	q := s.queries.WithTx(tx)
+	lead, err := q.AssignLead(ctx, repository.AssignLeadParams{
 		ID: int32(id),
 		UserID: pgtype.Int4{
 			Int32: int32(userId),
@@ -336,6 +350,10 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 		return Lead{}, err
 	}
 	err = wh.Message(ctx, user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone))
+	if err != nil {
+		return Lead{}, err
+	}
+	err = tx.Commit(ctx)
 	if err != nil {
 		return Lead{}, err
 	}
