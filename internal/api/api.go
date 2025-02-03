@@ -33,12 +33,12 @@ func New(mux *http.ServeMux, templates *template.Template, service *service.Serv
 
 func (app *app) register(pattern string, handler http.HandlerFunc, secured bool) {
 	app.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				app.errLog.Printf("unhandled panic: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}()
+		// defer func() {
+		// 	if err := recover(); err != nil {
+		// 		app.errLog.Printf("unhandled panic: %v", err)
+		// 		w.WriteHeader(http.StatusInternalServerError)
+		// 	}
+		// }()
 		app.accessLog.Printf("%s %v %s", r.Method, r.URL, r.Header.Get("User-Agent"))
 		if secured && !auth.IsLogged(r) {
 			http.Redirect(w, r, "/login", http.StatusFound)
