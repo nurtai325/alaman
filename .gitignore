@@ -11,3 +11,4 @@ assets/index.css
 assets/qr
 ./server
 *.pem
+tailwind.config.js
