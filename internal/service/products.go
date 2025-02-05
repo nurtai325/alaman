@@ -107,6 +107,17 @@ func (s *Service) AddStockProduct(ctx context.Context, id, quantity int) (int, e
 		ID:      int32(id),
 		InStock: int32(quantity),
 	})
+	if err != nil {
+		return 0, err
+	}
+	_, err = s.queries.InsertProductChange(ctx, repository.InsertProductChangeParams{
+		Quantity:  int32(quantity),
+		IsIncome:  true,
+		ProductID: int32(id),
+	})
+	if err != nil {
+		return 0, err
+	}
 	return int(inStock), err
 }
 
@@ -115,6 +126,17 @@ func (s *Service) RemoveStockProduct(ctx context.Context, id, quantity int) (int
 		ID:      int32(id),
 		InStock: int32(quantity),
 	})
+	if err != nil {
+		return 0, err
+	}
+	_, err = s.queries.InsertProductChange(ctx, repository.InsertProductChangeParams{
+		Quantity:  int32(quantity),
+		IsIncome:  false,
+		ProductID: int32(id),
+	})
+	if err != nil {
+		return 0, err
+	}
 	return int(inStock), err
 }
 

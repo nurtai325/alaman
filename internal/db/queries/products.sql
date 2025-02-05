@@ -45,3 +45,13 @@ UPDATE products
 SET in_stock = in_stock - $2
 WHERE id = $1
 RETURNING in_stock;
+
+-- name: GetProductChanges :many
+SELECT * FROM product_changes
+WHERE created_at > $1 AND created_at < $2
+ORDER BY created_at ASC;
+
+-- name: InsertProductChange :one
+INSERT INTO product_changes(quantity, is_income, product_id)
+VALUES($1 ,$2 , $3)
+RETURNING *;

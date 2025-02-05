@@ -7,6 +7,8 @@ package repository
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addStockProduct = `-- name: AddStockProduct :one
@@ -91,6 +93,43 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 	return i, err
 }
 
+const getProductChanges = `-- name: GetProductChanges :many
+SELECT id, quantity, is_income, product_id, created_at FROM product_changes
+WHERE created_at > $1 AND created_at < $2
+ORDER BY created_at ASC
+`
+
+type GetProductChangesParams struct {
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetProductChanges(ctx context.Context, arg GetProductChangesParams) ([]ProductChange, error) {
+	rows, err := q.db.Query(ctx, getProductChanges, arg.CreatedAt, arg.CreatedAt_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProductChange
+	for rows.Next() {
+		var i ProductChange
+		if err := rows.Scan(
+			&i.ID,
+			&i.Quantity,
+			&i.IsIncome,
+			&i.ProductID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProducts = `-- name: GetProducts :many
 SELECT id, name, in_stock, price, sale_count, stock_price, created_at FROM products 
 ORDER BY created_at DESC 
@@ -173,6 +212,31 @@ func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) (P
 		&i.Price,
 		&i.SaleCount,
 		&i.StockPrice,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const insertProductChange = `-- name: InsertProductChange :one
+INSERT INTO product_changes(quantity, is_income, product_id)
+VALUES($1 ,$2 , $3)
+RETURNING id, quantity, is_income, product_id, created_at
+`
+
+type InsertProductChangeParams struct {
+	Quantity  int32
+	IsIncome  bool
+	ProductID int32
+}
+
+func (q *Queries) InsertProductChange(ctx context.Context, arg InsertProductChangeParams) (ProductChange, error) {
+	row := q.db.QueryRow(ctx, insertProductChange, arg.Quantity, arg.IsIncome, arg.ProductID)
+	var i ProductChange
+	err := row.Scan(
+		&i.ID,
+		&i.Quantity,
+		&i.IsIncome,
+		&i.ProductID,
 		&i.CreatedAt,
 	)
 	return i, err

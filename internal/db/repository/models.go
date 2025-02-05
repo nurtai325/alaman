@@ -30,6 +30,14 @@ type Product struct {
 	CreatedAt  pgtype.Timestamptz
 }
 
+type ProductChange struct {
+	ID        int32
+	Quantity  int32
+	IsIncome  bool
+	ProductID int32
+	CreatedAt pgtype.Timestamptz
+}
+
 type Report struct {
 	ID        int32
 	Name      string
