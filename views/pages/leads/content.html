@@ -17,12 +17,25 @@
 		<h4 class="text-lg w-full text-center font-semibold text-green-400" id="ready-header">Дайын</h4>
 	</section>
 	<section class="flex h-full">
+		{{ $new_lead_classes := "" }}
+		{{if or (eq .Role "админ") (eq .Role "роп")}}
+		{{ $new_lead_classes = " w-1/4 " }}
+		{{ else }}
+		{{ $new_lead_classes = " w-96 ml-24 " }}
+		{{ end }}
 		{{ if or (eq .Role "админ") (eq .Role "роп") }}
-		<section class="overflow-auto bg-blue-100 h-[84lvh] {{if or (eq .Role "админ") (eq .Role "роп")}} w-1/4 {{ else }} w-96 ml-24 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		<section
+			class="{{ $new_lead_classes }} overflow-auto bg-blue-100 h-[84lvh] mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="new">
+			<div class="flex w-full mt-2 pl-6">
+				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
+				<input oninput="filterLeads('new', '.new-lead-cell')" id="new-leads-search"
+					class="px-2 rounded-lg text-lg" />
+			</div>
 			{{ range .New }}
 			<div id="lead-cell-{{ .Id }}"
-				class="lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+				class="lead-cell new-lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white"
+				phone="{{ .Phone }}">
 				<div>{{ .Phone }}</div>
 				<div class="flex mt-1 mb-1">
 					<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
@@ -40,20 +53,56 @@
 			{{ end }}
 		</section>
 		{{ end }}
-		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-20 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		{{ $assigned_lead_classes := "" }}
+		{{if or (eq .Role "админ") (eq .Role "роп")}}
+		{{ $assigned_lead_classes = " w-1/4 " }}
+		{{ else }}
+		{{ $assigned_lead_classes = " w-96 ml-20 " }}
+		{{ end }}
+		<section
+			class="{{ $assigned_lead_classes }} overflow-auto bg-blue-100 h-[84lvh] mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="assigned">
+			<div class="flex w-full mt-2 pl-6">
+				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
+				<input oninput="filterLeads('assigned', '.assigned-lead-cell')" id="assigned-leads-search"
+					class="px-2 rounded-lg text-lg" />
+			</div>
 			{{ range .Assigned }}
 			{{ template "lead-cell-assigned" . }}
 			{{ end }}
 		</section>
-		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-32 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		{{ $indelivery_lead_classes := "" }}
+		{{if or (eq .Role "админ") (eq .Role "роп")}}
+		{{ $indelivery_lead_classes = " w-1/4 " }}
+		{{ else }}
+		{{ $indelivery_lead_classes = " w-96 ml-32 " }}
+		{{ end }}
+		<section
+			class="{{ $indelivery_lead_classes }} overflow-auto bg-blue-100 h-[84lvh] mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="in-progress">
+			<div class="flex w-full mt-2 pl-6">
+				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
+				<input oninput="filterLeads('indelivery', '.indelivery-lead-cell')" id="indelivery-leads-search"
+					class="px-2 rounded-lg text-lg" />
+			</div>
 			{{ range .InDelivery }}
 			{{ template "lead-cell-in-delivery" . }}
 			{{ end }}
 		</section>
-		<section class="overflow-auto bg-blue-100 h-[84lvh] {{ if or (eq .Role "админ") (eq .Role "роп") }} w-1/4 {{ else }} w-96 ml-32 {{ end }} mx-4 my-4 border border-[#4A5568] rounded-2xl"
+		{{ $completed_lead_classes := "" }}
+		{{if or (eq .Role "админ") (eq .Role "роп")}}
+		{{ $completed_lead_classes = " w-1/4 " }}
+		{{ else }}
+		{{ $completed_lead_classes = " w-96 ml-32 " }}
+		{{ end }}
+		<section
+			class="{{ $completed_lead_classes }} overflow-auto bg-blue-100 h-[84lvh] mx-4 my-4 border border-[#4A5568] rounded-2xl"
 			id="ready" ondrop="drop(event)" ondragover="allowdrop(event)">
+			<div class="flex w-full mt-2 pl-6">
+				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
+				<input oninput="filterLeads('completed', '.completed-lead-cell')" id="completed-leads-search"
+					class="px-2 rounded-lg text-lg" />
+			</div>
 			{{ range .Completed }}
 			{{ template "lead-cell-completed" . }}
 			{{ end }}

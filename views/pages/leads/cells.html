@@ -11,7 +11,9 @@
 {{ end }}
 
 {{ block "lead-cell-new" . }}
-<div id="lead-cell-{{ .Id }}" class="lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+<div id="lead-cell-{{ .Id }}"
+	class="new-lead-cell lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white"
+	phone="{{ .Phone }}">
 	<div>{{ .Phone }}</div>
 	<div class="flex mt-1 mb-1">
 		<select class="bg-white text-sm text-black rounded-sm mr-1" name="user_id" required>
@@ -29,7 +31,9 @@
 {{ end }}
 
 {{ block "lead-cell-assigned" . }}
-<div id="lead-cell-{{ .Id }}" class="lead-cell task flex mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
+<div id="lead-cell-{{ .Id }}"
+	class="lead-cell assigned-lead-cell task flex mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white"
+	phone="{{ .Phone }}">
 	<div class="ml-2">
 		<div>{{ .Phone }}</div>
 		<div class="mt-1 font-bold">{{ .UserName }}</div>
@@ -43,8 +47,8 @@
 
 {{ block "lead-cell-in-delivery" . }}
 <div id="lead-cell-{{ .Id }}" lead-id="{{ .Id }}"
-	class="task lead-cell mx-4 my-3 bg-orange-500 py-6 px-8 rounded-2xl text-lg text-white" draggable="true"
-	ondragstart="drag(event)">
+	class="task lead-cell indelivery-lead-cell mx-4 my-3 bg-orange-500 py-6 px-8 rounded-2xl text-lg text-white"
+	draggable="true" ondragstart="drag(event)" phone="{{ .Phone }}">
 	<div class="flex font-light w-full">
 		<div class="mr-auto">Аты:</div>
 		<button class="ml-auto mr-3 font-bold bg-blue-500 text-center rounded-full w-8 h-8 text-white relative group">
@@ -76,7 +80,9 @@
 {{ end }}
 
 {{ block "lead-cell-completed" . }}
-<div lead-id="{{ .Id }}" class="task mx-4 my-3 bg-green-500 py-6 px-8 rounded-2xl text-lg text-white">
+<div lead-id="{{ .Id }}"
+	class="completed-lead-cell task mx-4 my-3 bg-green-500 py-6 px-8 rounded-2xl text-lg text-white"
+	phone="{{ .Phone }}">
 	<div class="flex font-light w-full">
 		<div class="mr-auto">Аты:</div>
 		<button class="ml-auto mr-3 font-bold bg-blue-500 text-center rounded-full w-8 h-8 text-white relative group">
