@@ -36,41 +36,29 @@ func (q *Queries) GetNewLeadsCount(ctx context.Context, createdAt pgtype.Timesta
 }
 
 const getSaleItemsByTime = `-- name: GetSaleItemsByTime :many
-SELECT si.id, si.product_id, si.sale_id, si.quantity, si.created_at, p.price, p.name AS product_name, p.sale_count FROM sale_items AS si
+SELECT si.id, si.price, si.product_name, si.sale_count, si.quantity, si.sale_id, si.product_id, si.created_at FROM sale_items AS si
 INNER JOIN sales s ON si.sale_id = s.id
-INNER JOIN products p ON si.product_id = p.id
 WHERE s.payment_at >= $1
 `
 
-type GetSaleItemsByTimeRow struct {
-	ID          int32
-	ProductID   int32
-	SaleID      int32
-	Quantity    int32
-	CreatedAt   pgtype.Timestamptz
-	Price       int32
-	ProductName string
-	SaleCount   int32
-}
-
-func (q *Queries) GetSaleItemsByTime(ctx context.Context, paymentAt pgtype.Timestamptz) ([]GetSaleItemsByTimeRow, error) {
+func (q *Queries) GetSaleItemsByTime(ctx context.Context, paymentAt pgtype.Timestamptz) ([]SaleItem, error) {
 	rows, err := q.db.Query(ctx, getSaleItemsByTime, paymentAt)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetSaleItemsByTimeRow
+	var items []SaleItem
 	for rows.Next() {
-		var i GetSaleItemsByTimeRow
+		var i SaleItem
 		if err := rows.Scan(
 			&i.ID,
-			&i.ProductID,
-			&i.SaleID,
-			&i.Quantity,
-			&i.CreatedAt,
 			&i.Price,
 			&i.ProductName,
 			&i.SaleCount,
+			&i.Quantity,
+			&i.SaleID,
+			&i.ProductID,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

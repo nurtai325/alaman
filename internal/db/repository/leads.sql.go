@@ -513,36 +513,28 @@ func (q *Queries) GetNewLeads(ctx context.Context) ([]Lead, error) {
 }
 
 const getSaleItems = `-- name: GetSaleItems :many
-SELECT s.id, s.product_id, s.sale_id, s.quantity, s.created_at, p.name AS product_name FROM sale_items AS s
-INNER JOIN products p ON s.product_id = p.id
+SELECT id, price, product_name, sale_count, quantity, sale_id, product_id, created_at FROM sale_items AS s
 WHERE s.sale_id = $1
 `
 
-type GetSaleItemsRow struct {
-	ID          int32
-	ProductID   int32
-	SaleID      int32
-	Quantity    int32
-	CreatedAt   pgtype.Timestamptz
-	ProductName string
-}
-
-func (q *Queries) GetSaleItems(ctx context.Context, saleID int32) ([]GetSaleItemsRow, error) {
+func (q *Queries) GetSaleItems(ctx context.Context, saleID int32) ([]SaleItem, error) {
 	rows, err := q.db.Query(ctx, getSaleItems, saleID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetSaleItemsRow
+	var items []SaleItem
 	for rows.Next() {
-		var i GetSaleItemsRow
+		var i SaleItem
 		if err := rows.Scan(
 			&i.ID,
-			&i.ProductID,
-			&i.SaleID,
-			&i.Quantity,
-			&i.CreatedAt,
+			&i.Price,
 			&i.ProductName,
+			&i.SaleCount,
+			&i.Quantity,
+			&i.SaleID,
+			&i.ProductID,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -619,25 +611,36 @@ func (q *Queries) InsertSale(ctx context.Context, arg InsertSaleParams) (Sale, e
 }
 
 const insertSaleItem = `-- name: InsertSaleItem :one
-INSERT INTO sale_items(product_id, sale_id, quantity)
-VALUES($1, $2, $3)
-RETURNING id, product_id, sale_id, quantity, created_at
+INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id)
+VALUES($1, $2, $3, $4, $5)
+RETURNING id, price, product_name, sale_count, quantity, sale_id, product_id, created_at
 `
 
 type InsertSaleItemParams struct {
-	ProductID int32
-	SaleID    int32
-	Quantity  int32
+	Price       float32
+	ProductName string
+	SaleID      int32
+	Quantity    int32
+	ProductID   int32
 }
 
 func (q *Queries) InsertSaleItem(ctx context.Context, arg InsertSaleItemParams) (SaleItem, error) {
-	row := q.db.QueryRow(ctx, insertSaleItem, arg.ProductID, arg.SaleID, arg.Quantity)
+	row := q.db.QueryRow(ctx, insertSaleItem,
+		arg.Price,
+		arg.ProductName,
+		arg.SaleID,
+		arg.Quantity,
+		arg.ProductID,
+	)
 	var i SaleItem
 	err := row.Scan(
 		&i.ID,
-		&i.ProductID,
-		&i.SaleID,
+		&i.Price,
+		&i.ProductName,
+		&i.SaleCount,
 		&i.Quantity,
+		&i.SaleID,
+		&i.ProductID,
 		&i.CreatedAt,
 	)
 	return i, err

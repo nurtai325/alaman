@@ -231,7 +231,7 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 		for i, product := range chartsData.Product {
 			if int32(product.Id) == saleItem.ProductID {
 				productFound = true
-				chartsData.Product[i].Amount += int(saleItem.Quantity * saleItem.Price)
+				chartsData.Product[i].Amount += int(saleItem.Quantity * int32(saleItem.Price))
 				break
 			}
 		}
@@ -239,7 +239,7 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 			chartsData.Product = append(chartsData.Product, barData{
 				Id:     int(saleItem.ProductID),
 				Label:  saleItem.ProductName,
-				Amount: int(saleItem.Quantity * saleItem.Price),
+				Amount: int(saleItem.Quantity * int32(saleItem.Price)),
 			})
 		}
 	}

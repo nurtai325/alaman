@@ -60,11 +60,14 @@ type Sale struct {
 }
 
 type SaleItem struct {
-	ID        int32
-	ProductID int32
-	SaleID    int32
-	Quantity  int32
-	CreatedAt pgtype.Timestamptz
+	ID          int32
+	Price       float32
+	ProductName string
+	SaleCount   int32
+	Quantity    int32
+	SaleID      int32
+	ProductID   int32
+	CreatedAt   pgtype.Timestamptz
 }
 
 type User struct {

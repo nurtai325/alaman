@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -247,7 +248,7 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 		app.error(w, fmt.Errorf("items sum isn't number: %s", fullSumStr))
 		return
 	}
-	items, err := parseCartItems(r.FormValue("items"))
+	items, err := app.parseCartItems(r.Context(), r.FormValue("items"))
 	if err != nil {
 		app.error(w, err)
 		return
@@ -274,7 +275,7 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 	app.execute(w, tLeadsInDeliveryCell, "", lead)
 }
 
-func parseCartItems(itemsStr string) ([]service.SaleItem, error) {
+func (app *app) parseCartItems(ctx context.Context, itemsStr string) ([]service.SaleItem, error) {
 	itemsSplit := strings.Split(itemsStr, ";")
 	items := make([]service.SaleItem, 0, len(itemsSplit))
 	if len(itemsSplit) == 0 {
@@ -297,9 +298,16 @@ func parseCartItems(itemsStr string) ([]service.SaleItem, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%w: %s", ErrInvalidCartItems, itemsStr)
 		}
+		product, err := app.service.GetProduct(ctx, productId)
+		if err != nil {
+			return nil, err
+		}
 		items = append(items, service.SaleItem{
-			ProductId: productId,
-			Quantity:  quantity,
+			Id:          productId,
+			Price:       float32(product.Price),
+			ProductName: product.Name,
+			Quantity:    quantity,
+			ProductId:   productId,
 		})
 	}
 	return items, nil

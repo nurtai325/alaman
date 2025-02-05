@@ -14,13 +14,16 @@ CREATE TABLE sales(
 
 CREATE TABLE sale_items(
 	id SERIAL PRIMARY KEY,
-	product_id INT NOT NULL,
-	sale_id INT NOT NULL,
+	price REAL NOT NULL,
+	product_name VARCHAR(100) NOT NULL,
+	sale_count INT NOT NULL,
 	quantity INT NOT NULL,
-	FOREIGN KEY(product_id)
-	REFERENCES products(id),
+	sale_id INT NOT NULL,
+	product_id INT NOT NULL,
 	FOREIGN KEY(sale_id)
 	REFERENCES sales(id),
+	FOREIGN KEY(product_id)
+	REFERENCES products(id),
 	created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 

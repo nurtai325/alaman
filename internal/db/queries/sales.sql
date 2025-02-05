@@ -18,9 +18,8 @@ INNER JOIN users u ON l.user_id = u.id
 WHERE s.payment_at >= $1;
 
 -- name: GetSaleItemsByTime :many
-SELECT si.*, p.price, p.name AS product_name, p.sale_count FROM sale_items AS si
+SELECT si.* FROM sale_items AS si
 INNER JOIN sales s ON si.sale_id = s.id
-INNER JOIN products p ON si.product_id = p.id
 WHERE s.payment_at >= $1;
 
 -- name: GetNewLeadsCount :one

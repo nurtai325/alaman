@@ -155,8 +155,9 @@ func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
 			sItems = append(sItems, SaleItem{
 				Id:          int(item.ID),
 				ProductName: item.ProductName,
-				ProductId:   int(item.ProductID),
 				Quantity:    int(item.Quantity),
+				Price:       item.Price,
+				ProductId:   int(item.ProductID),
 			})
 		}
 		sLeads = append(sLeads, Lead{
@@ -199,8 +200,9 @@ func (s *Service) GetInDeliveryLeadsUser(ctx context.Context, userId int) ([]Lea
 			sItems = append(sItems, SaleItem{
 				Id:          int(item.ID),
 				ProductName: item.ProductName,
-				ProductId:   int(item.ProductID),
+				Price:       item.Price,
 				Quantity:    int(item.Quantity),
+				ProductId:   int(item.ProductID),
 			})
 		}
 		sLeads = append(sLeads, Lead{
@@ -240,8 +242,9 @@ func (s *Service) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
 			sItems = append(sItems, SaleItem{
 				Id:          int(item.ID),
 				ProductName: item.ProductName,
-				ProductId:   int(item.ProductID),
+				Price:       item.Price,
 				Quantity:    int(item.Quantity),
+				ProductId:   int(item.ProductID),
 			})
 		}
 		sLeads = append(sLeads, Lead{
@@ -284,8 +287,9 @@ func (s *Service) GetCompletedLeadsUser(ctx context.Context, userId int) ([]Lead
 			sItems = append(sItems, SaleItem{
 				Id:          int(item.ID),
 				ProductName: item.ProductName,
-				ProductId:   int(item.ProductID),
+				Price:       item.Price,
 				Quantity:    int(item.Quantity),
+				ProductId:   int(item.ProductID),
 			})
 		}
 		sLeads = append(sLeads, Lead{
@@ -369,6 +373,7 @@ type SaleItem struct {
 	Id          int
 	ProductName string
 	ProductId   int
+	Price       float32
 	Quantity    int
 }
 
@@ -441,9 +446,10 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 	}
 	for _, item := range arg.Items {
 		_, err := q.InsertSaleItem(ctx, repository.InsertSaleItemParams{
-			SaleID:    sale.ID,
-			ProductID: int32(item.ProductId),
-			Quantity:  int32(item.Quantity),
+			SaleID:      sale.ID,
+			Price:       item.Price,
+			Quantity:    int32(item.Quantity),
+			ProductName: item.ProductName,
 		})
 		if err != nil {
 			return Lead{}, errors.Join(ErrInternal, err)
@@ -477,8 +483,8 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		sItems = append(sItems, SaleItem{
 			Id:          int(item.ID),
 			ProductName: item.ProductName,
-			ProductId:   int(item.ProductID),
 			Quantity:    int(item.Quantity),
+			ProductId:   int(item.ProductID),
 		})
 		itemsStr += fmt.Sprintf("%d %s", item.Quantity, item.ProductName)
 	}

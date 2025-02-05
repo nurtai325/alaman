@@ -72,8 +72,8 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: InsertSaleItem :one
-INSERT INTO sale_items(product_id, sale_id, quantity)
-VALUES($1, $2, $3)
+INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id)
+VALUES($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: SellLead :one
@@ -91,8 +91,7 @@ WHERE l.id = $1
 LIMIT 1;
 
 -- name: GetSaleItems :many
-SELECT s.*, p.name AS product_name FROM sale_items AS s
-INNER JOIN products p ON s.product_id = p.id
+SELECT * FROM sale_items AS s
 WHERE s.sale_id = $1;
 
 -- name: CompleteLead :one
