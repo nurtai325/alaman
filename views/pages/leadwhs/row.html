@@ -1,0 +1,35 @@
+{{ block "leadwh-row-edit" . }}
+<tr class="border-b">
+	<td scope="row" class="py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+		<input class="bg-gray-200 rounded-sm text-center" name="name" type="text" value="{{ .Name }}" />
+	</td>
+	<td class="px-4 py-4 text-center">
+		<input class="bg-gray-200 text-center" name="phone" type="tel" value="{{ .Phone }}" />
+	</td>
+	<td class="py-4 text-center">
+		<button hx-put="/leadwhs/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
+	</td>
+	<td class="py-4 text-center items-center">
+		<button hx-confirm="{{ .Name }} лид номерін жоюға сенімдісіз бе?" hx-delete="/leadwhs/{{ .Id }}"
+			hx-swap="delete">&#10060</button>
+	</td>
+</tr>
+{{ end }}
+
+{{ block "leadwh-row" . }}
+<tr class="border-b">
+	<td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-center">
+		{{ .Name }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		{{ .Phone }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		<button hx-get="/leadwhs/{{ .Id }}/edit" class="p-1 text-blue-600 text-sm">өңдеу</button>
+	</td>
+	<td class="px-6 py-4 text-center items-center">
+		<button hx-confirm="{{ .Name }} лид номерін жоюға сенімдісіз бе?" hx-delete="/leadwhs/{{ .Id }}"
+			hx-swap="delete">&#10060</button>
+	</td>
+</tr>
+{{ end }}

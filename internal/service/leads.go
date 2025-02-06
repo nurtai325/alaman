@@ -353,7 +353,7 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 	if err != nil {
 		return Lead{}, err
 	}
-	err = wh.Message(ctx, user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone))
+	err = wh.Message(ctx, "", user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone))
 	if err != nil {
 		return Lead{}, err
 	}
@@ -513,7 +513,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 Төлем уақыты: %s
 %s
 `, lead.UserName, lead.Name, lead.Phone, lead.Address, lead.SaleType, lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
-	err = wh.GroupMessage(ctx, msg)
+	err = wh.Message(ctx, "", "", msg)
 	if err != nil {
 		return Lead{}, err
 	}

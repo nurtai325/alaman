@@ -1,0 +1,33 @@
+{{ block "leadwhs-modal" . }}
+<form hx-post="/leadwhs" hx-swap="afterbegin" hx-target="#leadwhs-table-body" class="bg-gray-100 p-5">
+	<div class="flex">
+		<h1 class="text-lg mr-auto text-bold">Жаңа лид номер</h1>
+		<button onclick="closeModal()">&#10060</button>
+	</div>
+	<h1></h1>
+	<div class="flex">
+		<div>
+
+			<div class="p-2">
+				<div>
+					<label for="name" class="">Аты:</label>
+				</div>
+				<div>
+					<input class="p-1 rounded-sm" type="text" name="name" id="name" required />
+				</div>
+			</div>
+			<div class="p-2">
+				<div>
+					<label>Номер</label>
+				</div>
+				<div>
+					<input class="p-1   rounded-sm" type="tel" name="phone" id="phone" required value="+7" />
+				</div>
+			</div>
+		</div>
+		<div id="qr-section"></div>
+	</div>
+	<div class="ml-2 text-red-600 text-sm" id="leadwh-modal-errors"></div>
+	<button type="submit" class="ml-2 px-2 p-1 text-white bg-blue-600 rounded-md">қосу</button>
+</form>
+{{ end }}

@@ -17,9 +17,13 @@
 			</div>
 			<h1 class="text-2xl font-bold mb-4">Сканерлеу үшін QR код</h1>
 		</div>
-		<img src="{{.ImagePath}}" alt="QR код" class="mx-auto mb-4" />
+		{{ template "qr-image" .ImagePath }}
 	</div>
 </body>
 
 <html>
+{{ end }}
+
+{{ block "qr-image" . }}
+<img src="{{.}}" alt="QR код" class="mx-auto mb-4" />
 {{ end }}

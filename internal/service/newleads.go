@@ -11,8 +11,9 @@ import (
 
 func ListenNewLeads(s *Service) {
 	for {
-		jid := wh.ListenLead()
-		lead, err := s.GetLeadByPhone(context.Background(), "+"+jid.User)
+		phone := wh.ListenLead()
+		phone = "+" + phone
+		lead, err := s.GetLeadByPhone(context.Background(), phone)
 		if err != nil && !errors.Is(err, ErrNotFound) {
 			log.Println(err)
 			continue
@@ -20,12 +21,7 @@ func ListenNewLeads(s *Service) {
 		if lead.Id != 0 || lead.CreatedAt.After(time.Now().AddDate(0, 0, -7)) {
 			continue
 		}
-		_, err = s.InsertLead(context.Background(), "+"+jid.User)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		err = wh.Archive(context.Background(), jid)
+		_, err = s.InsertLead(context.Background(), phone)
 		if err != nil {
 			log.Println(err)
 			continue

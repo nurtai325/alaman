@@ -20,6 +20,14 @@ type Lead struct {
 	SoldAt    pgtype.Timestamptz
 }
 
+type LeadWh struct {
+	ID        int32
+	Name      string
+	Phone     string
+	Jid       pgtype.Text
+	CreatedAt pgtype.Timestamptz
+}
+
 type Product struct {
 	ID         int32
 	Name       string
@@ -76,6 +84,6 @@ type User struct {
 	Phone     string
 	Password  string
 	Role      string
-	Active    bool
+	Connected bool
 	CreatedAt pgtype.Timestamptz
 }

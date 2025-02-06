@@ -9,10 +9,32 @@ import (
 	"context"
 )
 
+const connectUser = `-- name: ConnectUser :one
+UPDATE users
+SET connected = TRUE
+WHERE id = $1
+RETURNING id, name, phone, password, role, connected, created_at
+`
+
+func (q *Queries) ConnectUser(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRow(ctx, connectUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Phone,
+		&i.Password,
+		&i.Role,
+		&i.Connected,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const deleteUser = `-- name: DeleteUser :one
 DELETE FROM users
 WHERE id = $1
-RETURNING id, name, phone, password, role, active, created_at
+RETURNING id, name, phone, password, role, connected, created_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int32) (User, error) {
@@ -24,14 +46,14 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) (User, error) {
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getLogist = `-- name: GetLogist :one
-SELECT id, name, phone, password, role, active, created_at FROM users 
+SELECT id, name, phone, password, role, connected, created_at FROM users 
 WHERE role = 'логист'
 LIMIT 1
 `
@@ -45,14 +67,14 @@ func (q *Queries) GetLogist(ctx context.Context) (User, error) {
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, phone, password, role, active, created_at FROM users 
+SELECT id, name, phone, password, role, connected, created_at FROM users 
 WHERE id = $1 
 LIMIT 1
 `
@@ -66,14 +88,14 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id, name, phone, password, role, active, created_at FROM users 
+SELECT id, name, phone, password, role, connected, created_at FROM users 
 WHERE phone = $1 
 LIMIT 1
 `
@@ -87,15 +109,14 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone string) (User, error
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, name, phone, password, role, active, created_at FROM users 
-WHERE active = true
+SELECT id, name, phone, password, role, connected, created_at FROM users 
 ORDER BY created_at DESC 
 LIMIT $2 
 OFFSET $1
@@ -121,7 +142,7 @@ func (q *Queries) GetUsers(ctx context.Context, arg GetUsersParams) ([]User, err
 			&i.Phone,
 			&i.Password,
 			&i.Role,
-			&i.Active,
+			&i.Connected,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -149,7 +170,7 @@ func (q *Queries) GetUsersCount(ctx context.Context) (int64, error) {
 const insertUser = `-- name: InsertUser :one
 INSERT INTO users(name, phone, password, role)
 VALUES($1, $2, $3, $4)
-RETURNING id, name, phone, password, role, active, created_at
+RETURNING id, name, phone, password, role, connected, created_at
 `
 
 type InsertUserParams struct {
@@ -173,7 +194,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -183,7 +204,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET name = $2, phone = $3, role = $4
 WHERE id = $1
-RETURNING id, name, phone, password, role, active, created_at
+RETURNING id, name, phone, password, role, connected, created_at
 `
 
 type UpdateUserParams struct {
@@ -207,7 +228,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Phone,
 		&i.Password,
 		&i.Role,
-		&i.Active,
+		&i.Connected,
 		&i.CreatedAt,
 	)
 	return i, err

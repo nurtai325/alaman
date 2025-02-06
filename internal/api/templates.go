@@ -38,9 +38,14 @@ const (
 	tReportsRow     templateName = "reports-row"
 	tReportsRowEdit templateName = "reports-row-edit"
 
-	tQrTempl templateName = "qr"
+	tLeadWhs       templateName = "leadwhs.html"
+	tLeadWhRow     templateName = "leadwh-row"
+	tLeadWhRowEdit templateName = "leadwh-row-edit"
 
-	pagesLimit = 1000
+	tQrTempl templateName = "qr"
+	tQrImage templateName = "qr-image"
+
+	PagesLimit = 1000
 
 	openModalEvent  = "openModal"
 	closeModalEvent = "closeModal"
@@ -59,7 +64,7 @@ type barsData struct {
 }
 
 var (
-	adminPages = []string{"dashboard", "leads", "products", "reports", "users"}
+	adminPages = []string{"dashboard", "leads", "products", "reports", "leadwhs", "users"}
 	normPages  = []string{"leads"}
 )
 

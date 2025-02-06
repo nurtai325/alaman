@@ -91,12 +91,12 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		completedLeads = leads
 	}
-	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
+	users, err := app.service.GetUsers(r.Context(), 0, PagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return
 	}
-	products, err := app.service.GetProducts(r.Context(), 0, pagesLimit)
+	products, err := app.service.GetProducts(r.Context(), 0, PagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return
@@ -140,7 +140,7 @@ func (app *app) handleLeadsPost(w http.ResponseWriter, r *http.Request) {
 		app.errorHx(w, tAlert, leadCellErrors, ErrChooseUser.Error())
 		return
 	}
-	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
+	users, err := app.service.GetUsers(r.Context(), 0, PagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return

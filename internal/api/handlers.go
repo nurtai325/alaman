@@ -43,5 +43,9 @@ func (app *app) registerHandlers() {
 	app.register("GET /reports/{id}/edit", app.handleReportsEdit, true)
 	app.register("DELETE /reports/{id}", app.handleReportsDelete, true)
 
-	app.register("GET /qr", app.HandleQr, true)
+	app.register("GET /leadwhs", app.handleLeadwhsGet, true)
+	app.register("POST /leadwhs", app.handleLeadWhsPost, true)
+	app.register("PUT /leadwhs/{id}", app.handleLeadWhsPut, true)
+	app.register("GET /leadwhs/{id}/edit", app.handleLeadWhsEdit, true)
+	app.register("DELETE /leadwhs/{id}", app.handleLeadWhsDelete, true)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -42,7 +43,7 @@ func main() {
 	log.SetOutput(errLog.Writer())
 
 	templates := template.Must(template.ParseGlob("./views/*.html"))
-	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports")
+	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports", "leadwhs")
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
@@ -52,11 +53,21 @@ func main() {
 		panic(err)
 	}
 	newSqlDb, err := db.NewSql(conf)
-	err = wh.Connect(newSqlDb)
+	err = wh.InitContainer(newSqlDb)
 	if err != nil {
 		panic(err)
 	}
 	newService := service.New(repository.New(newDB))
+	leadWhs, err := newService.GetLeadWhs(context.Background(), 0, api.PagesLimit)
+	if err != nil {
+		panic(err)
+	}
+	for _, leadWh := range leadWhs {
+		err := wh.Connect(leadWh.Jid, wh.HandleLeadEvents)
+		if err != nil {
+			panic(err)
+		}
+	}
 	go service.ListenNewLeads(newService)
 	app := api.New(http.NewServeMux(), templates, newService, infoLog, accessLog, errLog)
 	go auth.Cleanup()

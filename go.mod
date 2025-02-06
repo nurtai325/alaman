@@ -7,7 +7,6 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	go.mau.fi/whatsmeow v0.0.0-20250130221717-faf72d668860
 	golang.org/x/crypto v0.32.0
-	google.golang.org/protobuf v1.36.4
 )
 
 require (
@@ -26,4 +25,5 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 )

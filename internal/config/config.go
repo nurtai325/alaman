@@ -14,6 +14,7 @@ type Config struct {
 	POSTGRES_PASSWORD string
 	POSTGRES_DB       string
 	POSTGRES_PORT     string
+	TABYS_GROUP_ID    string
 }
 
 var conf *Config

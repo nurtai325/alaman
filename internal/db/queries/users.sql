@@ -1,6 +1,5 @@
 -- name: GetUsers :many
 SELECT * FROM users 
-WHERE active = true
 ORDER BY created_at DESC 
 LIMIT $2 
 OFFSET $1;
@@ -37,5 +36,11 @@ RETURNING *;
 
 -- name: DeleteUser :one
 DELETE FROM users
+WHERE id = $1
+RETURNING *;
+
+-- name: ConnectUser :one
+UPDATE users
+SET connected = TRUE
 WHERE id = $1
 RETURNING *;

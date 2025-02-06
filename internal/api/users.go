@@ -14,7 +14,7 @@ type userContent struct {
 }
 
 func (app *app) handleUsersGet(w http.ResponseWriter, r *http.Request) {
-	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
+	users, err := app.service.GetUsers(r.Context(), 0, PagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return

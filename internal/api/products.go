@@ -22,7 +22,7 @@ type productContent struct {
 }
 
 func (app *app) handleProductsGet(w http.ResponseWriter, r *http.Request) {
-	products, err := app.service.GetProducts(r.Context(), 0, pagesLimit)
+	products, err := app.service.GetProducts(r.Context(), 0, PagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return
