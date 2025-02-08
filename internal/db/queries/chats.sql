@@ -1,6 +1,6 @@
 -- name: GetChats :many
 SELECT * FROM chats 
-ORDER BY created_at DESC 
+ORDER BY updated_at DESC 
 LIMIT $2 
 OFFSET $1;
 
@@ -21,6 +21,12 @@ FROM chats;
 -- name: InsertChat :one
 INSERT INTO chats(lead_id, user_id)
 VALUES($1, $2)
+RETURNING *;
+
+-- name: UpdateChat :one
+UPDATE chats
+SET updated_at = $2
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteChat :one

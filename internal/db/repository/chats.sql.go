@@ -14,7 +14,7 @@ import (
 const deleteChat = `-- name: DeleteChat :one
 DELETE FROM chats
 WHERE id = $1
-RETURNING id, lead_id, user_id, created_at
+RETURNING id, lead_id, user_id, updated_at, created_at
 `
 
 func (q *Queries) DeleteChat(ctx context.Context, id int32) (Chat, error) {
@@ -24,6 +24,7 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) (Chat, error) {
 		&i.ID,
 		&i.LeadID,
 		&i.UserID,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -52,7 +53,7 @@ func (q *Queries) DeleteMessage(ctx context.Context, id int32) (Message, error) 
 }
 
 const getChat = `-- name: GetChat :one
-SELECT id, lead_id, user_id, created_at FROM chats 
+SELECT id, lead_id, user_id, updated_at, created_at FROM chats 
 WHERE id = $1 
 LIMIT 1
 `
@@ -64,13 +65,14 @@ func (q *Queries) GetChat(ctx context.Context, id int32) (Chat, error) {
 		&i.ID,
 		&i.LeadID,
 		&i.UserID,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getChatByLeadId = `-- name: GetChatByLeadId :one
-SELECT id, lead_id, user_id, created_at FROM chats 
+SELECT id, lead_id, user_id, updated_at, created_at FROM chats 
 WHERE lead_id = $1 
 LIMIT 1
 `
@@ -82,14 +84,15 @@ func (q *Queries) GetChatByLeadId(ctx context.Context, leadID int32) (Chat, erro
 		&i.ID,
 		&i.LeadID,
 		&i.UserID,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getChats = `-- name: GetChats :many
-SELECT id, lead_id, user_id, created_at FROM chats 
-ORDER BY created_at DESC 
+SELECT id, lead_id, user_id, updated_at, created_at FROM chats 
+ORDER BY updated_at DESC 
 LIMIT $2 
 OFFSET $1
 `
@@ -112,6 +115,7 @@ func (q *Queries) GetChats(ctx context.Context, arg GetChatsParams) ([]Chat, err
 			&i.ID,
 			&i.LeadID,
 			&i.UserID,
+			&i.UpdatedAt,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -208,7 +212,7 @@ func (q *Queries) GetMessagesCount(ctx context.Context) (int64, error) {
 const insertChat = `-- name: InsertChat :one
 INSERT INTO chats(lead_id, user_id)
 VALUES($1, $2)
-RETURNING id, lead_id, user_id, created_at
+RETURNING id, lead_id, user_id, updated_at, created_at
 `
 
 type InsertChatParams struct {
@@ -223,6 +227,7 @@ func (q *Queries) InsertChat(ctx context.Context, arg InsertChatParams) (Chat, e
 		&i.ID,
 		&i.LeadID,
 		&i.UserID,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -261,6 +266,31 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (M
 		&i.IsSent,
 		&i.AudioLength,
 		&i.ChatID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateChat = `-- name: UpdateChat :one
+UPDATE chats
+SET updated_at = $2
+WHERE id = $1
+RETURNING id, lead_id, user_id, updated_at, created_at
+`
+
+type UpdateChatParams struct {
+	ID        int32
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateChat(ctx context.Context, arg UpdateChatParams) (Chat, error) {
+	row := q.db.QueryRow(ctx, updateChat, arg.ID, arg.UpdatedAt)
+	var i Chat
+	err := row.Scan(
+		&i.ID,
+		&i.LeadID,
+		&i.UserID,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err

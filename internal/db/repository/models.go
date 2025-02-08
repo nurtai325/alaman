@@ -12,6 +12,7 @@ type Chat struct {
 	ID        int32
 	LeadID    int32
 	UserID    int32
+	UpdatedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 }
 

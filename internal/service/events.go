@@ -77,5 +77,16 @@ func ListenNewMessages(s *Service) {
 			log.Println(err)
 			continue
 		}
+		_, err = s.queries.UpdateChat(context.Background(), repository.UpdateChatParams{
+			ID: chat.ID,
+			UpdatedAt: pgtype.Timestamptz{
+				Time:  time.Now(),
+				Valid: true,
+			},
+		})
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 	}
 }
