@@ -9,11 +9,15 @@ import (
 )
 
 type Chat struct {
-	Id        int
-	Messages  []Message
-	LeadId    int
-	UserId    int
-	CreatedAt time.Time
+	Id         int
+	LeadPhone  string
+	UserPhone  string
+	UserName   string
+	LeadId     int
+	UserId     int
+	UpdatedAt  time.Time
+	UpdatedAtF string
+	CreatedAt  time.Time
 }
 
 type msgType string
@@ -26,13 +30,14 @@ const (
 )
 
 type Message struct {
-	Id        int
-	Text      string
-	Path      string
-	Type      msgType
-	IsSent    bool
-	ChatId    int
-	CreatedAt time.Time
+	Id         int
+	Text       string
+	Path       string
+	Type       msgType
+	IsSent     bool
+	ChatId     int
+	CreatedAtF string
+	CreatedAt  time.Time
 }
 
 func (s *Service) GetChats(ctx context.Context, offset, limit int) ([]Chat, error) {
@@ -45,13 +50,37 @@ func (s *Service) GetChats(ctx context.Context, offset, limit int) ([]Chat, erro
 	}
 	sChats := make([]Chat, 0, len(chats))
 	for _, chat := range chats {
-		messages, err := s.GetMessages(ctx, int(chat.ID))
-		if err != nil {
-			return nil, err
-		}
-		sChats = append(sChats, getSChat(chat, messages))
+		sChats = append(sChats, Chat{
+			Id:         int(chat.ID),
+			LeadPhone:  chat.LeadPhone,
+			UserPhone:  chat.UserPhone,
+			UserName:   chat.UserName,
+			LeadId:     int(chat.LeadID),
+			UserId:     int(chat.UserID),
+			UpdatedAt:  chat.UpdatedAt.Time,
+			UpdatedAtF: chat.UpdatedAt.Time.Format("15:04"),
+			CreatedAt:  chat.CreatedAt.Time,
+		})
 	}
 	return sChats, nil
+}
+
+func (s *Service) GetChat(ctx context.Context, id int) (Chat, error) {
+	chat, err := s.queries.GetChat(ctx, int32(id))
+	if err != nil {
+		return Chat{}, err
+	}
+	return Chat{
+		Id:         int(chat.ID),
+		LeadPhone:  chat.LeadPhone,
+		UserPhone:  chat.UserPhone,
+		UserName:   chat.UserName,
+		LeadId:     int(chat.LeadID),
+		UserId:     int(chat.UserID),
+		UpdatedAt:  chat.UpdatedAt.Time,
+		UpdatedAtF: chat.UpdatedAt.Time.Format("15:04"),
+		CreatedAt:  chat.CreatedAt.Time,
+	}, nil
 }
 
 func (s *Service) GetMessages(ctx context.Context, chatId int) ([]Message, error) {
@@ -66,12 +95,12 @@ func (s *Service) GetMessages(ctx context.Context, chatId int) ([]Message, error
 	return sMessages, nil
 }
 
-func getSChat(chat repository.Chat, messages []Message) Chat {
+func getSChat(chat repository.Chat) Chat {
 	return Chat{
 		Id:        int(chat.ID),
-		Messages:  messages,
 		LeadId:    int(chat.LeadID),
 		UserId:    int(chat.UserID),
+		UpdatedAt: chat.UpdatedAt.Time,
 		CreatedAt: chat.CreatedAt.Time,
 	}
 }
@@ -84,7 +113,7 @@ func (s *Service) InsertChat(ctx context.Context, leadId, userId int) (Chat, err
 	if err != nil {
 		return Chat{}, err
 	}
-	return getSChat(chat, nil), err
+	return getSChat(chat), err
 }
 
 func (s *Service) InsertMessage(ctx context.Context, text, path string, msgtype msgType, isSent bool, audioLength, chatId int) (Message, error) {
@@ -109,13 +138,18 @@ func (s *Service) InsertMessage(ctx context.Context, text, path string, msgtype 
 }
 
 func getSMessage(msg repository.Message) Message {
+	path := ""
+	if len(msg.Path.String) != 0 {
+		path = msg.Path.String[1:]
+	}
 	return Message{
-		Id:        int(msg.ID),
-		Text:      msg.Text.String,
-		Path:      msg.Path.String,
-		Type:      msgType(msg.Type),
-		IsSent:    msg.IsSent,
-		ChatId:    int(msg.ChatID),
-		CreatedAt: msg.CreatedAt.Time,
+		Id:         int(msg.ID),
+		Text:       msg.Text.String,
+		Path:       path,
+		Type:       msgType(msg.Type),
+		IsSent:     msg.IsSent,
+		ChatId:     int(msg.ChatID),
+		CreatedAtF: msg.CreatedAt.Time.Format("15:04"),
+		CreatedAt:  msg.CreatedAt.Time,
 	}
 }

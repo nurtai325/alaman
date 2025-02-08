@@ -1,0 +1,67 @@
+{{ block "messages" . }}
+<div id="messages-container" class="h-full w-full bg-white shadow-lg overflow-auto">
+	<div class="bg-gray-600 flex text-white p-4 w-full fixed">
+		<div class="text-lg font-semibold mr-4">{{ .Phone }}</div>
+		<div class="text-sm font-normal mt-1.5">{{ .Sender }}</div>
+	</div>
+	<div class="p-4 space-y-4 mt-12">
+		{{ range .Messages }}
+		{{ if .IsSent }}
+		<div class="flex justify-end">
+			{{ if eq .Type "text" }}
+			<div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+				{{ .Text }}
+			</div>
+			{{ else if eq .Type "audio" }}
+			<div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+				<audio controls>
+					<source src="{{ .Path }}">
+					Your browser does not support the audio element.
+				</audio>
+			</div>
+			{{ else if eq .Type "video" }}
+			<div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+				<video controls class="max-w-full">
+					<source src="{{ .Path }}">
+					Your browser does not support the video element.
+				</video>
+			</div>
+			{{ else if eq .Type "image" }}
+			<div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+				<img src="{{ .Path }}" alt="Image" class="max-w-full rounded-lg">
+			</div>
+			{{ end }}
+			<div class="text-xs text-right mt-1 ml-1 self-end">{{ .CreatedAtF }}</div>
+		</div>
+		{{ else }}
+		<div class="flex justify-start">
+			{{ if eq .Type "text" }}
+			<div class="bg-gray-200 text-gray-900 p-3 rounded-lg max-w-xs">
+				{{ .Text }}
+			</div>
+			{{ else if eq .Type "audio" }}
+			<div class="bg-gray-200 text-gray-900 p-3 rounded-lg max-w-xs">
+				<audio controls>
+					<source src="{{ .Path }}">
+					Your browser does not support the audio element.
+				</audio>
+			</div>
+			{{ else if eq .Type "video" }}
+			<div class="bg-gray-200 text-gray-900 p-3 rounded-lg max-w-xs">
+				<video controls class="max-w-full">
+					<source src="{{ .Path }}">
+					Your browser does not support the video element.
+				</video>
+			</div>
+			{{ else if eq .Type "image" }}
+			<div class="bg-gray-200 text-gray-900 p-3 rounded-lg max-w-xs">
+				<img src="{{ .Path }}" alt="Image" class="max-w-full rounded-lg">
+			</div>
+			{{ end }}
+			<div class="text-xs text-right mt-1 ml-1 self-end">{{ .CreatedAtF }}</div>
+		</div>
+		{{ end }}
+		{{ end }}
+	</div>
+</div>
+{{ end }}

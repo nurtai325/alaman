@@ -42,10 +42,13 @@ const (
 	tLeadWhRow     templateName = "leadwh-row"
 	tLeadWhRowEdit templateName = "leadwh-row-edit"
 
+	tChats    templateName = "chats.html"
+	tMessages templateName = "messages"
+
 	tQrTempl templateName = "qr"
 	tQrImage templateName = "qr-image"
 
-	PagesLimit = 1000
+	pagesLimit = 1000
 
 	openModalEvent  = "openModal"
 	closeModalEvent = "closeModal"
@@ -64,7 +67,7 @@ type barsData struct {
 }
 
 var (
-	adminPages = []string{"dashboard", "leads", "products", "reports", "leadwhs", "users"}
+	adminPages = []string{"dashboard", "leads", "chats", "products", "reports", "leadwhs", "users"}
 	normPages  = []string{"leads"}
 )
 

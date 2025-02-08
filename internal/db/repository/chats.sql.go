@@ -53,20 +53,36 @@ func (q *Queries) DeleteMessage(ctx context.Context, id int32) (Message, error) 
 }
 
 const getChat = `-- name: GetChat :one
-SELECT id, lead_id, user_id, updated_at, created_at FROM chats 
-WHERE id = $1 
+SELECT ch.id, ch.lead_id, ch.user_id, ch.updated_at, ch.created_at, u.name AS user_name, u.phone AS user_phone, l.phone AS lead_phone FROM chats AS ch
+INNER JOIN users u ON ch.user_id = u.id
+INNER JOIN leads l ON ch.lead_id = l.id
+WHERE ch.id = $1 
 LIMIT 1
 `
 
-func (q *Queries) GetChat(ctx context.Context, id int32) (Chat, error) {
+type GetChatRow struct {
+	ID        int32
+	LeadID    int32
+	UserID    int32
+	UpdatedAt pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UserName  string
+	UserPhone string
+	LeadPhone string
+}
+
+func (q *Queries) GetChat(ctx context.Context, id int32) (GetChatRow, error) {
 	row := q.db.QueryRow(ctx, getChat, id)
-	var i Chat
+	var i GetChatRow
 	err := row.Scan(
 		&i.ID,
 		&i.LeadID,
 		&i.UserID,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.UserName,
+		&i.UserPhone,
+		&i.LeadPhone,
 	)
 	return i, err
 }
@@ -91,7 +107,9 @@ func (q *Queries) GetChatByLeadId(ctx context.Context, leadID int32) (Chat, erro
 }
 
 const getChats = `-- name: GetChats :many
-SELECT id, lead_id, user_id, updated_at, created_at FROM chats 
+SELECT ch.id, ch.lead_id, ch.user_id, ch.updated_at, ch.created_at, u.name AS user_name, u.phone AS user_phone, l.phone AS lead_phone FROM chats AS ch
+INNER JOIN users u ON ch.user_id = u.id
+INNER JOIN leads l ON ch.lead_id = l.id
 ORDER BY updated_at DESC 
 LIMIT $2 
 OFFSET $1
@@ -102,21 +120,35 @@ type GetChatsParams struct {
 	Limit  int64
 }
 
-func (q *Queries) GetChats(ctx context.Context, arg GetChatsParams) ([]Chat, error) {
+type GetChatsRow struct {
+	ID        int32
+	LeadID    int32
+	UserID    int32
+	UpdatedAt pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UserName  string
+	UserPhone string
+	LeadPhone string
+}
+
+func (q *Queries) GetChats(ctx context.Context, arg GetChatsParams) ([]GetChatsRow, error) {
 	rows, err := q.db.Query(ctx, getChats, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Chat
+	var items []GetChatsRow
 	for rows.Next() {
-		var i Chat
+		var i GetChatsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.LeadID,
 			&i.UserID,
 			&i.UpdatedAt,
 			&i.CreatedAt,
+			&i.UserName,
+			&i.UserPhone,
+			&i.LeadPhone,
 		); err != nil {
 			return nil, err
 		}
@@ -165,7 +197,7 @@ func (q *Queries) GetMessage(ctx context.Context, id int32) (Message, error) {
 const getMessages = `-- name: GetMessages :many
 SELECT id, text, path, type, is_sent, audio_length, chat_id, created_at FROM messages 
 WHERE chat_id = $1
-ORDER BY created_at DESC
+ORDER BY created_at ASC
 `
 
 func (q *Queries) GetMessages(ctx context.Context, chatID int32) ([]Message, error) {

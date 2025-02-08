@@ -48,4 +48,7 @@ func (app *app) registerHandlers() {
 	app.register("PUT /leadwhs/{id}", app.handleLeadWhsPut, true)
 	app.register("GET /leadwhs/{id}/edit", app.handleLeadWhsEdit, true)
 	app.register("DELETE /leadwhs/{id}", app.handleLeadWhsDelete, true)
+
+	app.register("GET /chats", app.handleChatsGet, true)
+	app.register("GET /messages/{id}", app.handleMessagesGet, true)
 }

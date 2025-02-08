@@ -1,12 +1,16 @@
 -- name: GetChats :many
-SELECT * FROM chats 
+SELECT ch.*, u.name AS user_name, u.phone AS user_phone, l.phone AS lead_phone FROM chats AS ch
+INNER JOIN users u ON ch.user_id = u.id
+INNER JOIN leads l ON ch.lead_id = l.id
 ORDER BY updated_at DESC 
 LIMIT $2 
 OFFSET $1;
 
 -- name: GetChat :one
-SELECT * FROM chats 
-WHERE id = $1 
+SELECT ch.*, u.name AS user_name, u.phone AS user_phone, l.phone AS lead_phone FROM chats AS ch
+INNER JOIN users u ON ch.user_id = u.id
+INNER JOIN leads l ON ch.lead_id = l.id
+WHERE ch.id = $1 
 LIMIT 1;
 
 -- name: GetChatByLeadId :one
@@ -37,7 +41,7 @@ RETURNING *;
 -- name: GetMessages :many
 SELECT * FROM messages 
 WHERE chat_id = $1
-ORDER BY created_at DESC;
+ORDER BY created_at ASC;
 
 -- name: GetMessage :one
 SELECT * FROM messages

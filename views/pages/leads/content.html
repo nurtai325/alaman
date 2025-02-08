@@ -1,6 +1,6 @@
 {{ block "leads-content" . }}
 {{ $users := .Users }}
-<div class="p-1">
+<div class="p-4">
 	<section class="flex justify-around">
 		{{if or (eq .Role "админ") (eq .Role "роп")}}
 		<h4 class="items-center text-lg flex w-full text-center font-semibold text-blue-400" id="new-header">

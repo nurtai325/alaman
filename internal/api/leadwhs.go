@@ -19,7 +19,7 @@ type leadWhContent struct {
 }
 
 func (app *app) handleLeadwhsGet(w http.ResponseWriter, r *http.Request) {
-	leadWhs, err := app.service.GetLeadWhs(r.Context(), 0, PagesLimit)
+	leadWhs, err := app.service.GetLeadWhs(r.Context(), 0, pagesLimit)
 	if err != nil {
 		app.error(w, err)
 		return

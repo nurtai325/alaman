@@ -14,11 +14,11 @@
 		<div>
 			{{ template "sidebar" .BarsData }}
 		</div>
-		<div class="w-full h-auto ">
+		<div class="w-full">
 			<div>
 				{{ template "navbar" . }}
 			</div>
-			<div class="bg-gray-50 p-4">
+			<div class="bg-gray-50 h-[92.5%]">
 				{{ block "content" . }}{{ end }}
 			</div>
 		</div>

@@ -1,0 +1,26 @@
+{{ block "chats-content" . }}
+<div class="w-[100%] h-full flex">
+	<div class="w-[40%] h-full bg-gray-200">
+		<div class="flex w-full m-4 pr-2">
+			<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
+			<input oninput="filterChats()" id="chats-search" class="w-[90%] px-2 rounded-lg text-lg" />
+		</div>
+		{{ range .Chats }}
+		{{ $chatDesc := print .LeadPhone .UserName .UserPhone }}
+		<div hx-get="/messages/{{ .Id }}" hx-swap="innerHTML" hx-target="#messages-box" chat-desc="{{ $chatDesc }}"
+			class="chat max-w-md w-full ml-2 mr-4 py-4 px-4 bg-white shadow-md rounded-lg border cursor-pointer">
+			<div class="flex items-center justify-between">
+				<p class="text-lg font-semibold text-gray-900">{{ .LeadPhone }}</p>
+				<p class="text-sm text-gray-500">{{ .UpdatedAtF }}</p>
+			</div>
+			<div class="mt-1">
+				<p class="text-sm text-gray-600">{{ .UserName }}</p>
+			</div>
+		</div>
+		{{ end }}
+	</div>
+	<div id="messages-box" class="w-full h-full bg-gray-100">
+	</div>
+</div>
+<script src="/assets/js/chats.js"></script>
+{{ end }}
