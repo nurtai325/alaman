@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -131,22 +132,22 @@ func (s *Service) GetLeadWhQr(phone string) (string, error) {
 func (s *Service) ConnectAllWh() error {
 	leadWhs, err := s.GetLeadWhs(context.Background(), 0, 1000)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, leadWh := range leadWhs {
 		err := wh.Connect(leadWh.Jid, wh.LeadEventsHandler)
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 	}
 	users, err := s.GetUsers(context.Background(), 0, 1000)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, user := range users {
 		err := wh.Connect(user.Jid, wh.ChatEventsHandler(user.Id))
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 	}
 	return nil
