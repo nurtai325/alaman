@@ -32,7 +32,7 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) (Chat, error) {
 const deleteMessage = `-- name: DeleteMessage :one
 DELETE FROM messages
 WHERE id = $1
-RETURNING id, text, path, type, is_sent, chat_id, created_at
+RETURNING id, text, path, type, is_sent, audio_length, chat_id, created_at
 `
 
 func (q *Queries) DeleteMessage(ctx context.Context, id int32) (Message, error) {
@@ -44,6 +44,7 @@ func (q *Queries) DeleteMessage(ctx context.Context, id int32) (Message, error) 
 		&i.Path,
 		&i.Type,
 		&i.IsSent,
+		&i.AudioLength,
 		&i.ChatID,
 		&i.CreatedAt,
 	)
@@ -136,7 +137,7 @@ func (q *Queries) GetChatsCount(ctx context.Context) (int64, error) {
 }
 
 const getMessage = `-- name: GetMessage :one
-SELECT id, text, path, type, is_sent, chat_id, created_at FROM messages
+SELECT id, text, path, type, is_sent, audio_length, chat_id, created_at FROM messages
 WHERE id = $1 
 LIMIT 1
 `
@@ -150,6 +151,7 @@ func (q *Queries) GetMessage(ctx context.Context, id int32) (Message, error) {
 		&i.Path,
 		&i.Type,
 		&i.IsSent,
+		&i.AudioLength,
 		&i.ChatID,
 		&i.CreatedAt,
 	)
@@ -157,7 +159,7 @@ func (q *Queries) GetMessage(ctx context.Context, id int32) (Message, error) {
 }
 
 const getMessages = `-- name: GetMessages :many
-SELECT id, text, path, type, is_sent, chat_id, created_at FROM messages 
+SELECT id, text, path, type, is_sent, audio_length, chat_id, created_at FROM messages 
 WHERE chat_id = $1
 ORDER BY created_at DESC
 `
@@ -177,6 +179,7 @@ func (q *Queries) GetMessages(ctx context.Context, chatID int32) ([]Message, err
 			&i.Path,
 			&i.Type,
 			&i.IsSent,
+			&i.AudioLength,
 			&i.ChatID,
 			&i.CreatedAt,
 		); err != nil {
@@ -226,17 +229,18 @@ func (q *Queries) InsertChat(ctx context.Context, arg InsertChatParams) (Chat, e
 }
 
 const insertMessage = `-- name: InsertMessage :one
-INSERT INTO messages(text, path, type, is_sent, chat_id)
-VALUES($1, $2, $3, $4, $5)
-RETURNING id, text, path, type, is_sent, chat_id, created_at
+INSERT INTO messages(text, path, type, is_sent, audio_length, chat_id)
+VALUES($1, $2, $3, $4, $5, $6)
+RETURNING id, text, path, type, is_sent, audio_length, chat_id, created_at
 `
 
 type InsertMessageParams struct {
-	Text   pgtype.Text
-	Path   pgtype.Text
-	Type   string
-	IsSent bool
-	ChatID int32
+	Text        pgtype.Text
+	Path        pgtype.Text
+	Type        string
+	IsSent      bool
+	AudioLength int32
+	ChatID      int32
 }
 
 func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (Message, error) {
@@ -245,6 +249,7 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (M
 		arg.Path,
 		arg.Type,
 		arg.IsSent,
+		arg.AudioLength,
 		arg.ChatID,
 	)
 	var i Message
@@ -254,6 +259,7 @@ func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (M
 		&i.Path,
 		&i.Type,
 		&i.IsSent,
+		&i.AudioLength,
 		&i.ChatID,
 		&i.CreatedAt,
 	)

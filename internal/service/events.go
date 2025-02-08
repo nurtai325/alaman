@@ -35,7 +35,7 @@ func ListenNewLeads(s *Service) {
 func ListenNewMessages(s *Service) {
 	for {
 		msg := wh.ListenMsg()
-		phone := "+7" + msg.LeadPhone
+		phone := "+" + msg.LeadPhone
 		lead, err := s.queries.GetLeadByPhone(context.Background(), phone)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
@@ -55,6 +55,7 @@ func ListenNewMessages(s *Service) {
 				UserID: int32(msg.UserId),
 			})
 			if err != nil {
+				log.Println(err)
 				continue
 			}
 		}
@@ -67,11 +68,13 @@ func ListenNewMessages(s *Service) {
 				Valid:  true,
 				String: msg.Path,
 			},
-			Type:   msg.Type,
-			IsSent: msg.IsFromUser,
-			ChatID: chat.ID,
+			Type:        msg.Type,
+			IsSent:      msg.IsFromUser,
+			AudioLength: int32(msg.AudioLength),
+			ChatID:      chat.ID,
 		})
 		if err != nil {
+			log.Println(err)
 			continue
 		}
 	}

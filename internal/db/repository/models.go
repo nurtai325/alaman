@@ -36,13 +36,14 @@ type LeadWh struct {
 }
 
 type Message struct {
-	ID        int32
-	Text      pgtype.Text
-	Path      pgtype.Text
-	Type      string
-	IsSent    bool
-	ChatID    int32
-	CreatedAt pgtype.Timestamptz
+	ID          int32
+	Text        pgtype.Text
+	Path        pgtype.Text
+	Type        string
+	IsSent      bool
+	AudioLength int32
+	ChatID      int32
+	CreatedAt   pgtype.Timestamptz
 }
 
 type Product struct {

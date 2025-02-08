@@ -61,6 +61,7 @@ func (s *Service) GetReport(ctx context.Context, id int) (Report, error) {
 func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt time.Time) (Report, error) {
 	report, err := s.queries.InsertReport(ctx, repository.InsertReportParams{
 		Name: name,
+		Path: "",
 		StartAt: pgtype.Timestamptz{
 			Time:  startAt,
 			Valid: true,

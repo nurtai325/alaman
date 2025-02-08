@@ -121,7 +121,7 @@ func (s *Service) GetLeadWhQr(phone string) (string, error) {
 	if !validPhone(phone) {
 		return "", ErrInvalidPhone
 	}
-	imagePath, err := wh.StartPairing(phone[1:], wh.HandleLeadEvents)
+	imagePath, err := wh.StartPairing(phone[1:], wh.LeadEventsHandler)
 	if err != nil && errors.Is(err, wh.ErrAlreadyPaired) {
 		return "", ErrAlreadyPaired
 	}
@@ -134,7 +134,7 @@ func (s *Service) ConnectAllWh() error {
 		panic(err)
 	}
 	for _, leadWh := range leadWhs {
-		err := wh.Connect(leadWh.Jid, wh.HandleLeadEvents)
+		err := wh.Connect(leadWh.Jid, wh.LeadEventsHandler)
 		if err != nil {
 			panic(err)
 		}
@@ -144,7 +144,7 @@ func (s *Service) ConnectAllWh() error {
 		panic(err)
 	}
 	for _, user := range users {
-		err := wh.Connect(user.Jid, wh.HandleChatEvents(user.Id))
+		err := wh.Connect(user.Jid, wh.ChatEventsHandler(user.Id))
 		if err != nil {
 			panic(err)
 		}

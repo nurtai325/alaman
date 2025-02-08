@@ -43,8 +43,8 @@ SELECT COUNT(*)
 FROM messages;
 
 -- name: InsertMessage :one
-INSERT INTO messages(text, path, type, is_sent, chat_id)
-VALUES($1, $2, $3, $4, $5)
+INSERT INTO messages(text, path, type, is_sent, audio_length, chat_id)
+VALUES($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: DeleteMessage :one

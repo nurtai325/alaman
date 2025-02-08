@@ -34,7 +34,6 @@ func parseTemplPages(templ *template.Template, pages ...string) *template.Templa
 	return templ
 }
 
-// TODO: report, lead sort
 func main() {
 	infoLog, err := openLog("info", log.Lshortfile)
 	accessLog, err := openLog("access", 0)

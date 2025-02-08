@@ -17,6 +17,7 @@ CREATE TABLE messages(
 	path VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
 	is_sent BOOLEAN NOT NULL,
+	audio_length INT NOT NULL,
 	chat_id INT NOT NULL,
 	FOREIGN KEY(chat_id)
 	REFERENCES chats(id),

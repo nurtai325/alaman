@@ -16,14 +16,14 @@ var (
 	ErrDeviceNotFound = errors.New("wh with this phone is not present in store")
 )
 
-func StartPairing(phone string, eventHandler func(evt any)) (string, error) {
+func StartPairing(phone string, eventHandler whHandler) (string, error) {
 	_, found := clients[phone]
 	if found {
 		return "", ErrAlreadyPaired
 	}
 	device := container.NewDevice()
 	newClient := whatsmeow.NewClient(device, nil)
-	newClient.AddEventHandler(eventHandler)
+	newClient.AddEventHandler(eventHandler(newClient))
 	qrCh, err := newClient.GetQRChannel(context.Background())
 	if err != nil {
 		return "", fmt.Errorf("error getting qr channel: %w", err)

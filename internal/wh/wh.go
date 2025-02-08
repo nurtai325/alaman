@@ -34,14 +34,16 @@ func SendMessage(ctx context.Context, from, to, text string) error {
 	return nil
 }
 
-func Connect(jidStr string, eventHandler func(any)) error {
+type whHandler func(*whatsmeow.Client) func(any)
+
+func Connect(jidStr string, eventHandler whHandler) error {
 	jid, err := types.ParseJID(jidStr)
 	if err != nil {
 		return err
 	}
 	client, ok := clients[jid.User]
 	if ok {
-		client.c.AddEventHandler(eventHandler)
+		client.c.AddEventHandler(eventHandler(client.c))
 		return nil
 	}
 	device, err := container.GetDevice(jid)
@@ -56,7 +58,7 @@ func Connect(jidStr string, eventHandler func(any)) error {
 	if err != nil {
 		return err
 	}
-	newClient.AddEventHandler(eventHandler)
+	newClient.AddEventHandler(eventHandler(newClient))
 	clients[jid.User] = &cliWh{c: newClient}
 	return nil
 }

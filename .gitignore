@@ -8,6 +8,8 @@ tmp
 build
 tailwindcss
 assets/index.css
+assets/reports
+assets/wh-media
 assets/qr
 ./server
 *.pem

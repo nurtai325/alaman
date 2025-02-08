@@ -87,7 +87,7 @@ func (s *Service) InsertChat(ctx context.Context, leadId, userId int) (Chat, err
 	return getSChat(chat, nil), err
 }
 
-func (s *Service) InsertMessage(ctx context.Context, text, path string, msgtype msgType, isSent bool, chatId int) (Message, error) {
+func (s *Service) InsertMessage(ctx context.Context, text, path string, msgtype msgType, isSent bool, audioLength, chatId int) (Message, error) {
 	msg, err := s.queries.InsertMessage(ctx, repository.InsertMessageParams{
 		Text: pgtype.Text{
 			Valid:  true,
@@ -97,9 +97,10 @@ func (s *Service) InsertMessage(ctx context.Context, text, path string, msgtype 
 			Valid:  true,
 			String: path,
 		},
-		Type:   string(msgtype),
-		IsSent: isSent,
-		ChatID: int32(chatId),
+		Type:        string(msgtype),
+		IsSent:      isSent,
+		ChatID:      int32(chatId),
+		AudioLength: int32(audioLength),
 	})
 	if err != nil {
 		return Message{}, err
