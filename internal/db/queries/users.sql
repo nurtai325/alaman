@@ -41,6 +41,6 @@ RETURNING *;
 
 -- name: ConnectUser :one
 UPDATE users
-SET connected = TRUE
+SET jid = $2
 WHERE id = $1
 RETURNING *;

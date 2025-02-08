@@ -30,7 +30,7 @@ func InitContainer(dbConn *sql.DB) error {
 	return nil
 }
 
-func Message(ctx context.Context, from, to, text string) error {
+func SendMessage(ctx context.Context, from, to, text string) error {
 	return nil
 }
 
@@ -39,6 +39,11 @@ func Connect(jidStr string, eventHandler func(any)) error {
 	if err != nil {
 		return err
 	}
+	client, ok := clients[jid.User]
+	if ok {
+		client.c.AddEventHandler(eventHandler)
+		return nil
+	}
 	device, err := container.GetDevice(jid)
 	if err != nil {
 		return err
@@ -46,13 +51,13 @@ func Connect(jidStr string, eventHandler func(any)) error {
 	if device == nil {
 		return fmt.Errorf("jid %s: %w", jid, ErrDeviceNotFound)
 	}
-	client := whatsmeow.NewClient(device, nil)
-	err = client.Connect()
+	newClient := whatsmeow.NewClient(device, nil)
+	err = newClient.Connect()
 	if err != nil {
 		return err
 	}
-	client.AddEventHandler(eventHandler)
-	clients[jid.User] = &cliWh{c: client}
+	newClient.AddEventHandler(eventHandler)
+	clients[jid.User] = &cliWh{c: newClient}
 	return nil
 }
 

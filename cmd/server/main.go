@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -58,17 +57,12 @@ func main() {
 		panic(err)
 	}
 	newService := service.New(repository.New(newDB))
-	leadWhs, err := newService.GetLeadWhs(context.Background(), 0, api.PagesLimit)
+	err = newService.ConnectAllWh()
 	if err != nil {
 		panic(err)
 	}
-	for _, leadWh := range leadWhs {
-		err := wh.Connect(leadWh.Jid, wh.HandleLeadEvents)
-		if err != nil {
-			panic(err)
-		}
-	}
 	go service.ListenNewLeads(newService)
+	go service.ListenNewMessages(newService)
 	app := api.New(http.NewServeMux(), templates, newService, infoLog, accessLog, errLog)
 	go auth.Cleanup()
 

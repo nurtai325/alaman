@@ -127,3 +127,27 @@ func (s *Service) GetLeadWhQr(phone string) (string, error) {
 	}
 	return imagePath, err
 }
+
+func (s *Service) ConnectAllWh() error {
+	leadWhs, err := s.GetLeadWhs(context.Background(), 0, 1000)
+	if err != nil {
+		panic(err)
+	}
+	for _, leadWh := range leadWhs {
+		err := wh.Connect(leadWh.Jid, wh.HandleLeadEvents)
+		if err != nil {
+			panic(err)
+		}
+	}
+	users, err := s.GetUsers(context.Background(), 0, 1000)
+	if err != nil {
+		panic(err)
+	}
+	for _, user := range users {
+		err := wh.Connect(user.Jid, wh.HandleChatEvents(user.Id))
+		if err != nil {
+			panic(err)
+		}
+	}
+	return nil
+}

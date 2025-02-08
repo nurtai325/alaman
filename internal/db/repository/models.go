@@ -8,6 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Chat struct {
+	ID        int32
+	LeadID    int32
+	UserID    int32
+	CreatedAt pgtype.Timestamptz
+}
+
 type Lead struct {
 	ID        int32
 	Name      pgtype.Text
@@ -25,6 +32,16 @@ type LeadWh struct {
 	Name      string
 	Phone     string
 	Jid       pgtype.Text
+	CreatedAt pgtype.Timestamptz
+}
+
+type Message struct {
+	ID        int32
+	Text      pgtype.Text
+	Path      pgtype.Text
+	Type      string
+	IsSent    bool
+	ChatID    int32
 	CreatedAt pgtype.Timestamptz
 }
 
@@ -84,6 +101,6 @@ type User struct {
 	Phone     string
 	Password  string
 	Role      string
-	Connected bool
+	Jid       pgtype.Text
 	CreatedAt pgtype.Timestamptz
 }

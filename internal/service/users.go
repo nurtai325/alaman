@@ -27,6 +27,7 @@ type User struct {
 	Name      string
 	Phone     string
 	Role      auth.Role
+	Jid       string
 	CreatedAt time.Time
 }
 
@@ -41,6 +42,7 @@ func getSUser(user repository.User) User {
 		Phone:     user.Phone,
 		CreatedAt: user.CreatedAt.Time,
 		Role:      auth.Role(user.Role),
+		Jid:       user.Jid.String,
 	}
 }
 
