@@ -38,8 +38,20 @@ func (app *app) handleUsersPost(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
-	name := r.FormValue("name")
 	phone := r.FormValue("phone")
+	imagePath, err := app.service.GetLeadWhQr(phone)
+	if err != nil {
+		if !errors.Is(err, service.ErrAlreadyPaired) {
+			app.error(w, err)
+			return
+		}
+	} else {
+		w.Header().Add("HX-Retarget", "#qr-section")
+		w.Header().Add("HX-Reswap", "innerHTML")
+		app.execute(w, tQrImage, "", imagePath)
+		return
+	}
+	name := r.FormValue("name")
 	password := r.FormValue("password")
 	passwordCheck := r.FormValue("passwordCheck")
 	role, err := auth.ToRole(r.FormValue("role"))
