@@ -31,6 +31,44 @@ func (q *Queries) DeleteReport(ctx context.Context, id int32) (Report, error) {
 	return i, err
 }
 
+const getProductIncoming = `-- name: GetProductIncoming :one
+SELECT SUM(quantity)
+FROM product_changes
+WHERE product_id = $1 AND created_at > $2 AND created_at < $3 AND is_income = TRUE
+`
+
+type GetProductIncomingParams struct {
+	ProductID   int32
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetProductIncoming(ctx context.Context, arg GetProductIncomingParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getProductIncoming, arg.ProductID, arg.CreatedAt, arg.CreatedAt_2)
+	var sum int64
+	err := row.Scan(&sum)
+	return sum, err
+}
+
+const getProductOutcoming = `-- name: GetProductOutcoming :one
+SELECT SUM(quantity)
+FROM product_changes
+WHERE product_id = $1 AND created_at > $2 AND created_at < $3 AND is_income = FALSE
+`
+
+type GetProductOutcomingParams struct {
+	ProductID   int32
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetProductOutcoming(ctx context.Context, arg GetProductOutcomingParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getProductOutcoming, arg.ProductID, arg.CreatedAt, arg.CreatedAt_2)
+	var sum int64
+	err := row.Scan(&sum)
+	return sum, err
+}
+
 const getReport = `-- name: GetReport :one
 SELECT id, name, path, start_at, end_at, created_at FROM reports
 WHERE id = $1
@@ -48,6 +86,36 @@ func (q *Queries) GetReport(ctx context.Context, id int32) (Report, error) {
 		&i.EndAt,
 		&i.CreatedAt,
 	)
+	return i, err
+}
+
+const getReportByProduct = `-- name: GetReportByProduct :one
+SELECT 
+	COALESCE(SUM(sl.sale_count), 0) AS sale_count_sum, 
+	COALESCE(SUM(sl.quantity), 0) AS sold, 
+	COALESCE(SUM(sl.price), 0) AS sold_sum
+FROM sale_items AS sl
+WHERE sl.product_id = $1 
+AND sl.created_at > $2 
+AND sl.created_at < $3
+`
+
+type GetReportByProductParams struct {
+	ProductID   int32
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+type GetReportByProductRow struct {
+	SaleCountSum pgtype.Int8
+	Sold         pgtype.Int8
+	SoldSum      pgtype.Float4
+}
+
+func (q *Queries) GetReportByProduct(ctx context.Context, arg GetReportByProductParams) (GetReportByProductRow, error) {
+	row := q.db.QueryRow(ctx, getReportByProduct, arg.ProductID, arg.CreatedAt, arg.CreatedAt_2)
+	var i GetReportByProductRow
+	err := row.Scan(&i.SaleCountSum, &i.Sold, &i.SoldSum)
 	return i, err
 }
 

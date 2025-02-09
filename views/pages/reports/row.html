@@ -9,6 +9,9 @@
 	<td class="px-6 py-4 text-center">
 		{{ .CreatedAtStr }}
 	</td>
+	<td class="px-6 py-4 text-center">
+		<a class="text-blue-600" href="{{ .Path }}">жүктеу</a>
+	</td>
 	<td class="py-4 text-center">
 		<button hx-put="/reports/{{ .Id }}" hx-include="closest tr" class="p-1 text-blue-600 text-sm">сақтау</button>
 	</td>
@@ -29,6 +32,9 @@
 	</td>
 	<td class="px-6 py-4 text-center">
 		{{ .CreatedAtStr }}
+	</td>
+	<td class="px-6 py-4 text-center">
+		<a class="text-blue-600" href="{{ .Path }}">жүктеу</a>
 	</td>
 	<td class="px-6 py-4 text-center">
 		<button hx-get="/reports/{{ .Id }}/edit" class="p-1 text-blue-600 text-sm">өңдеу</button>

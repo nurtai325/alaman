@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/db/repository"
+	"github.com/xuri/excelize/v2"
 )
 
 type Report struct {
@@ -58,10 +60,127 @@ func (s *Service) GetReport(ctx context.Context, id int) (Report, error) {
 
 }
 
+const (
+	reportsDir = "./assets/reports"
+)
+
+type productReport struct {
+	Order     int
+	Incoming  int
+	Outcoming int
+	Name      string
+	SaleCount int
+	Sold      int
+	InStock   int
+	SoldSum   float32
+}
+
 func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt time.Time) (Report, error) {
+	products, err := s.queries.GetProducts(ctx, repository.GetProductsParams{
+		Offset: 0,
+		Limit:  1000,
+	})
+	productReports := make([]productReport, 0, len(products))
+	totalSold := 0
+	totalSaleCount := 0
+	totalSoldSum := 0
+	for i, product := range products {
+		productSaleSum, err := s.queries.GetReportByProduct(ctx, repository.GetReportByProductParams{
+			ProductID: product.ID,
+			CreatedAt: pgtype.Timestamptz{
+				Time:  startAt,
+				Valid: true,
+			},
+			CreatedAt_2: pgtype.Timestamptz{
+				Time:  endAt,
+				Valid: true,
+			},
+		})
+		if err != nil {
+			return Report{}, err
+		}
+		productIncoming, err := s.queries.GetProductIncoming(ctx, repository.GetProductIncomingParams{
+			ProductID: product.ID,
+			CreatedAt: pgtype.Timestamptz{
+				Time:  startAt,
+				Valid: true,
+			},
+			CreatedAt_2: pgtype.Timestamptz{
+				Time:  endAt,
+				Valid: true,
+			},
+		})
+		productOutcoming, err := s.queries.GetProductOutcoming(ctx, repository.GetProductOutcomingParams{
+			ProductID: product.ID,
+			CreatedAt: pgtype.Timestamptz{
+				Time:  startAt,
+				Valid: true,
+			},
+			CreatedAt_2: pgtype.Timestamptz{
+				Time:  endAt,
+				Valid: true,
+			},
+		})
+		totalSold += int(productSaleSum.Sold.Int64)
+		totalSaleCount += int(productSaleSum.SaleCountSum.Int64)
+		totalSoldSum += int(productSaleSum.SoldSum.Float32)
+		productReports = append(productReports, productReport{
+			Order:     i + 1,
+			Incoming:  int(productIncoming),
+			Outcoming: int(productOutcoming),
+			Name:      product.Name,
+			SaleCount: int(productSaleSum.SaleCountSum.Int64),
+			Sold:      int(productSaleSum.Sold.Int64),
+			InStock:   int(product.InStock),
+			SoldSum:   productSaleSum.SoldSum.Float32,
+		})
+	}
+	f := excelize.NewFile()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
+	sheet1 := "Sheet1"
+	firstRow := &[]any{name, "", startAt.Format(time.DateOnly), "-", endAt.Format(time.DateOnly)}
+	err = f.SetSheetRow(sheet1, "A1", firstRow)
+	if err != nil {
+		return Report{}, err
+	}
+	reportHeaders := &[]any{"#", "Аты", "Келді", "Кетті", "Қалды", "Сатылды", "Сатылым Саны", "Сатылған сумма"}
+	err = f.SetSheetRow(sheet1, "A3", reportHeaders)
+	if err != nil {
+		return Report{}, err
+	}
+	currentRow := 4
+	for i, productReport := range productReports {
+		row := &[]any{productReport.Order, productReport.Name, productReport.Incoming, productReport.Outcoming, productReport.InStock, productReport.Sold, productReport.SaleCount, productReport.SoldSum}
+		err = f.SetSheetRow(sheet1, fmt.Sprintf("A%d", currentRow+i), row)
+		if err != nil {
+			return Report{}, err
+		}
+		currentRow += 1
+	}
+	err = f.SetCellInt(sheet1, fmt.Sprintf("F%d", currentRow), totalSoldSum)
+	if err != nil {
+		return Report{}, err
+	}
+	err = f.SetCellInt(sheet1, fmt.Sprintf("G%d", currentRow), totalSaleCount)
+	if err != nil {
+		return Report{}, err
+	}
+	err = f.SetCellInt(sheet1, fmt.Sprintf("H%d", currentRow), totalSoldSum)
+	if err != nil {
+		return Report{}, err
+	}
+	fPath := fmt.Sprintf("%s/%s-%s-%d.xlsx", reportsDir, startAt.Format(time.DateOnly), endAt.Format(time.DateOnly), time.Now().UnixNano())
+	err = f.SaveAs(fPath)
+	if err != nil {
+		return Report{}, err
+	}
 	report, err := s.queries.InsertReport(ctx, repository.InsertReportParams{
 		Name: name,
-		Path: "",
+		Path: fPath,
 		StartAt: pgtype.Timestamptz{
 			Time:  startAt,
 			Valid: true,

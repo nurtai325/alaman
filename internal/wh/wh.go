@@ -7,18 +7,24 @@ import (
 	"sync"
 
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 )
 
 var (
-	clients   map[string]*cliWh = make(map[string]*cliWh)
-	container *sqlstore.Container
+	clients       map[string]*cliWh = make(map[string]*cliWh)
+	defaultClient *whatsmeow.Client
+	container     *sqlstore.Container
 )
 
 type cliWh struct {
 	mu sync.Mutex
 	c  *whatsmeow.Client
+}
+
+func SetDefaultClient(client *whatsmeow.Client) {
+	defaultClient = client
 }
 
 func InitContainer(dbConn *sql.DB) error {
@@ -31,36 +37,42 @@ func InitContainer(dbConn *sql.DB) error {
 }
 
 func SendMessage(ctx context.Context, from, to, text string) error {
+	_, err := defaultClient.SendMessage(ctx, types.NewJID(to, types.DefaultUserServer), &waE2E.Message{
+		Conversation: &text,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 type whHandler func(*whatsmeow.Client) func(any)
 
-func Connect(jidStr string, eventHandler whHandler) error {
+func Connect(jidStr string, eventHandler whHandler) (*whatsmeow.Client, error) {
 	jid, err := types.ParseJID(jidStr)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	client, ok := clients[jid.User]
 	if ok {
 		client.c.AddEventHandler(eventHandler(client.c))
-		return nil
+		return client.c, nil
 	}
 	device, err := container.GetDevice(jid)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if device == nil {
-		return fmt.Errorf("jid %s: %w", jid, ErrDeviceNotFound)
+		return nil, fmt.Errorf("jid %s: %w", jid, ErrDeviceNotFound)
 	}
 	newClient := whatsmeow.NewClient(device, nil)
 	err = newClient.Connect()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	newClient.AddEventHandler(eventHandler(newClient))
 	clients[jid.User] = &cliWh{c: newClient}
-	return nil
+	return newClient, nil
 }
 
 func GetJid(phone string) string {

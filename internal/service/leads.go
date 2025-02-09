@@ -513,7 +513,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 Төлем уақыты: %s
 %s
 `, lead.UserName, lead.Name, lead.Phone, lead.Address, lead.SaleType, lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
-	err = wh.SendMessage(ctx, "", "", msg)
+	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg)
 	if err != nil {
 		return Lead{}, err
 	}

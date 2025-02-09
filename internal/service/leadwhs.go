@@ -135,7 +135,7 @@ func (s *Service) ConnectAllWh() error {
 		return err
 	}
 	for _, leadWh := range leadWhs {
-		err := wh.Connect(leadWh.Jid, wh.LeadEventsHandler)
+		_, err := wh.Connect(leadWh.Jid, wh.LeadEventsHandler)
 		if err != nil {
 			log.Println(err)
 		}
@@ -144,10 +144,13 @@ func (s *Service) ConnectAllWh() error {
 	if err != nil {
 		return err
 	}
-	for _, user := range users {
-		err := wh.Connect(user.Jid, wh.ChatEventsHandler(user.Id))
+	for i, user := range users {
+		client, err := wh.Connect(user.Jid, wh.ChatEventsHandler(user.Id))
 		if err != nil {
 			log.Println(err)
+		}
+		if i == 0 {
+			wh.SetDefaultClient(client)
 		}
 	}
 	return nil
