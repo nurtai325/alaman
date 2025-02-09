@@ -90,14 +90,9 @@ func (q *Queries) GetReport(ctx context.Context, id int32) (Report, error) {
 }
 
 const getReportByProduct = `-- name: GetReportByProduct :one
-SELECT 
-	COALESCE(SUM(sl.sale_count), 0) AS sale_count_sum, 
-	COALESCE(SUM(sl.quantity), 0) AS sold, 
-	COALESCE(SUM(sl.price), 0) AS sold_sum
+SELECT SUM(sl.sale_count) AS sale_count, SUM(sl.quantity) AS sold, SUM(sl.price) AS sold_sum
 FROM sale_items AS sl
-WHERE sl.product_id = $1 
-AND sl.created_at > $2 
-AND sl.created_at < $3
+WHERE sl.product_id = $1 AND sl.created_at > $2 AND sl.created_at < $3
 `
 
 type GetReportByProductParams struct {
@@ -107,15 +102,15 @@ type GetReportByProductParams struct {
 }
 
 type GetReportByProductRow struct {
-	SaleCountSum pgtype.Int8
-	Sold         pgtype.Int8
-	SoldSum      pgtype.Float4
+	SaleCount int64
+	Sold      int64
+	SoldSum   float32
 }
 
 func (q *Queries) GetReportByProduct(ctx context.Context, arg GetReportByProductParams) (GetReportByProductRow, error) {
 	row := q.db.QueryRow(ctx, getReportByProduct, arg.ProductID, arg.CreatedAt, arg.CreatedAt_2)
 	var i GetReportByProductRow
-	err := row.Scan(&i.SaleCountSum, &i.Sold, &i.SoldSum)
+	err := row.Scan(&i.SaleCount, &i.Sold, &i.SoldSum)
 	return i, err
 }
 
