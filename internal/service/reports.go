@@ -155,7 +155,7 @@ func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt 
 		return Report{}, err
 	}
 	currentRow := 4
-	for i, productReport := range productReports {
+	for _, productReport := range productReports {
 		row := &[]any{productReport.Order, productReport.Name, productReport.Incoming, productReport.Outcoming, productReport.InStock, productReport.Sold, productReport.SaleCount, productReport.SoldSum}
 		err = f.SetSheetRow(sheet1, fmt.Sprintf("A%d", currentRow), row)
 		if err != nil {
