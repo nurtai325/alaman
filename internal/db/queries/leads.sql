@@ -72,8 +72,8 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: InsertSaleItem :one
-INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id)
-VALUES($1, $2, $3, $4, $5)
+INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id, sale_count)
+VALUES($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: SellLead :one

@@ -308,6 +308,7 @@ func (app *app) parseCartItems(ctx context.Context, itemsStr string) ([]service.
 			ProductName: product.Name,
 			Quantity:    quantity,
 			ProductId:   productId,
+			SaleCount:   product.SaleCount,
 		})
 	}
 	return items, nil

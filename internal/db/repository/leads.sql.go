@@ -611,8 +611,8 @@ func (q *Queries) InsertSale(ctx context.Context, arg InsertSaleParams) (Sale, e
 }
 
 const insertSaleItem = `-- name: InsertSaleItem :one
-INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id)
-VALUES($1, $2, $3, $4, $5)
+INSERT INTO sale_items(price, product_name, sale_id, quantity, product_id, sale_count)
+VALUES($1, $2, $3, $4, $5, $6)
 RETURNING id, price, product_name, sale_count, quantity, sale_id, product_id, created_at
 `
 
@@ -622,6 +622,7 @@ type InsertSaleItemParams struct {
 	SaleID      int32
 	Quantity    int32
 	ProductID   int32
+	SaleCount   int32
 }
 
 func (q *Queries) InsertSaleItem(ctx context.Context, arg InsertSaleItemParams) (SaleItem, error) {
@@ -631,6 +632,7 @@ func (q *Queries) InsertSaleItem(ctx context.Context, arg InsertSaleItemParams) 
 		arg.SaleID,
 		arg.Quantity,
 		arg.ProductID,
+		arg.SaleCount,
 	)
 	var i SaleItem
 	err := row.Scan(

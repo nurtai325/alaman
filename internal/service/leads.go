@@ -375,6 +375,7 @@ type SaleItem struct {
 	ProductId   int
 	Price       float32
 	Quantity    int
+	SaleCount   int
 }
 
 type SellLeadParams struct {
@@ -450,6 +451,8 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 			Price:       item.Price,
 			Quantity:    int32(item.Quantity),
 			ProductName: item.ProductName,
+			ProductID:   int32(item.ProductId),
+			SaleCount:   int32(item.SaleCount),
 		})
 		if err != nil {
 			return Lead{}, errors.Join(ErrInternal, err)
