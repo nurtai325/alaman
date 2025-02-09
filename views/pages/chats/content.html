@@ -8,7 +8,7 @@
 		{{ range .Chats }}
 		{{ $chatDesc := print .LeadPhone .UserName .UserPhone }}
 		<div hx-get="/messages/{{ .Id }}" hx-swap="innerHTML" hx-target="#messages-box" chat-desc="{{ $chatDesc }}"
-			class="chat max-w-md w-full ml-2 mr-4 py-4 px-4 bg-white shadow-md rounded-lg border cursor-pointer">
+			class="chat max-w-md w-full mt-1 ml-2 mr-4 py-4 px-4 bg-white shadow-md rounded-lg border cursor-pointer">
 			<div class="flex items-center justify-between">
 				<p class="text-lg font-semibold text-gray-900">{{ .LeadPhone }}</p>
 				<p class="text-sm text-gray-500">{{ .UpdatedAtF }}</p>
