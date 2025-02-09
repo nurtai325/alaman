@@ -493,7 +493,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 			Quantity:    int(item.Quantity),
 			ProductId:   int(item.ProductID),
 		})
-		itemsStr += fmt.Sprintf("%d %s", item.Quantity, item.ProductName)
+		itemsStr += fmt.Sprintf("%d %s\n", item.Quantity, item.ProductName)
 	}
 	lead := Lead{
 		Id:                 int(fullLead.ID),
