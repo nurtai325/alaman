@@ -157,13 +157,13 @@ func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt 
 	currentRow := 4
 	for i, productReport := range productReports {
 		row := &[]any{productReport.Order, productReport.Name, productReport.Incoming, productReport.Outcoming, productReport.InStock, productReport.Sold, productReport.SaleCount, productReport.SoldSum}
-		err = f.SetSheetRow(sheet1, fmt.Sprintf("A%d", currentRow+i), row)
+		err = f.SetSheetRow(sheet1, fmt.Sprintf("A%d", currentRow), row)
 		if err != nil {
 			return Report{}, err
 		}
 		currentRow += 1
 	}
-	err = f.SetCellInt(sheet1, fmt.Sprintf("F%d", currentRow), totalSoldSum)
+	err = f.SetCellInt(sheet1, fmt.Sprintf("F%d", currentRow), totalSold)
 	if err != nil {
 		return Report{}, err
 	}
