@@ -121,18 +121,18 @@ func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt 
 				Valid: true,
 			},
 		})
-		totalSold += int(productSaleSum.Sold.Int64)
-		totalSaleCount += int(productSaleSum.SaleCountSum.Int64)
-		totalSoldSum += int(productSaleSum.SoldSum.Float32)
+		totalSold += int(productSaleSum.Sold)
+		totalSaleCount += int(productSaleSum.SaleCount)
+		totalSoldSum += int(productSaleSum.SoldSum)
 		productReports = append(productReports, productReport{
 			Order:     i + 1,
 			Incoming:  int(productIncoming),
 			Outcoming: int(productOutcoming),
 			Name:      product.Name,
-			SaleCount: int(productSaleSum.SaleCountSum.Int64),
-			Sold:      int(productSaleSum.Sold.Int64),
+			SaleCount: int(productSaleSum.SaleCount),
+			Sold:      int(productSaleSum.Sold),
 			InStock:   int(product.InStock),
-			SoldSum:   productSaleSum.SoldSum.Float32,
+			SoldSum:   productSaleSum.SoldSum,
 		})
 	}
 	f := excelize.NewFile()
