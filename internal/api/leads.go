@@ -304,11 +304,11 @@ func (app *app) parseCartItems(ctx context.Context, itemsStr string) ([]service.
 		}
 		items = append(items, service.SaleItem{
 			Id:          productId,
-			Price:       float32(product.Price),
+			Price:       float32(product.Price)*float32(quantity),
 			ProductName: product.Name,
 			Quantity:    quantity,
 			ProductId:   productId,
-			SaleCount:   product.SaleCount,
+			SaleCount:   product.SaleCount*quantity,
 		})
 	}
 	return items, nil

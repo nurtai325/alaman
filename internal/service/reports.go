@@ -85,6 +85,8 @@ func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt 
 	totalSaleCount := 0
 	totalSoldSum := 0
 	for i, product := range products {
+		startAt = startAt.Add(time.Hour * 5)
+		endAt = endAt.Add(time.Hour * 24)
 		productSaleSum, err := s.queries.GetReportByProduct(ctx, repository.GetReportByProductParams{
 			ProductID: product.ID,
 			CreatedAt: pgtype.Timestamptz{
@@ -121,18 +123,18 @@ func (s *Service) InsertReport(ctx context.Context, name string, startAt, endAt 
 				Valid: true,
 			},
 		})
-		totalSold += int(productSaleSum.Sold)
-		totalSaleCount += int(productSaleSum.SaleCount)
-		totalSoldSum += int(productSaleSum.SoldSum)
+		totalSold += int(productSaleSum.Sold.Int64)
+		totalSaleCount += int(productSaleSum.SaleCountSum.Int64)
+		totalSoldSum += int(productSaleSum.SoldSum.Float32)
 		productReports = append(productReports, productReport{
 			Order:     i + 1,
 			Incoming:  int(productIncoming),
 			Outcoming: int(productOutcoming),
 			Name:      product.Name,
-			SaleCount: int(productSaleSum.SaleCount),
-			Sold:      int(productSaleSum.Sold),
+			SaleCount: int(productSaleSum.SaleCountSum.Int64),
+			Sold:      int(productSaleSum.Sold.Int64),
 			InStock:   int(product.InStock),
-			SoldSum:   productSaleSum.SoldSum,
+			SoldSum:   productSaleSum.SoldSum.Float32,
 		})
 	}
 	f := excelize.NewFile()
