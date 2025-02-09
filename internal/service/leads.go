@@ -475,6 +475,10 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
 	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
 	fullLead, err := s.queries.GetFullLead(ctx, soldLead.ID)
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)
@@ -519,10 +523,6 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg)
 	if err != nil {
 		return Lead{}, err
-	}
-	err = tx.Commit(ctx)
-	if err != nil {
-		return Lead{}, errors.Join(ErrInternal, err)
 	}
 	return lead, nil
 }
