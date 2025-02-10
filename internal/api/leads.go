@@ -23,13 +23,14 @@ const (
 )
 
 type leadsContent struct {
-	New        []service.Lead
-	Assigned   []service.Lead
-	InDelivery []service.Lead
-	Completed  []service.Lead
-	Users      []service.User
-	Products   []service.Product
-	Role       string
+	New           []service.Lead
+	Assigned      []service.Lead
+	InDelivery    []service.Lead
+	Completed     []service.Lead
+	Users         []service.User
+	Products      []service.Product
+	Role          string
+	NewLeadsCount int
 }
 
 func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
@@ -109,13 +110,14 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		},
 		User: app.service.GetAuthUser(r),
 		Data: leadsContent{
-			New:        newLeads,
-			Assigned:   assignedLeads,
-			InDelivery: inDeliveryLeads,
-			Completed:  completedLeads,
-			Users:      users,
-			Products:   products,
-			Role:       string(user.Role),
+			New:           newLeads,
+			Assigned:      assignedLeads,
+			InDelivery:    inDeliveryLeads,
+			Completed:     completedLeads,
+			Users:         users,
+			Products:      products,
+			Role:          string(user.Role),
+			NewLeadsCount: len(newLeads),
 		},
 	})
 }

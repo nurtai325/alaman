@@ -33,6 +33,8 @@
 		const toRemove = document.getElementById("lead-cell-{{ .Id }}")
 		toRemove.remove();
 	});
+	newLeadsCount += 1
+	document.getElementById("new-leads-header").innerText = `Жаңа (${newLeadsCount})`;
 </script>
 {{ end }}
 

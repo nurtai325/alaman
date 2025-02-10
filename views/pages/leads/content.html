@@ -5,8 +5,8 @@
 		{{if or (eq .Role "админ") (eq .Role "роп")}}
 		<h4 class="items-center text-lg flex w-full text-center font-semibold text-blue-400" id="new-header">
 			<span class="w-36"></span>
-			<div class="items-center text-lg flex text-center font-semibold text-blue-400">
-				Жаңа
+			<div id="new-leads-header" class="items-center text-lg flex text-center font-semibold text-blue-400">
+				Жаңа ({{ .NewLeadsCount }})
 			</div>
 			<button hx-get="/leads/new" hx-swap="afterbegin" hx-target="#new"
 				class="ml-2 rounded-lg p-1 bg-blue-400 text-white text-sm">қосу</button>
@@ -41,7 +41,7 @@
 						<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
 							<option class="hidden" disabled selected value></option>
 							{{ range $users }}
-							<option class="text-center" value="{{ .Id }}">
+							<option class="text-center text-sm" value="{{ .Id }}">
 								{{ .Name }}
 							</option>
 							{{ end }}
@@ -115,4 +115,7 @@
 	</section>
 	<span id="lead-cell-errors"></span>
 </div>
+<script>
+	let newLeadsCount = {{ .NewLeadsCount}}
+</script>
 {{ end }}
