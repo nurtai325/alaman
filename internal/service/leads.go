@@ -369,7 +369,7 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 	if err != nil {
 		return Lead{}, err
 	}
-	err = wh.SendMessage(ctx, "", user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone))
+	err = wh.SendMessage(ctx, "", user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone), false)
 	if err != nil {
 		return Lead{}, err
 	}
@@ -545,7 +545,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 %s
 %s
 `, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), getDeliveryTypeName(lead.DeliveryType), lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr, lastLine)
-	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg)
+	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg, true)
 	if err != nil {
 		return Lead{}, err
 	}
