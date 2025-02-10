@@ -62,7 +62,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		assignedLeads = leads
 	}
-	if user.Role == auth.AdminRole || user.Role == auth.LogistRole {
+	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
 		leads, err := app.service.GetInDeliveryLeads(r.Context())
 		if err != nil {
 			app.error(w, err)
@@ -77,7 +77,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		inDeliveryLeads = leads
 	}
-	if user.Role == auth.AdminRole || user.Role == auth.LogistRole {
+	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
 		leads, err := app.service.GetCompletedLeads(r.Context())
 		if err != nil {
 			app.error(w, err)
