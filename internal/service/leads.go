@@ -527,6 +527,14 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		DeliveryType:       deliveryType(fullLead.DeliveryType.String),
 		DeliveryTypeName:   getDeliveryTypeName(deliveryType(fullLead.DeliveryType.String)),
 	}
+	lastLine := fmt.Sprintf("%s: %d", getSaleTypeName(lead.SaleType), int(arg.ItemsSum))
+	if lead.DeliveryType != noDelivery {
+		lastLine += fmt.Sprintf(" + %d", int(arg.DeliveryCost))
+	}
+	if lead.SaleType == kaspiLoan {
+		lastLine += fmt.Sprintf(" + %d", int(arg.LoanCost))
+	}
+	lastLine += fmt.Sprintf(" = %d", int(arg.FullSum))
 	msg := fmt.Sprintf(`Кеңесші маман: %s
 Аты: %s
 Номер: %s
@@ -535,7 +543,8 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 Жеткізу түрі: %s
 Төлем уақыты: %s
 %s
-`, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
+%s
+`, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), getDeliveryTypeName(lead.DeliveryType), lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr, lastLine)
 	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg)
 	if err != nil {
 		return Lead{}, err
