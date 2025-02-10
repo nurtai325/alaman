@@ -56,6 +56,22 @@ const (
 	taxi       deliveryType = "taxi"
 )
 
+func getSaleTypeName(val saleType) string {
+	switch val {
+	case kaspiLoan:
+		return "бөліп төлеу"
+	case cash:
+		return "қолма-қол"
+	case kaspiRed:
+		return "kaspi red"
+	case kaspiTransfer:
+		return "kaspi аударым"
+	case kaspiQr:
+		return "kaspi qr"
+	}
+	return ""
+}
+
 func getSLead(lead repository.Lead) Lead {
 	return Lead{
 		Id:        int(lead.ID),
@@ -519,7 +535,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 Жеткізу түрі: %s
 Төлем уақыты: %s
 %s
-`, lead.UserName, lead.Name, lead.Phone, lead.Address, lead.SaleType, lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
+`, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), lead.DeliveryType, lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr)
 	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg)
 	if err != nil {
 		return Lead{}, err
