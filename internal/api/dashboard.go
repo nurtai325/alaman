@@ -41,8 +41,11 @@ func (app *app) handleEmpty(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPage(r *http.Request) []string {
-	if auth.GetUser(r).Role == auth.AdminRole {
+	user := auth.GetUser(r)
+	if user.Role == auth.AdminRole {
 		return adminPages
+	} else if user.Role == auth.RopRole {
+		return ropPages
 	} else {
 		return normPages
 	}

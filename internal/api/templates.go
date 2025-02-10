@@ -68,6 +68,7 @@ type barsData struct {
 
 var (
 	adminPages = []string{"dashboard", "leads", "chats", "products", "reports", "leadwhs", "users"}
+	ropPages   = []string{"dashboard", "leads", "chats"}
 	normPages  = []string{"leads"}
 )
 
