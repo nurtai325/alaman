@@ -124,7 +124,8 @@ function parseCartItems() {
 const taskElements = document.querySelectorAll('.task');
 taskElements.forEach((taskElement) => {
 	document.addEventListener(taskElement.id, () => {
-		taskElement.remove();
+		const toRemove = document.getElementById(taskElement.id)
+		toRemove.remove();
 	});
 });
 let newLeadsSearch = document.getElementById("new-leads-search")

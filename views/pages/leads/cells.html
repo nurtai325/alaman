@@ -28,6 +28,12 @@
 			class="p-1 bg-green-600 text-white text-sm">сақтау</button>
 	</div>
 </div>
+<script>
+	document.addEventListener("lead-cell-{{ .Id }}", () => {
+		const toRemove = document.getElementById("lead-cell-{{ .Id }}")
+		toRemove.remove();
+	});
+</script>
 {{ end }}
 
 {{ block "lead-cell-assigned" . }}

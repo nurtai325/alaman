@@ -61,7 +61,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		assignedLeads = leads
 	}
-	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+	if user.Role == auth.AdminRole {
 		leads, err := app.service.GetInDeliveryLeads(r.Context())
 		if err != nil {
 			app.error(w, err)
@@ -76,7 +76,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		inDeliveryLeads = leads
 	}
-	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
+	if user.Role == auth.AdminRole {
 		leads, err := app.service.GetCompletedLeads(r.Context())
 		if err != nil {
 			app.error(w, err)
@@ -304,11 +304,11 @@ func (app *app) parseCartItems(ctx context.Context, itemsStr string) ([]service.
 		}
 		items = append(items, service.SaleItem{
 			Id:          productId,
-			Price:       float32(product.Price)*float32(quantity),
+			Price:       float32(product.Price) * float32(quantity),
 			ProductName: product.Name,
 			Quantity:    quantity,
 			ProductId:   productId,
-			SaleCount:   product.SaleCount*quantity,
+			SaleCount:   product.SaleCount * quantity,
 		})
 	}
 	return items, nil
