@@ -125,18 +125,19 @@ func (q *Queries) GetLeadWhsCount(ctx context.Context) (int64, error) {
 }
 
 const insertLeadWh = `-- name: InsertLeadWh :one
-INSERT INTO lead_whs(name, phone)
-VALUES($1, $2)
+INSERT INTO lead_whs(name, phone, jid)
+VALUES($1, $2, $3)
 RETURNING id, name, phone, jid, created_at
 `
 
 type InsertLeadWhParams struct {
 	Name  string
 	Phone string
+	Jid   pgtype.Text
 }
 
 func (q *Queries) InsertLeadWh(ctx context.Context, arg InsertLeadWhParams) (LeadWh, error) {
-	row := q.db.QueryRow(ctx, insertLeadWh, arg.Name, arg.Phone)
+	row := q.db.QueryRow(ctx, insertLeadWh, arg.Name, arg.Phone, arg.Jid)
 	var i LeadWh
 	err := row.Scan(
 		&i.ID,

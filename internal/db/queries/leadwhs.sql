@@ -14,8 +14,8 @@ SELECT COUNT(*)
 FROM lead_whs;
 
 -- name: InsertLeadWh :one
-INSERT INTO lead_whs(name, phone)
-VALUES($1, $2)
+INSERT INTO lead_whs(name, phone, jid)
+VALUES($1, $2, $3)
 RETURNING *;
 
 -- name: UpdateLeadWh :one

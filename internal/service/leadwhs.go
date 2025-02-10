@@ -61,13 +61,17 @@ func (s *Service) GetLeadWh(ctx context.Context, id int) (LeadWh, error) {
 	return getSLeadWh(p), nil
 }
 
-func (s *Service) InsertLeadWh(ctx context.Context, name, phone string) (LeadWh, error) {
+func (s *Service) InsertLeadWh(ctx context.Context, name, phone, jid string) (LeadWh, error) {
 	if !validPhone(phone) {
 		return LeadWh{}, ErrInvalidPhone
 	}
 	p, err := s.queries.InsertLeadWh(ctx, repository.InsertLeadWhParams{
 		Name:  name,
 		Phone: phone,
+		Jid: pgtype.Text{
+			String: jid,
+			Valid:  true,
+		},
 	})
 	if err != nil {
 		return LeadWh{}, errors.Join(ErrInternal, err)

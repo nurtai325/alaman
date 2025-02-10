@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/nurtai325/alaman/internal/service"
-	"github.com/nurtai325/alaman/internal/wh"
 )
 
 const (
@@ -44,7 +43,7 @@ func (app *app) handleLeadWhsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	phone := r.FormValue("phone")
-	imagePath, err := app.service.GetLeadWhQr(phone)
+	imagePath, jid, err := app.service.GetLeadWhQr(phone)
 	if err != nil {
 		if !errors.Is(err, service.ErrAlreadyPaired) {
 			app.error(w, err)
@@ -57,18 +56,13 @@ func (app *app) handleLeadWhsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := r.FormValue("name")
-	leadWh, err := app.service.InsertLeadWh(r.Context(), name, phone)
+	leadWh, err := app.service.InsertLeadWh(r.Context(), name, phone, jid)
 	if err != nil {
 		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)
 			return
 		}
 		app.errorHx(w, tText, leadWhModalErrs, err.Error())
-		return
-	}
-	_, err = app.service.ConnectLeadWh(r.Context(), leadWh.Id, wh.GetJid(phone[1:]))
-	if err != nil {
-		app.error(w, err)
 		return
 	}
 	w.Header().Add("HX-Trigger", closeModalEvent)
