@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/db/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -109,7 +110,7 @@ func (s *Service) UpdateUser(ctx context.Context, id int, name, phone string, ro
 	return getSUser(user), nil
 }
 
-func (s *Service) InsertUser(ctx context.Context, name, phone, password, checkPassword string, role auth.Role) (User, error) {
+func (s *Service) InsertUser(ctx context.Context, name, phone, password, checkPassword, jid string, role auth.Role) (User, error) {
 	if !validPhone(phone) {
 		return User{}, ErrInvalidPhone
 	} else if err := validUserName(name); err != nil {
@@ -135,6 +136,10 @@ func (s *Service) InsertUser(ctx context.Context, name, phone, password, checkPa
 		Phone:    phone,
 		Password: string(hashedPassword),
 		Role:     string(role),
+		Jid: pgtype.Text{
+			String: jid,
+			Valid:  true,
+		},
 	})
 	if err != nil {
 		return User{}, errors.Join(err, ErrInternal)

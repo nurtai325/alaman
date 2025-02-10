@@ -12,25 +12,25 @@ import (
 )
 
 var (
-	ErrAlreadyPaired = errors.New("user is already paired")
+	ErrAlreadyPaired  = errors.New("user is already paired")
 	ErrDeviceNotFound = errors.New("wh with this phone is not present in store")
 )
 
-func StartPairing(phone string, eventHandler whHandler) (string, error) {
-	_, found := clients[phone]
+func StartPairing(phone string, eventHandler whHandler) (string, string, error) {
+	client, found := clients[phone]
 	if found {
-		return "", ErrAlreadyPaired
+		return "", client.c.Store.ID.String(), ErrAlreadyPaired
 	}
 	device := container.NewDevice()
 	newClient := whatsmeow.NewClient(device, nil)
 	newClient.AddEventHandler(eventHandler(newClient))
 	qrCh, err := newClient.GetQRChannel(context.Background())
 	if err != nil {
-		return "", fmt.Errorf("error getting qr channel: %w", err)
+		return "", "", fmt.Errorf("error getting qr channel: %w", err)
 	}
 	err = newClient.Connect()
 	if err != nil {
-		return "", fmt.Errorf("error connecting to whatsapp websocket: %w", err)
+		return "", "", fmt.Errorf("error connecting to whatsapp websocket: %w", err)
 	}
 	for evt := range qrCh {
 		if evt.Event != "code" {
@@ -41,11 +41,11 @@ func StartPairing(phone string, eventHandler whHandler) (string, error) {
 		imagePath = fmt.Sprintf("/assets/qr/%d.qr.png", time.Now().UnixNano())
 		err = qrcode.WriteFile(evt.Code, qrcode.Medium, 512, "."+imagePath)
 		if err != nil {
-			return "", fmt.Errorf("error generating qr code image: %w", err)
+			return "", "", fmt.Errorf("error generating qr code image: %w", err)
 		}
-		return imagePath, nil
+		return imagePath, "", nil
 	}
-	return "", fmt.Errorf("unsuccesfull pairing")
+	return "", "", fmt.Errorf("unsuccesfull pairing")
 }
 
 func waitPairing(qrCh <-chan whatsmeow.QRChannelItem, client *whatsmeow.Client, phone string) {

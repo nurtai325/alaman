@@ -175,8 +175,8 @@ func (q *Queries) GetUsersCount(ctx context.Context) (int64, error) {
 }
 
 const insertUser = `-- name: InsertUser :one
-INSERT INTO users(name, phone, password, role)
-VALUES($1, $2, $3, $4)
+INSERT INTO users(name, phone, password, role, jid)
+VALUES($1, $2, $3, $4, $5)
 RETURNING id, name, phone, password, role, jid, created_at
 `
 
@@ -185,6 +185,7 @@ type InsertUserParams struct {
 	Phone    string
 	Password string
 	Role     string
+	Jid      pgtype.Text
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
@@ -193,6 +194,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 		arg.Phone,
 		arg.Password,
 		arg.Role,
+		arg.Jid,
 	)
 	var i User
 	err := row.Scan(

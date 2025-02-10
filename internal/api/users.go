@@ -39,7 +39,7 @@ func (app *app) handleUsersPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	phone := r.FormValue("phone")
-	imagePath, err := app.service.GetLeadWhQr(phone)
+	imagePath, jid, err := app.service.GetLeadWhQr(phone)
 	if err != nil {
 		if !errors.Is(err, service.ErrAlreadyPaired) {
 			app.error(w, err)
@@ -59,7 +59,7 @@ func (app *app) handleUsersPost(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
-	user, err := app.service.InsertUser(r.Context(), name, phone, password, passwordCheck, role)
+	user, err := app.service.InsertUser(r.Context(), name, phone, password, passwordCheck, jid, role)
 	if err != nil {
 		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)

@@ -118,15 +118,15 @@ func (s *Service) ConnectLeadWh(ctx context.Context, id int, jid string) (LeadWh
 	return getSLeadWh(p), nil
 }
 
-func (s *Service) GetLeadWhQr(phone string) (string, error) {
+func (s *Service) GetLeadWhQr(phone string) (string, string, error) {
 	if !validPhone(phone) {
-		return "", ErrInvalidPhone
+		return "", "", ErrInvalidPhone
 	}
-	imagePath, err := wh.StartPairing(phone[1:], wh.LeadEventsHandler)
+	imagePath, jid, err := wh.StartPairing(phone[1:], wh.LeadEventsHandler)
 	if err != nil && errors.Is(err, wh.ErrAlreadyPaired) {
-		return "", ErrAlreadyPaired
+		return "", jid, ErrAlreadyPaired
 	}
-	return imagePath, err
+	return imagePath, "", err
 }
 
 func (s *Service) ConnectAllWh() error {
@@ -149,7 +149,7 @@ func (s *Service) ConnectAllWh() error {
 		if err != nil {
 			log.Println(err)
 		}
-		if i == 0 {
+		if i == len(users)-1 {
 			wh.SetDefaultClient(client)
 		}
 	}

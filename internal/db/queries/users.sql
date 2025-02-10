@@ -24,8 +24,8 @@ SELECT COUNT(*)
 FROM users;
 
 -- name: InsertUser :one
-INSERT INTO users(name, phone, password, role)
-VALUES($1, $2, $3, $4)
+INSERT INTO users(name, phone, password, role, jid)
+VALUES($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateUser :one
