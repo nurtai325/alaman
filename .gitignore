@@ -14,3 +14,5 @@ assets/qr
 ./server
 *.pem
 tailwind.config.js
+server
+!cmd/server
