@@ -40,5 +40,6 @@ jobs:
           git pull origin main
           make
           pkill -f "sudo ./server" || true
-          sudo ./server &
+          nohup sudo ./server > /dev/null 2>&1 &
+          exit
           EOF
