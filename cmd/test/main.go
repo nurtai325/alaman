@@ -36,6 +36,18 @@ where leads.sale_id is null;`)
 			if err != nil {
 				panic(err)
 			}
+			q := repository.New(pool)
+			_, err = q.AddStockProduct(context.Background(), repository.AddStockProductParams{
+				ID:      int32(productId),
+				InStock: int32(quantity),
+			})
+			if err != nil {
+				panic(err)
+			}
+			_, err = pool.Exec(context.Background(), `delete from sales where id = $1;`, saleId)
+			if err != nil {
+				panic(err)
+			}
 			fmt.Println(saleId, quantity, productId)
 		}
 		return
