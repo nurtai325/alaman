@@ -34,11 +34,11 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > main.pem
           chmod 600 main.pem
       - name: Deploy to server
-        run:
+        run: |
           ssh -i "main.pem" -o StrictHostKeyChecking=no ${{ secrets.ALAMAN_HOST }} << 'EOF'
-            cd alaman
-            git pull origin main
-            make
-            pkill -f "sudo ./server"
-            sudo ./server
+          cd alaman
+          git pull origin main
+          make
+          pkill -f "sudo ./server" || true
+          sudo ./server &
           EOF
