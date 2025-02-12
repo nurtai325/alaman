@@ -415,6 +415,13 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 	if !validDeliveryType(arg.DeliveryType) {
 		return Lead{}, fmt.Errorf("%w: %s", ErrInvalidDeliveryType, arg.Type)
 	}
+	selectedLead, err := s.queries.GetLead(ctx, int32(arg.Id))
+	if err != nil {
+		return Lead{}, errors.Join(ErrInternal, err)
+	}
+	if selectedLead.SaleID.Valid {
+		return Lead{}, errors.Join(ErrInternal, ErrAlreadySold)
+	}
 	conf, err := config.New()
 	if err != nil {
 		return Lead{}, errors.Join(ErrInternal, err)

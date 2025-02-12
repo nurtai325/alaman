@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
@@ -13,9 +12,37 @@ import (
 )
 
 func main() {
+	if true {
+		conf, err := config.New()
+		if err != nil {
+			panic(err)
+		}
+		pool, err := db.New(conf)
+		if err != nil {
+			panic(err)
+		}
+		rows, err := pool.Query(context.Background(), `select sales.id, sale_items.quantity, sale_items.product_id from sales
+left join leads on sales.id = leads.sale_id
+inner join sale_items on sales.id = sale_items.sale_id
+where leads.sale_id is null;`)
+		if err != nil {
+			panic(err)
+		}
+		for rows.Next() {
+			var saleId int
+			var quantity int
+			var productId int
+			err := rows.Scan(&saleId, &quantity, &productId)
+			if err != nil {
+				panic(err)
+			}
+		}
+		return
+	}
 	if 0 == 0 {
 		password, _ := bcrypt.GenerateFromPassword([]byte("adminadmin"), bcrypt.DefaultCost)
 		fmt.Println(string(password))
+		return
 	}
 	conf, err := config.New()
 	if err != nil {
