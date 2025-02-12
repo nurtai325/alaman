@@ -47,7 +47,9 @@ func LeadEventsHandler(*whatsmeow.Client) func(any) {
 		if e.Info.IsFromMe || e.Info.IsGroup {
 			return
 		}
-		leadCh <- e.Info.Sender.User
+		if e.Message.Conversation != nil && *e.Message.Conversation == "Аламан туралы білгім келеді" {
+			leadCh <- e.Info.Sender.User
+		}
 	}
 }
 

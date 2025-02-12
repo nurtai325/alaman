@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
