@@ -36,6 +36,7 @@ where leads.sale_id is null;`)
 			if err != nil {
 				panic(err)
 			}
+			fmt.Println(saleId, quantity, productId)
 		}
 		return
 	}
