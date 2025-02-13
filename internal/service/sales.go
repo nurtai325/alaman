@@ -188,19 +188,19 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 			if sale.PaymentAt.Time.Weekday() == time.Sunday {
 				day = 6
 			}
-			chartsData.Week[day].Amount += int(sale.FullSum)
-			chartsData.WeekSum += int(sale.FullSum)
+			chartsData.Week[day].Amount += int(sale.ItemsSum)
+			chartsData.WeekSum += int(sale.ItemsSum)
 		}
 		if !sale.PaymentAt.Time.After(monthStart) {
 			continue
 		}
-		chartsData.Month[sale.PaymentAt.Time.Day()-1].Amount += int(sale.FullSum)
-		chartsData.MonthSum += int(sale.FullSum)
+		chartsData.Month[sale.PaymentAt.Time.Day()-1].Amount += int(sale.ItemsSum)
+		chartsData.MonthSum += int(sale.ItemsSum)
 		userFound := false
 		for i, manager := range chartsData.Manager {
 			if int32(manager.Id) == sale.UserID {
 				userFound = true
-				chartsData.Manager[i].Amount += int(sale.FullSum)
+				chartsData.Manager[i].Amount += int(sale.ItemsSum)
 				break
 			}
 		}
@@ -208,7 +208,7 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 			chartsData.Manager = append(chartsData.Manager, barData{
 				Id:     int(sale.UserID),
 				Label:  sale.UserName,
-				Amount: int(sale.FullSum),
+				Amount: int(sale.ItemsSum),
 			})
 		}
 	}
