@@ -65,8 +65,14 @@ func ChatEventsHandler(userId int) whHandler {
 			}
 			msgType := ""
 			mediaPath := ""
+			text := ""
 			if msg.Info.Type == "text" {
 				msgType = "text"
+				if msg.Message.Conversation == nil {
+					log.Println("message conversation is nil")
+					return
+				}
+				text = *msg.Message.Conversation
 			} else if msg.Info.Type == "media" {
 				mediaType, err := getMsgMediaType(msg.Info.MediaType)
 				if err != nil {
@@ -87,10 +93,6 @@ func ChatEventsHandler(userId int) whHandler {
 			audioLength := 0
 			if msg.Message.AudioMessage != nil {
 				audioLength = int(*msg.Message.AudioMessage.Seconds)
-			}
-			text := ""
-			if msg.Message.Conversation != nil {
-				text = *msg.Message.Conversation
 			}
 			newMsg := Message{
 				UserId:      userId,
