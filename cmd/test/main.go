@@ -35,6 +35,10 @@ ORDER BY created_at DESC;`)
 				panic(err)
 			}
 			fmt.Println(id, phone)
+			_, err = pool.Exec(context.Background(), "delete from chats where lead_id = $1;", id)
+			if err != nil {
+				panic(err)
+			}
 			_, err = pool.Exec(context.Background(), "delete from leads where id = $1;", id)
 			if err != nil {
 				panic(err)
