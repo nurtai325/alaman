@@ -22,7 +22,7 @@ func main() {
 			panic(err)
 		}
 		rows, err := pool.Query(context.Background(), `SELECT id, phone FROM leads
-WHERE user_id IS NULL and phone not in('+77715696404')
+WHERE user_id IS NULL
 ORDER BY created_at DESC;`)
 		if err != nil {
 			panic(err)
