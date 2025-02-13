@@ -136,7 +136,7 @@ func (q *Queries) GetSoldLeadCount(ctx context.Context, createdAt pgtype.Timesta
 }
 
 const getSum = `-- name: GetSum :one
-SELECT SUM(full_sum) FROM sales AS s
+SELECT SUM(items_sum) FROM sales AS s
 INNER JOIN leads l ON l.sale_id = s.id
 WHERE s.payment_at >= $1
 `
