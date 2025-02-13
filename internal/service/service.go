@@ -13,6 +13,7 @@ var (
 	ErrInvalidArgs   = errors.New("invalid args")
 	ErrInvalidOffset = errors.New("offset is less than 0")
 	ErrInvalidLimit  = errors.New("limit is less than or equal to 0")
+	ErrAlreadySold   = errors.New("lead is already sold")
 )
 
 const (

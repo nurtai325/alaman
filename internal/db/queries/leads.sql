@@ -9,6 +9,11 @@ WHERE phone = $1
 ORDER BY created_at DESC
 LIMIT 1;
 
+-- name: GetLead :one
+SELECT * FROM leads 
+WHERE id = $1 
+LIMIT 1;
+
 -- name: GetAssignedLeads :many
 SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id

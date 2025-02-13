@@ -452,6 +452,29 @@ func (q *Queries) GetInDeliveryLeadsByUser(ctx context.Context, userID pgtype.In
 	return items, nil
 }
 
+const getLead = `-- name: GetLead :one
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
+WHERE id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetLead(ctx context.Context, id int32) (Lead, error) {
+	row := q.db.QueryRow(ctx, getLead, id)
+	var i Lead
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Address,
+		&i.Phone,
+		&i.Completed,
+		&i.UserID,
+		&i.SaleID,
+		&i.CreatedAt,
+		&i.SoldAt,
+	)
+	return i, err
+}
+
 const getLeadByPhone = `-- name: GetLeadByPhone :one
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
 WHERE phone = $1 

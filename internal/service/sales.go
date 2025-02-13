@@ -226,7 +226,7 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 	}
 	salesCount := 0
 	for _, saleItem := range salesItems {
-		salesCount += int(saleItem.SaleCount) * int(saleItem.Quantity)
+		salesCount += int(saleItem.SaleCount)
 		productFound := false
 		for i, product := range chartsData.Product {
 			if int32(product.Id) == saleItem.ProductID {
