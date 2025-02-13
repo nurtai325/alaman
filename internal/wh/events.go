@@ -51,11 +51,15 @@ func LeadEventsHandler(*whatsmeow.Client) func(any) {
 		if e.Info.Type != "text" {
 			return
 		}
-		if e.Message.Conversation == nil {
-			log.Printf("message conversation is nil %+v", e)
-			return
+		text := e.Message.GetConversation()
+		if text == "" {
+			text = e.Message.GetExtendedTextMessage().GetText()
+			if text == "" {
+				log.Printf("message conversation is nil %+v", e)
+				return
+			}
 		}
-		if strings.Contains(*e.Message.Conversation, "Аламан туралы білгім келеді") {
+		if strings.Contains(text, "Аламан туралы білгім келеді") {
 			leadCh <- e.Info.Sender.User
 		}
 	}
