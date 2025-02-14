@@ -111,16 +111,17 @@ func (s *Service) GetNewLeadsCount(ctx context.Context, weekStart time.Time) (in
 }
 
 type ChartsData struct {
-	Week       []barData
-	Month      []barData
-	Manager    []barData
-	Product    []barData
-	WeekSum    int
-	MonthSum   int
-	Scr        float32
-	AverageSum int
-	NewLeads   int
-	SalesCount int
+	Week          []barData
+	Month         []barData
+	Manager       []barData
+	Product       []barData
+	WeekSum       int
+	MonthSum      int
+	Scr           float32
+	AverageSum    int
+	NewLeads      int
+	NewLeadsToday int
+	SalesCount    int
 }
 
 type barData struct {
@@ -170,6 +171,11 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 		return nil, err
 	}
 	chartsData.NewLeads = newLeadsCount
+	newLeadsToday, err := s.GetNewLeadsCount(ctx, now.Add(-time.Duration(now.Hour())*time.Hour))
+	if err != nil {
+		return nil, err
+	}
+	chartsData.NewLeadsToday = newLeadsToday
 	sales, err := s.queries.GetSales(ctx, pgtype.Timestamptz{
 		Time:  start,
 		Valid: true,

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				currentValue += Math.ceil(targetValue / 100); // Increment in small steps
 				if (currentValue > targetValue) currentValue = targetValue;
 				let measure = el.classList.contains('scr') ? '%' : 'тг.'
-				if (el.classList.contains('new-lead') || el.classList.contains('sale-count')) {
+				if (el.classList.contains('new-lead') || el.classList.contains('sale-count') || el.classList.contains('new-lead-today')) {
 					measure = ''
 				}
 				el.textContent = `${currentValue} ${measure}`;
