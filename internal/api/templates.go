@@ -53,7 +53,9 @@ const (
 	openModalEvent  = "openModal"
 	closeModalEvent = "closeModal"
 
-	jsonContentType = "application/json"
+	jsonContentType   = "application/json"
+	contentTypeHeader = "Content-Type"
+	acceptHeader      = "Accept"
 )
 
 type layoutData struct {

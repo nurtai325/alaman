@@ -175,12 +175,13 @@ func (app *app) handleLeadsPost(w http.ResponseWriter, r *http.Request) {
 		app.errorHx(w, tAlert, leadCellErrors, ErrChooseUser.Error())
 		return
 	}
-	if r.Header.Get("Content-Type") == jsonContentType {
+	if r.Header.Get(acceptHeader) == jsonContentType {
 		resp, err := json.Marshal(lead)
 		if err != nil {
 			app.error(w, err)
 			return
 		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
 		_, err = w.Write(resp)
 		if err != nil {
 			app.error(w, err)
@@ -231,12 +232,13 @@ func (app *app) handleLeadsAssign(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 	}
 	lead.UserName = user.Name
-	if r.Header.Get("Content-Type") == jsonContentType {
+	if r.Header.Get(acceptHeader) == jsonContentType {
 		resp, err := json.Marshal(lead)
 		if err != nil {
 			app.error(w, err)
 			return
 		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
 		_, err = w.Write(resp)
 		if err != nil {
 			app.error(w, err)

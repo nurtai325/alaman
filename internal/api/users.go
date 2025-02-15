@@ -20,12 +20,13 @@ func (app *app) handleUsersGet(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
-	if r.Header.Get("Content-Type") == jsonContentType {
+	if r.Header.Get(acceptHeader) == jsonContentType {
 		resp, err := json.Marshal(users)
 		if err != nil {
 			app.error(w, err)
 			return
 		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
 		_, err = w.Write(resp)
 		if err != nil {
 			app.error(w, err)
