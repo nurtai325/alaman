@@ -20,24 +20,24 @@ var (
 )
 
 type Lead struct {
-	Id                 int
-	Name               string
-	UserName           string
-	Address            string
-	Phone              string
-	Completed          bool
-	SaleType           saleType
-	FullPrice          float32
-	DeliveryCost       float32
-	LoanCost           float32
-	Items              []SaleItem
-	UserId             int
-	SaleId             int
-	DeliveryType       deliveryType
-	DeliveryTypeName   string
-	PaymentAt          time.Time
-	PaymentAtFormatted string
-	CreatedAt          time.Time
+	Id                 int          `json:"id"`
+	Name               string       `json:"name"`
+	UserName           string       `json:"user_name"`
+	Address            string       `json:"address"`
+	Phone              string       `json:"phone"`
+	Completed          bool         `json:"completed"`
+	SaleType           saleType     `json:"sale_type"`
+	FullPrice          float32      `json:"full_price"`
+	DeliveryCost       float32      `json:"delivery_cost"`
+	LoanCost           float32      `json:"loan_cost"`
+	Items              []SaleItem   `json:"items"`
+	UserId             int          `json:"user_id"`
+	SaleId             int          `json:"sale_id"`
+	DeliveryType       deliveryType `json:"delivery_type"`
+	DeliveryTypeName   string       `json:"delivery_type_name"`
+	PaymentAt          time.Time    `json:"payment_at"`
+	PaymentAtFormatted string       `json:"payment_at_formatted"`
+	CreatedAt          time.Time    `json:"created_at"`
 }
 
 type saleType string
@@ -386,12 +386,12 @@ func (s *Service) CompleteLead(ctx context.Context, id int) error {
 }
 
 type SaleItem struct {
-	Id          int
-	ProductName string
-	ProductId   int
-	Price       float32
-	Quantity    int
-	SaleCount   int
+	Id          int     `json:"id"`
+	ProductName string  `json:"product_name"`
+	ProductId   int     `json:"product_id"`
+	Price       float32 `json:"price"`
+	Quantity    int     `json:"quantity"`
+	SaleCount   int     `json:"sale_count"`
 }
 
 type SellLeadParams struct {

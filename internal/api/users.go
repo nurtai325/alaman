@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -17,6 +18,19 @@ func (app *app) handleUsersGet(w http.ResponseWriter, r *http.Request) {
 	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
 	if err != nil {
 		app.error(w, err)
+		return
+	}
+	if r.Header.Get("Content-Type") == jsonContentType {
+		resp, err := json.Marshal(users)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
 		return
 	}
 	app.execute(w, tUsers, "/pages/users", layoutData{

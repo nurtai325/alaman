@@ -24,12 +24,12 @@ var (
 )
 
 type User struct {
-	Id        int
-	Name      string
-	Phone     string
-	Role      auth.Role
-	Jid       string
-	CreatedAt time.Time
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	Phone     string    `json:"phone"`
+	Role      auth.Role `json:"role"`
+	Jid       string    `json:"jid"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (user User) GetId() int {

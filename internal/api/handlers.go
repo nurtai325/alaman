@@ -30,12 +30,14 @@ func (app *app) registerHandlers() {
 	app.register("PUT /products/{id}/remove", app.handleProductsRemove, true)
 
 	app.register("GET /leads", app.handleLeadsGet, true)
-	app.register("GET /leads/new", app.handleLeadsNew, true)
+	app.register("GET /leads/newform", app.handleLeadsNew, true)
 	app.register("POST /leads", app.handleLeadsPost, true)
 	app.register("PUT /leads/{id}/assign", app.handleLeadsAssign, true)
 	app.register("POST /leads/sell", app.handleLeadsSell, true)
 	app.register("POST /leads/{id}/complete", app.handleLeadsComplete, true)
 	app.register("GET /leads/product", app.handleLeadsProduct, true)
+	app.register("GET /leads/new", app.handleLeadsNewGet, true)
+	app.register("GET /leads/assigned", app.handleLeadsAssignedGet, true)
 
 	app.register("GET /reports", app.handleReportsGet, true)
 	app.register("POST /reports", app.handleReportsPost, true)

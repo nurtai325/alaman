@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -122,6 +123,38 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
+	newLeads, err := app.service.GetNewLeads(r.Context())
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	resp, err := json.Marshal(newLeads)
+	if err != nil {
+		app.error(w, err)
+	}
+	_, err = w.Write(resp)
+	if err != nil {
+		app.error(w, err)
+	}
+}
+
+func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
+	assignedLeads, err := app.service.GetAssignedLeads(r.Context())
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	resp, err := json.Marshal(assignedLeads)
+	if err != nil {
+		app.error(w, err)
+	}
+	_, err = w.Write(resp)
+	if err != nil {
+		app.error(w, err)
+	}
+}
+
 func (app *app) handleLeadsNew(w http.ResponseWriter, _ *http.Request) {
 	app.execute(w, tLeadsNewForm, "", nil)
 }
@@ -140,6 +173,19 @@ func (app *app) handleLeadsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		app.errorHx(w, tAlert, leadCellErrors, ErrChooseUser.Error())
+		return
+	}
+	if r.Header.Get("Content-Type") == jsonContentType {
+		resp, err := json.Marshal(lead)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
 		return
 	}
 	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
@@ -185,6 +231,19 @@ func (app *app) handleLeadsAssign(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 	}
 	lead.UserName = user.Name
+	if r.Header.Get("Content-Type") == jsonContentType {
+		resp, err := json.Marshal(lead)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		return
+	}
 	w.Header().Add("HX-Trigger", fmt.Sprintf("lead-cell-%d", lead.Id))
 	app.execute(w, tLeadsAssignedCell, "", lead)
 }
