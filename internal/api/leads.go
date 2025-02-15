@@ -133,6 +133,7 @@ func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.error(w, err)
 	}
+	w.Header().Add(contentTypeHeader, jsonContentType)
 	_, err = w.Write(resp)
 	if err != nil {
 		app.error(w, err)
@@ -149,6 +150,7 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.error(w, err)
 	}
+	w.Header().Add(contentTypeHeader, jsonContentType)
 	_, err = w.Write(resp)
 	if err != nil {
 		app.error(w, err)
