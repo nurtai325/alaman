@@ -126,7 +126,7 @@
 	<select price="{{ .Price }}" class="p-1 rounded-sm" disabled>
 		<option value="{{ .Id }}">{{ .Name }}</option>
 	</select>
-	<input class="ml-2 w-16 p-1 rounded-sm" type="number" value="0" onchange="calcSaleSum()" />
+	<input class="ml-2 w-16 p-1 rounded-sm" type="number" value="1" onchange="calcSaleSum()" />
 	<button hx-get="/empty" hx-swap="outerHTML" hx-target="closest div" class="ml-2 rounded-sm">
 		&#10060
 	</button>

@@ -107,7 +107,7 @@
 				<option value="{{ .Id }}">{{ .Name }}</option>
 				{{ end }}
 			</select>
-			<button class="ml-2" hx-get="/leads/product" hx-target="#items" hx-swap="afterbegin"
+			<button class="ml-2" hx-get="/leads/product" hx-target="#items" hx-swap="beforeend"
 				hx-include="#select-product">&#10133</button>
 		</div>
 	</div>

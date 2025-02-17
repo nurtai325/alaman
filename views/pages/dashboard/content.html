@@ -3,31 +3,27 @@
 	<link rel="stylesheet" href="/assets/dashboard.css" />
 	<div class="font-semibold text-lg">Жалпы статистика:</div>
 	<div class="flex p-8 w-full">
-		<div class="bg-orange-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6">
+		<div class="bg-orange-200 rounded-lg p-6 flex flex-col items-center justify-center text-center mr-4">
 			<div class="text-lg font-semibold">Апталық касса</div>
 			<div class="text-2xl font-bold mt-4 week-sum number" data-target="{{ .WeekSum }}">0 тг.</div>
 		</div>
-		<div class="bg-blue-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-8">
+		<div class="bg-blue-200 rounded-lg p-6 flex flex-col items-center justify-center text-center mr-4 px-8">
 			<div class="text-lg font-semibold">Айлық касса</div>
 			<div class="text-2xl font-bold mt-4 month-sum number" data-target="{{ .MonthSum }}">0 тг.</div>
 		</div>
-		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+		<div class="bg-green-200 rounded-lg p-6 flex flex-col items-center justify-center text-center mr-4 px-8">
 			<div class="text-lg font-semibold">Орташа чек</div>
 			<div class="text-2xl font-bold mt-4 avg-sum number" data-target="{{ .AverageSum }}">0 тг.</div>
 		</div>
-		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+		<div class="bg-green-200 rounded-lg p-6 flex flex-col items-center justify-center text-center mr-4 px-8">
 			<div class="text-lg font-semibold">Жаңа лидтер</div>
 			<div class="text-2xl font-bold mt-4 new-lead number" data-target="{{ .NewLeads }}">0</div>
 		</div>
-		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
+		<div class="bg-green-200 rounded-lg p-6 flex flex-col items-center justify-center text-center mr-4 px-8">
 			<div class="text-lg font-semibold">Жаңа лидтер бүгін </div>
 			<div class="text-2xl font-bold mt-4 new-lead-today number" data-target="{{ .NewLeadsToday }}">0</div>
 		</div>
-		<div class="bg-green-200 rounded-lg p-8 flex flex-col items-center justify-center text-center mr-6 px-12">
-			<div class="text-lg font-semibold">Сатылым саны</div>
-			<div class="text-2xl font-bold mt-4 sale-count number" data-target="{{ .SalesCount }}">0</div>
-		</div>
-		<div class="bg-red-200 rounded-lg p-8 flex flex-col items-center justify-center text-center px-12">
+		<div class="bg-red-200 rounded-lg p-6 flex flex-col items-center justify-center text-center px-8">
 			<div class="text-lg font-semibold">Сату кф.</div>
 			<div class="text-2xl font-bold mt-4 scr number" data-target="{{ .Scr }}">0%</div>
 		</div>
