@@ -17,3 +17,4 @@ assets/qr
 tailwind.config.js
 server
 !cmd/server
+*.zip
