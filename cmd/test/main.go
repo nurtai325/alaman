@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
@@ -12,6 +14,28 @@ import (
 )
 
 func main() {
+	if true {
+		conf, err := config.New()
+		if err != nil {
+			panic(err)
+		}
+		pool, err := db.New(conf)
+		if err != nil {
+			panic(err)
+		}
+		q := repository.New(pool)
+		sales, err := q.GetSales(context.Background(), pgtype.Timestamptz{
+			Time:  time.Now().AddDate(-1, 0, 0),
+			Valid: true,
+		})
+		if err != nil {
+			panic(err)
+		}
+		for _, sale := range sales {
+			fmt.Println(sale)
+		}
+		return
+	}
 	if true {
 		conf, err := config.New()
 		if err != nil {
