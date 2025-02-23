@@ -33,6 +33,10 @@ func main() {
 		}
 		for _, sale := range sales {
 			fmt.Println(sale)
+			_, err := pool.Exec(context.Background(), "update sales set payment_at = $2 where id = $1", sale.ID, sale.PaymentAt.Time.Add(time.Hour*5))
+			if err != nil {
+				panic(err)
+			}
 		}
 		return
 	}
