@@ -529,7 +529,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		LoanCost:           fullLead.LoanCost,
 		SaleType:           saleType(fullLead.SaleType),
 		Items:              sItems,
-		PaymentAt:          fullLead.PaymentAt.Time,
+		PaymentAt:          arg.PaymentAt,
 		PaymentAtFormatted: fullLead.PaymentAt.Time.Format("2006/01/02 03:04"),
 		DeliveryType:       deliveryType(fullLead.DeliveryType.String),
 		DeliveryTypeName:   getDeliveryTypeName(deliveryType(fullLead.DeliveryType.String)),

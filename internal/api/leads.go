@@ -289,6 +289,7 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 		app.error(w, fmt.Errorf("error parsing payment at: %s: %w", paymentAtStr, err))
 		return
 	}
+	paymentAt = paymentAt.Add(-time.Hour * 5)
 	paymentAt = paymentAt.Local()
 	deliveryCostStr := r.FormValue("deliverycost")
 	deliveryCost, err := strconv.ParseFloat(deliveryCostStr, 32)
