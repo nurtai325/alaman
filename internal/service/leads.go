@@ -530,7 +530,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		SaleType:           saleType(fullLead.SaleType),
 		Items:              sItems,
 		PaymentAt:          arg.PaymentAt,
-		PaymentAtFormatted: fullLead.PaymentAt.Time.Format("2006/01/02 03:04"),
+		PaymentAtFormatted: fullLead.PaymentAt.Time.Format(dateTimeFormat),
 		DeliveryType:       deliveryType(fullLead.DeliveryType.String),
 		DeliveryTypeName:   getDeliveryTypeName(deliveryType(fullLead.DeliveryType.String)),
 	}
@@ -551,7 +551,7 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 Төлем уақыты: %s
 %s
 %s
-`, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), getDeliveryTypeName(lead.DeliveryType), lead.PaymentAt.Format("2006/01/02 03:04"), itemsStr, lastLine)
+`, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), getDeliveryTypeName(lead.DeliveryType), lead.PaymentAt.Format(dateTimeFormat), itemsStr, lastLine)
 	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg, true)
 	if err != nil {
 		return Lead{}, err
