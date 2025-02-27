@@ -59,7 +59,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetAssignedLeads(r.Context(), 0, 8, "")
+		leads, err := app.service.GetAssignedLeads(r.Context(), 0, 9, "")
 		if err != nil {
 			app.error(w, err)
 			return
@@ -207,7 +207,7 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	search := r.FormValue("search")
-	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 8, search)
+	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 9, search)
 	if err != nil {
 		app.error(w, err)
 		return
