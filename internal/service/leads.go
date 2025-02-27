@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -478,21 +479,7 @@ func (s *Service) InsertLead(ctx context.Context, phone string) (Lead, error) {
 }
 
 func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) {
-	conf, err := config.New()
-	if err != nil {
-		return Lead{}, errors.Join(ErrInternal, err)
-	}
-	pool, err := db.New(conf)
-	if err != nil {
-		return Lead{}, errors.Join(ErrInternal, err)
-	}
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return Lead{}, errors.Join(ErrInternal, err)
-	}
-	defer tx.Rollback(ctx)
-	q := s.queries.WithTx(tx)
-	lead, err := q.AssignLead(ctx, repository.AssignLeadParams{
+	lead, err := s.queries.AssignLead(ctx, repository.AssignLeadParams{
 		ID: int32(id),
 		UserID: pgtype.Int4{
 			Int32: int32(userId),
@@ -506,14 +493,12 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 	if err != nil {
 		return Lead{}, err
 	}
-	err = wh.SendMessage(ctx, "", user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone), false)
-	if err != nil {
-		return Lead{}, err
-	}
-	err = tx.Commit(ctx)
-	if err != nil {
-		return Lead{}, err
-	}
+	go func() {
+		err := wh.SendMessage(ctx, "", user.Phone[1:], fmt.Sprintf("Жаңа лид:\n%s", lead.Phone), false)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 	return getSLead(lead), nil
 }
 
@@ -689,10 +674,12 @@ func (s *Service) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 %s
 %s
 `, lead.UserName, lead.Name, lead.Phone, lead.Address, getSaleTypeName(lead.SaleType), getDeliveryTypeName(lead.DeliveryType), lead.PaymentAt.Format(dateTimeFormat), itemsStr, lastLine)
-	err = wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg, true)
-	if err != nil {
-		return Lead{}, err
-	}
+	go func() {
+		err := wh.SendMessage(ctx, "", fullLead.UserPhone[1:], msg, true)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 	return lead, nil
 }
 
