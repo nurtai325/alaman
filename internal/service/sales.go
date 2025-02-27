@@ -102,8 +102,8 @@ func (s *Service) GetScr(ctx context.Context) (float32, error) {
 	return float32(soldLeadCount) / float32(leadCount) * 100, nil
 }
 
-func (s *Service) GetNewLeadsCount(ctx context.Context, weekStart time.Time) (int, error) {
-	count, err := s.queries.GetNewLeadsCount(ctx, pgtype.Timestamptz{
+func (s *Service) GetNewLeadsCountByTime(ctx context.Context, weekStart time.Time) (int, error) {
+	count, err := s.queries.GetNewLeadsCountByTime(ctx, pgtype.Timestamptz{
 		Time:  weekStart,
 		Valid: true,
 	})
@@ -166,12 +166,12 @@ func (s *Service) GetSalesData(ctx context.Context) (*ChartsData, error) {
 	chartsData.Manager = make([]barData, 0, 10)
 	chartsData.Product = make([]barData, 0)
 	chartsData.Scr = scr
-	newLeadsCount, err := s.GetNewLeadsCount(ctx, weekStart)
+	newLeadsCount, err := s.GetNewLeadsCountByTime(ctx, weekStart)
 	if err != nil {
 		return nil, err
 	}
 	chartsData.NewLeads = newLeadsCount
-	newLeadsToday, err := s.GetNewLeadsCount(ctx, now.Add(-time.Duration(now.Hour())*time.Hour))
+	newLeadsToday, err := s.GetNewLeadsCountByTime(ctx, now.Add(-time.Duration(now.Hour())*time.Hour))
 	if err != nil {
 		return nil, err
 	}

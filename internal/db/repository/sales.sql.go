@@ -23,13 +23,13 @@ func (q *Queries) GetLeadCount(ctx context.Context, createdAt pgtype.Timestamptz
 	return count, err
 }
 
-const getNewLeadsCount = `-- name: GetNewLeadsCount :one
+const getNewLeadsCountByTime = `-- name: GetNewLeadsCountByTime :one
 SELECT COUNT(*) FROM leads
 WHERE created_at >= $1
 `
 
-func (q *Queries) GetNewLeadsCount(ctx context.Context, createdAt pgtype.Timestamptz) (int64, error) {
-	row := q.db.QueryRow(ctx, getNewLeadsCount, createdAt)
+func (q *Queries) GetNewLeadsCountByTime(ctx context.Context, createdAt pgtype.Timestamptz) (int64, error) {
+	row := q.db.QueryRow(ctx, getNewLeadsCountByTime, createdAt)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

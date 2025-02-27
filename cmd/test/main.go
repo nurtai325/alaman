@@ -24,6 +24,40 @@ func main() {
 			panic(err)
 		}
 		q := repository.New(pool)
+		for range 500 {
+			_, err := q.InsertLead(context.Background(), "+77777777777")
+			if err != nil {
+				panic(err)
+			}
+		}
+		leads, err := q.GetNewLeads(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		for i := range 250 {
+			_, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
+				ID: leads[i].ID,
+				UserID: pgtype.Int4{
+					Int32: 1,
+					Valid: true,
+				},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+		return
+	}
+	if true {
+		conf, err := config.New()
+		if err != nil {
+			panic(err)
+		}
+		pool, err := db.New(conf)
+		if err != nil {
+			panic(err)
+		}
+		q := repository.New(pool)
 		sales, err := q.GetSales(context.Background(), pgtype.Timestamptz{
 			Time:  time.Now().AddDate(-1, 0, 0),
 			Valid: true,

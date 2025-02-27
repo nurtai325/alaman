@@ -1,7 +1,18 @@
 -- name: GetNewLeads :many
 SELECT * FROM leads AS l
 WHERE user_id IS NULL
+ORDER BY created_at DESC
+LIMIT $2 
+OFFSET $1;
+
+-- name: GetNewLeadsSearch :many
+SELECT * FROM leads AS l
+WHERE user_id IS NULL AND phone LIKE $1
 ORDER BY created_at DESC;
+
+-- name: GetNewLeadsCount :one
+SELECT COUNT(*) FROM leads AS l
+WHERE user_id IS NULL;
 
 -- name: GetLeadByPhone :one
 SELECT * FROM leads 
@@ -18,7 +29,16 @@ LIMIT 1;
 SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL
+ORDER BY created_at DESC
+LIMIT $2 
+OFFSET $1;
+
+-- name: GetAssignedLeadsSearch :many
+SELECT l.*, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NULL AND l.phone LIKE $1
 ORDER BY created_at DESC;
+
 
 -- name: GetAssignedLeadsByUser :many
 SELECT l.*, u.name AS user_name FROM leads AS l
@@ -31,6 +51,15 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
+ORDER BY sold_at DESC
+LIMIT $2 
+OFFSET $1;
+
+-- name: GetInDeliveryLeadsSearch :many
+SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND l.phone LIKE $1
 ORDER BY sold_at DESC;
 
 -- name: GetInDeliveryLeadsByUser :many
@@ -45,6 +74,15 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
+ORDER BY sold_at DESC
+LIMIT $2 
+OFFSET $1;
+
+-- name: GetCompletedLeadsSearch :many
+SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND l.phone LIKE $1
 ORDER BY sold_at DESC;
 
 -- name: GetCompletedLeadsByUser :many

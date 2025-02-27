@@ -34,6 +34,13 @@ type leadsContent struct {
 	NewLeadsCount int
 }
 
+type leadWithUsers struct {
+	Id    int
+	Phone string
+	Users []service.User
+	Page  int
+}
+
 func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 	var newLeads []service.Lead
 	var assignedLeads []service.Lead
@@ -41,20 +48,26 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 	var completedLeads []service.Lead
 	user := auth.GetUser(r)
 	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetNewLeads(r.Context())
+		leads, err := app.service.GetNewLeads(r.Context(), 0, 8, "")
 		if err != nil {
 			app.error(w, err)
 			return
 		}
 		newLeads = leads
+		if len(newLeads) != 0 {
+			newLeads[len(newLeads)-1].Page = 1
+		}
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetAssignedLeads(r.Context())
+		leads, err := app.service.GetAssignedLeads(r.Context(), 0, 8, "")
 		if err != nil {
 			app.error(w, err)
 			return
 		}
 		assignedLeads = leads
+		if len(assignedLeads) != 0 {
+			assignedLeads[len(assignedLeads)-1].Page = 1
+		}
 	} else {
 		leads, err := app.service.GetAssignedLeadsUser(r.Context(), user.Id)
 		if err != nil {
@@ -64,12 +77,15 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		assignedLeads = leads
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetInDeliveryLeads(r.Context())
+		leads, err := app.service.GetInDeliveryLeads(r.Context(), 0, 3, "")
 		if err != nil {
 			app.error(w, err)
 			return
 		}
 		inDeliveryLeads = leads
+		if len(inDeliveryLeads) != 0 {
+			inDeliveryLeads[len(inDeliveryLeads)-1].Page = 1
+		}
 	} else {
 		leads, err := app.service.GetInDeliveryLeadsUser(r.Context(), user.Id)
 		if err != nil {
@@ -79,12 +95,15 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		inDeliveryLeads = leads
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetCompletedLeads(r.Context())
+		leads, err := app.service.GetCompletedLeads(r.Context(), 0, 3, "")
 		if err != nil {
 			app.error(w, err)
 			return
 		}
 		completedLeads = leads
+		if len(completedLeads) != 0 {
+			completedLeads[len(completedLeads)-1].Page = 1
+		}
 	} else {
 		leads, err := app.service.GetCompletedLeadsUser(r.Context(), user.Id)
 		if err != nil {
@@ -99,6 +118,11 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	products, err := app.service.GetProducts(r.Context(), 0, pagesLimit)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	count, err := app.service.GetNewLeadsCount(r.Context())
 	if err != nil {
 		app.error(w, err)
 		return
@@ -118,43 +142,159 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			Users:         users,
 			Products:      products,
 			Role:          string(user.Role),
-			NewLeadsCount: len(newLeads),
+			NewLeadsCount: count,
 		},
 	})
 }
 
 func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
-	newLeads, err := app.service.GetNewLeads(r.Context())
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 0
+	}
+	err = r.ParseForm()
 	if err != nil {
 		app.error(w, err)
 		return
 	}
-	resp, err := json.Marshal(newLeads)
+	search := r.FormValue("search")
+	newLeads, err := app.service.GetNewLeads(r.Context(), page, 8, search)
 	if err != nil {
 		app.error(w, err)
+		return
 	}
-	w.Header().Add(contentTypeHeader, jsonContentType)
-	_, err = w.Write(resp)
+	if len(newLeads) != 0 && search == "" {
+		newLeads[len(newLeads)-1].Page = page + 1
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(newLeads)
+		if err != nil {
+			app.error(w, err)
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+		}
+	}
+	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
 	if err != nil {
 		app.error(w, err)
+		return
 	}
+	newLeadsWithUsers := make([]leadWithUsers, 0, len(newLeads))
+	for _, lead := range newLeads {
+		newLeadsWithUsers = append(newLeadsWithUsers, leadWithUsers{
+			Id:    lead.Id,
+			Phone: lead.Phone,
+			Users: users,
+			Page:  lead.Page,
+		})
+	}
+	app.execute(w, tLeadsNewCells, "", newLeadsWithUsers)
 }
 
 func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
-	assignedLeads, err := app.service.GetAssignedLeads(r.Context())
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 0
+	}
+	err = r.ParseForm()
 	if err != nil {
 		app.error(w, err)
 		return
 	}
-	resp, err := json.Marshal(assignedLeads)
+	search := r.FormValue("search")
+	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 8, search)
 	if err != nil {
 		app.error(w, err)
+		return
 	}
-	w.Header().Add(contentTypeHeader, jsonContentType)
-	_, err = w.Write(resp)
+	if len(assignedLeads) != 0 && search == "" {
+		assignedLeads[len(assignedLeads)-1].Page = page + 1
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(assignedLeads)
+		if err != nil {
+			app.error(w, err)
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+		}
+	}
+	app.execute(w, tLeadsAssignedCells, "", assignedLeads)
+}
+
+func (app *app) handleLeadsInDeliveryGet(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 0
+	}
+	err = r.ParseForm()
 	if err != nil {
 		app.error(w, err)
+		return
 	}
+	search := r.FormValue("search")
+	inDeliveryLeads, err := app.service.GetInDeliveryLeads(r.Context(), page, 3, search)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	if len(inDeliveryLeads) != 0 && search == "" {
+		inDeliveryLeads[len(inDeliveryLeads)-1].Page = page + 1
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(inDeliveryLeads)
+		if err != nil {
+			app.error(w, err)
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+		}
+	}
+	app.execute(w, tLeadsInDeliveryCells, "", inDeliveryLeads)
+}
+
+func (app *app) handleLeadsCompletedGet(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		page = 0
+	}
+	err = r.ParseForm()
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	search := r.FormValue("search")
+	completedLeads, err := app.service.GetCompletedLeads(r.Context(), page, 3, search)
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	if len(completedLeads) != 0 && search == "" {
+		completedLeads[len(completedLeads)-1].Page = page + 1
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(completedLeads)
+		if err != nil {
+			app.error(w, err)
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+		}
+	}
+	app.execute(w, tLeadsCompletedCells, "", completedLeads)
 }
 
 func (app *app) handleLeadsNew(w http.ResponseWriter, _ *http.Request) {
@@ -196,11 +336,7 @@ func (app *app) handleLeadsPost(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
-	app.execute(w, tLeadsNewCell, "", struct {
-		Id    int
-		Phone string
-		Users []service.User
-	}{
+	app.execute(w, tLeadsNewCell, "", leadWithUsers{
 		Id:    lead.Id,
 		Phone: lead.Phone,
 		Users: users,

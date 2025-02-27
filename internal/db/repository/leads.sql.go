@@ -69,7 +69,14 @@ SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.cr
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC
+LIMIT $2 
+OFFSET $1
 `
+
+type GetAssignedLeadsParams struct {
+	Offset int64
+	Limit  int64
+}
 
 type GetAssignedLeadsRow struct {
 	ID        int32
@@ -84,8 +91,8 @@ type GetAssignedLeadsRow struct {
 	UserName  string
 }
 
-func (q *Queries) GetAssignedLeads(ctx context.Context) ([]GetAssignedLeadsRow, error) {
-	rows, err := q.db.Query(ctx, getAssignedLeads)
+func (q *Queries) GetAssignedLeads(ctx context.Context, arg GetAssignedLeadsParams) ([]GetAssignedLeadsRow, error) {
+	rows, err := q.db.Query(ctx, getAssignedLeads, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -166,13 +173,71 @@ func (q *Queries) GetAssignedLeadsByUser(ctx context.Context, userID pgtype.Int4
 	return items, nil
 }
 
+const getAssignedLeadsSearch = `-- name: GetAssignedLeadsSearch :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+WHERE user_id IS NOT NULL AND sale_id IS NULL AND l.phone LIKE $1
+ORDER BY created_at DESC
+`
+
+type GetAssignedLeadsSearchRow struct {
+	ID        int32
+	Name      pgtype.Text
+	Address   pgtype.Text
+	Phone     string
+	Completed bool
+	UserID    pgtype.Int4
+	SaleID    pgtype.Int4
+	CreatedAt pgtype.Timestamptz
+	SoldAt    pgtype.Timestamptz
+	UserName  string
+}
+
+func (q *Queries) GetAssignedLeadsSearch(ctx context.Context, phone string) ([]GetAssignedLeadsSearchRow, error) {
+	rows, err := q.db.Query(ctx, getAssignedLeadsSearch, phone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAssignedLeadsSearchRow
+	for rows.Next() {
+		var i GetAssignedLeadsSearchRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCompletedLeads = `-- name: GetCompletedLeads :many
 SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
 ORDER BY sold_at DESC
+LIMIT $2 
+OFFSET $1
 `
+
+type GetCompletedLeadsParams struct {
+	Offset int64
+	Limit  int64
+}
 
 type GetCompletedLeadsRow struct {
 	ID           int32
@@ -190,8 +255,8 @@ type GetCompletedLeadsRow struct {
 	PaymentAt    pgtype.Timestamptz
 }
 
-func (q *Queries) GetCompletedLeads(ctx context.Context) ([]GetCompletedLeadsRow, error) {
-	rows, err := q.db.Query(ctx, getCompletedLeads)
+func (q *Queries) GetCompletedLeads(ctx context.Context, arg GetCompletedLeadsParams) ([]GetCompletedLeadsRow, error) {
+	rows, err := q.db.Query(ctx, getCompletedLeads, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -282,6 +347,64 @@ func (q *Queries) GetCompletedLeadsByUser(ctx context.Context, userID pgtype.Int
 	return items, nil
 }
 
+const getCompletedLeadsSearch = `-- name: GetCompletedLeadsSearch :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND l.phone LIKE $1
+ORDER BY sold_at DESC
+`
+
+type GetCompletedLeadsSearchRow struct {
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
+}
+
+func (q *Queries) GetCompletedLeadsSearch(ctx context.Context, phone string) ([]GetCompletedLeadsSearchRow, error) {
+	rows, err := q.db.Query(ctx, getCompletedLeadsSearch, phone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCompletedLeadsSearchRow
+	for rows.Next() {
+		var i GetCompletedLeadsSearchRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFullLead = `-- name: GetFullLead :one
 SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, u.phone AS user_phone, s.full_sum, s.delivery_cost, s.loan_cost, s.delivery_type, s.payment_at, s.type AS sale_type
 FROM leads AS l
@@ -342,7 +465,14 @@ INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
 ORDER BY sold_at DESC
+LIMIT $2 
+OFFSET $1
 `
+
+type GetInDeliveryLeadsParams struct {
+	Offset int64
+	Limit  int64
+}
 
 type GetInDeliveryLeadsRow struct {
 	ID           int32
@@ -360,8 +490,8 @@ type GetInDeliveryLeadsRow struct {
 	PaymentAt    pgtype.Timestamptz
 }
 
-func (q *Queries) GetInDeliveryLeads(ctx context.Context) ([]GetInDeliveryLeadsRow, error) {
-	rows, err := q.db.Query(ctx, getInDeliveryLeads)
+func (q *Queries) GetInDeliveryLeads(ctx context.Context, arg GetInDeliveryLeadsParams) ([]GetInDeliveryLeadsRow, error) {
+	rows, err := q.db.Query(ctx, getInDeliveryLeads, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -452,6 +582,64 @@ func (q *Queries) GetInDeliveryLeadsByUser(ctx context.Context, userID pgtype.In
 	return items, nil
 }
 
+const getInDeliveryLeadsSearch = `-- name: GetInDeliveryLeadsSearch :many
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+INNER JOIN users u ON l.user_id = u.id
+INNER JOIN sales s ON l.sale_id = s.id
+WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND l.phone LIKE $1
+ORDER BY sold_at DESC
+`
+
+type GetInDeliveryLeadsSearchRow struct {
+	ID           int32
+	Name         pgtype.Text
+	Address      pgtype.Text
+	Phone        string
+	Completed    bool
+	UserID       pgtype.Int4
+	SaleID       pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
+	SoldAt       pgtype.Timestamptz
+	UserName     string
+	FullSum      float32
+	DeliveryType pgtype.Text
+	PaymentAt    pgtype.Timestamptz
+}
+
+func (q *Queries) GetInDeliveryLeadsSearch(ctx context.Context, phone string) ([]GetInDeliveryLeadsSearchRow, error) {
+	rows, err := q.db.Query(ctx, getInDeliveryLeadsSearch, phone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetInDeliveryLeadsSearchRow
+	for rows.Next() {
+		var i GetInDeliveryLeadsSearchRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+			&i.UserName,
+			&i.FullSum,
+			&i.DeliveryType,
+			&i.PaymentAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLead = `-- name: GetLead :one
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
 WHERE id = $1 
@@ -503,10 +691,65 @@ const getNewLeads = `-- name: GetNewLeads :many
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
 WHERE user_id IS NULL
 ORDER BY created_at DESC
+LIMIT $2 
+OFFSET $1
 `
 
-func (q *Queries) GetNewLeads(ctx context.Context) ([]Lead, error) {
-	rows, err := q.db.Query(ctx, getNewLeads)
+type GetNewLeadsParams struct {
+	Offset int64
+	Limit  int64
+}
+
+func (q *Queries) GetNewLeads(ctx context.Context, arg GetNewLeadsParams) ([]Lead, error) {
+	rows, err := q.db.Query(ctx, getNewLeads, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Lead
+	for rows.Next() {
+		var i Lead
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Address,
+			&i.Phone,
+			&i.Completed,
+			&i.UserID,
+			&i.SaleID,
+			&i.CreatedAt,
+			&i.SoldAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNewLeadsCount = `-- name: GetNewLeadsCount :one
+SELECT COUNT(*) FROM leads AS l
+WHERE user_id IS NULL
+`
+
+func (q *Queries) GetNewLeadsCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getNewLeadsCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getNewLeadsSearch = `-- name: GetNewLeadsSearch :many
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
+WHERE user_id IS NULL AND phone LIKE $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetNewLeadsSearch(ctx context.Context, phone string) ([]Lead, error) {
+	rows, err := q.db.Query(ctx, getNewLeadsSearch, phone)
 	if err != nil {
 		return nil, err
 	}

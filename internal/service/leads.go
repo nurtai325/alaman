@@ -38,6 +38,7 @@ type Lead struct {
 	PaymentAt          time.Time    `json:"payment_at"`
 	PaymentAtFormatted string       `json:"payment_at_formatted"`
 	CreatedAt          time.Time    `json:"created_at"`
+	Page               int
 }
 
 type saleType string
@@ -96,10 +97,23 @@ func (s *Service) GetLeadByPhone(ctx context.Context, phone string) (Lead, error
 	return getSLead(lead), err
 }
 
-func (s *Service) GetNewLeads(ctx context.Context) ([]Lead, error) {
-	leads, err := s.queries.GetNewLeads(ctx)
-	if err != nil {
-		return nil, err
+func (s *Service) GetNewLeads(ctx context.Context, page, limit int, search string) ([]Lead, error) {
+	var leads []repository.Lead
+	if search == "" {
+		newLeads, err := s.queries.GetNewLeads(ctx, repository.GetNewLeadsParams{
+			Offset: int64(page * limit),
+			Limit:  int64(limit),
+		})
+		if err != nil {
+			return nil, err
+		}
+		leads = newLeads
+	} else {
+		newLeads, err := s.queries.GetNewLeadsSearch(ctx, "%"+search+"%")
+		if err != nil {
+			return nil, err
+		}
+		leads = newLeads
 	}
 	sLeads := make([]Lead, 0, len(leads))
 	for _, lead := range leads {
@@ -108,24 +122,57 @@ func (s *Service) GetNewLeads(ctx context.Context) ([]Lead, error) {
 	return sLeads, nil
 }
 
-func (s *Service) GetAssignedLeads(ctx context.Context) ([]Lead, error) {
-	leads, err := s.queries.GetAssignedLeads(ctx)
+func (s *Service) GetNewLeadsCount(ctx context.Context) (int, error) {
+	count, err := s.queries.GetNewLeadsCount(ctx)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	sLeads := make([]Lead, 0, len(leads))
-	for _, lead := range leads {
-		sLeads = append(sLeads, Lead{
-			Id:        int(lead.ID),
-			Name:      lead.Name.String,
-			UserName:  lead.UserName,
-			Address:   lead.Address.String,
-			Phone:     lead.Phone,
-			Completed: lead.Completed,
-			UserId:    int(lead.UserID.Int32),
-			SaleId:    int(lead.SaleID.Int32),
-			CreatedAt: lead.CreatedAt.Time,
+	return int(count), nil
+}
+
+func (s *Service) GetAssignedLeads(ctx context.Context, page, limit int, search string) ([]Lead, error) {
+	var sLeads []Lead
+	if search == "" {
+		leads, err := s.queries.GetAssignedLeads(ctx, repository.GetAssignedLeadsParams{
+			Offset: int64(page * limit),
+			Limit:  int64(limit),
 		})
+		if err != nil {
+			return nil, err
+		}
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			sLeads = append(sLeads, Lead{
+				Id:        int(lead.ID),
+				Name:      lead.Name.String,
+				UserName:  lead.UserName,
+				Address:   lead.Address.String,
+				Phone:     lead.Phone,
+				Completed: lead.Completed,
+				UserId:    int(lead.UserID.Int32),
+				SaleId:    int(lead.SaleID.Int32),
+				CreatedAt: lead.CreatedAt.Time,
+			})
+		}
+	} else {
+		leads, err := s.queries.GetAssignedLeadsSearch(ctx, "%"+search+"%")
+		if err != nil {
+			return nil, err
+		}
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			sLeads = append(sLeads, Lead{
+				Id:        int(lead.ID),
+				Name:      lead.Name.String,
+				UserName:  lead.UserName,
+				Address:   lead.Address.String,
+				Phone:     lead.Phone,
+				Completed: lead.Completed,
+				UserId:    int(lead.UserID.Int32),
+				SaleId:    int(lead.SaleID.Int32),
+				CreatedAt: lead.CreatedAt.Time,
+			})
+		}
 	}
 	return sLeads, nil
 }
@@ -155,44 +202,89 @@ func (s *Service) GetAssignedLeadsUser(ctx context.Context, userId int) ([]Lead,
 	return sLeads, nil
 }
 
-func (s *Service) GetInDeliveryLeads(ctx context.Context) ([]Lead, error) {
-	leads, err := s.queries.GetInDeliveryLeads(ctx)
-	if err != nil {
-		return nil, err
-	}
-	sLeads := make([]Lead, 0, len(leads))
-	for _, lead := range leads {
-		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+func (s *Service) GetInDeliveryLeads(ctx context.Context, page, limit int, search string) ([]Lead, error) {
+	var sLeads []Lead
+	if search == "" {
+		leads, err := s.queries.GetInDeliveryLeads(ctx, repository.GetInDeliveryLeadsParams{
+			Offset: int64(page * limit),
+			Limit:  int64(limit),
+		})
 		if err != nil {
 			return nil, err
 		}
-		sItems := make([]SaleItem, 0, len(items))
-		for _, item := range items {
-			sItems = append(sItems, SaleItem{
-				Id:          int(item.ID),
-				ProductName: item.ProductName,
-				Quantity:    int(item.Quantity),
-				Price:       item.Price,
-				ProductId:   int(item.ProductID),
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+			if err != nil {
+				return nil, err
+			}
+			sItems := make([]SaleItem, 0, len(items))
+			for _, item := range items {
+				sItems = append(sItems, SaleItem{
+					Id:          int(item.ID),
+					ProductName: item.ProductName,
+					Quantity:    int(item.Quantity),
+					Price:       item.Price,
+					ProductId:   int(item.ProductID),
+				})
+			}
+			sLeads = append(sLeads, Lead{
+				Id:                 int(lead.ID),
+				Name:               lead.Name.String,
+				UserName:           lead.UserName,
+				Address:            lead.Address.String,
+				Phone:              lead.Phone,
+				Completed:          lead.Completed,
+				UserId:             int(lead.UserID.Int32),
+				SaleId:             int(lead.SaleID.Int32),
+				Items:              sItems,
+				CreatedAt:          lead.CreatedAt.Time,
+				FullPrice:          lead.FullSum,
+				PaymentAt:          lead.PaymentAt.Time,
+				DeliveryType:       deliveryType(lead.DeliveryType.String),
+				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 			})
 		}
-		sLeads = append(sLeads, Lead{
-			Id:                 int(lead.ID),
-			Name:               lead.Name.String,
-			UserName:           lead.UserName,
-			Address:            lead.Address.String,
-			Phone:              lead.Phone,
-			Completed:          lead.Completed,
-			UserId:             int(lead.UserID.Int32),
-			SaleId:             int(lead.SaleID.Int32),
-			Items:              sItems,
-			CreatedAt:          lead.CreatedAt.Time,
-			FullPrice:          lead.FullSum,
-			PaymentAt:          lead.PaymentAt.Time,
-			DeliveryType:       deliveryType(lead.DeliveryType.String),
-			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
-			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
-		})
+	} else {
+		leads, err := s.queries.GetInDeliveryLeadsSearch(ctx, "%"+search+"%")
+		if err != nil {
+			return nil, err
+		}
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+			if err != nil {
+				return nil, err
+			}
+			sItems := make([]SaleItem, 0, len(items))
+			for _, item := range items {
+				sItems = append(sItems, SaleItem{
+					Id:          int(item.ID),
+					ProductName: item.ProductName,
+					Quantity:    int(item.Quantity),
+					Price:       item.Price,
+					ProductId:   int(item.ProductID),
+				})
+			}
+			sLeads = append(sLeads, Lead{
+				Id:                 int(lead.ID),
+				Name:               lead.Name.String,
+				UserName:           lead.UserName,
+				Address:            lead.Address.String,
+				Phone:              lead.Phone,
+				Completed:          lead.Completed,
+				UserId:             int(lead.UserID.Int32),
+				SaleId:             int(lead.SaleID.Int32),
+				Items:              sItems,
+				CreatedAt:          lead.CreatedAt.Time,
+				FullPrice:          lead.FullSum,
+				PaymentAt:          lead.PaymentAt.Time,
+				DeliveryType:       deliveryType(lead.DeliveryType.String),
+				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+			})
+		}
 	}
 	return sLeads, nil
 }
@@ -242,44 +334,89 @@ func (s *Service) GetInDeliveryLeadsUser(ctx context.Context, userId int) ([]Lea
 	return sLeads, nil
 }
 
-func (s *Service) GetCompletedLeads(ctx context.Context) ([]Lead, error) {
-	leads, err := s.queries.GetCompletedLeads(ctx)
-	if err != nil {
-		return nil, err
-	}
-	sLeads := make([]Lead, 0, len(leads))
-	for _, lead := range leads {
-		items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+func (s *Service) GetCompletedLeads(ctx context.Context, page, limit int, search string) ([]Lead, error) {
+	var sLeads []Lead
+	if search == "" {
+		leads, err := s.queries.GetCompletedLeads(ctx, repository.GetCompletedLeadsParams{
+			Offset: int64(page * limit),
+			Limit:  int64(limit),
+		})
 		if err != nil {
 			return nil, err
 		}
-		sItems := make([]SaleItem, 0, len(items))
-		for _, item := range items {
-			sItems = append(sItems, SaleItem{
-				Id:          int(item.ID),
-				ProductName: item.ProductName,
-				Price:       item.Price,
-				Quantity:    int(item.Quantity),
-				ProductId:   int(item.ProductID),
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+			if err != nil {
+				return nil, err
+			}
+			sItems := make([]SaleItem, 0, len(items))
+			for _, item := range items {
+				sItems = append(sItems, SaleItem{
+					Id:          int(item.ID),
+					ProductName: item.ProductName,
+					Price:       item.Price,
+					Quantity:    int(item.Quantity),
+					ProductId:   int(item.ProductID),
+				})
+			}
+			sLeads = append(sLeads, Lead{
+				Id:                 int(lead.ID),
+				Name:               lead.Name.String,
+				UserName:           lead.UserName,
+				Address:            lead.Address.String,
+				Phone:              lead.Phone,
+				Completed:          lead.Completed,
+				UserId:             int(lead.UserID.Int32),
+				SaleId:             int(lead.SaleID.Int32),
+				Items:              sItems,
+				CreatedAt:          lead.CreatedAt.Time,
+				FullPrice:          lead.FullSum,
+				PaymentAt:          lead.PaymentAt.Time,
+				DeliveryType:       deliveryType(lead.DeliveryType.String),
+				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
 			})
 		}
-		sLeads = append(sLeads, Lead{
-			Id:                 int(lead.ID),
-			Name:               lead.Name.String,
-			UserName:           lead.UserName,
-			Address:            lead.Address.String,
-			Phone:              lead.Phone,
-			Completed:          lead.Completed,
-			UserId:             int(lead.UserID.Int32),
-			SaleId:             int(lead.SaleID.Int32),
-			Items:              sItems,
-			CreatedAt:          lead.CreatedAt.Time,
-			FullPrice:          lead.FullSum,
-			PaymentAt:          lead.PaymentAt.Time,
-			DeliveryType:       deliveryType(lead.DeliveryType.String),
-			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
-			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
-		})
+	} else {
+		leads, err := s.queries.GetCompletedLeadsSearch(ctx, "%"+search+"%")
+		if err != nil {
+			return nil, err
+		}
+		sLeads = make([]Lead, 0, len(leads))
+		for _, lead := range leads {
+			items, err := s.queries.GetSaleItems(ctx, lead.SaleID.Int32)
+			if err != nil {
+				return nil, err
+			}
+			sItems := make([]SaleItem, 0, len(items))
+			for _, item := range items {
+				sItems = append(sItems, SaleItem{
+					Id:          int(item.ID),
+					ProductName: item.ProductName,
+					Price:       item.Price,
+					Quantity:    int(item.Quantity),
+					ProductId:   int(item.ProductID),
+				})
+			}
+			sLeads = append(sLeads, Lead{
+				Id:                 int(lead.ID),
+				Name:               lead.Name.String,
+				UserName:           lead.UserName,
+				Address:            lead.Address.String,
+				Phone:              lead.Phone,
+				Completed:          lead.Completed,
+				UserId:             int(lead.UserID.Int32),
+				SaleId:             int(lead.SaleID.Int32),
+				Items:              sItems,
+				CreatedAt:          lead.CreatedAt.Time,
+				FullPrice:          lead.FullSum,
+				PaymentAt:          lead.PaymentAt.Time,
+				DeliveryType:       deliveryType(lead.DeliveryType.String),
+				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
+				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+			})
+		}
 	}
 	return sLeads, nil
 }

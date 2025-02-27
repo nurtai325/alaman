@@ -38,6 +38,8 @@ func (app *app) registerHandlers() {
 	app.register("GET /leads/product", app.handleLeadsProduct, true)
 	app.register("GET /leads/new", app.handleLeadsNewGet, true)
 	app.register("GET /leads/assigned", app.handleLeadsAssignedGet, true)
+	app.register("GET /leads/indelivery", app.handleLeadsInDeliveryGet, true)
+	app.register("GET /leads/completed", app.handleLeadsCompletedGet, true)
 
 	app.register("GET /reports", app.handleReportsGet, true)
 	app.register("POST /reports", app.handleReportsPost, true)

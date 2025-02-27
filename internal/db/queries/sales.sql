@@ -22,6 +22,6 @@ SELECT si.* FROM sale_items AS si
 INNER JOIN sales s ON si.sale_id = s.id
 WHERE s.payment_at >= $1;
 
--- name: GetNewLeadsCount :one
+-- name: GetNewLeadsCountByTime :one
 SELECT COUNT(*) FROM leads
 WHERE created_at >= $1;

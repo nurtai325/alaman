@@ -129,28 +129,3 @@ taskElements.forEach((taskElement) => {
 		toRemove.remove();
 	});
 });
-let newLeadsSearch = document.getElementById("new-leads-search")
-let assignedLeadsSearch = document.getElementById("assigned-leads-search")
-let indeliveryLeadsSearch = document.getElementById("indelivery-leads-search")
-let completedLeadsSearch = document.getElementById("completed-leads-search")
-function filterLeads(inputName, leadsClass) {
-	let searchQuery = ""
-	if (inputName === "new") {
-		searchQuery = newLeadsSearch.value.toLowerCase();
-	} else if (inputName === "assigned") {
-		searchQuery = assignedLeadsSearch.value.toLowerCase();
-	} else if (inputName === "indelivery") {
-		searchQuery = indeliveryLeadsSearch.value.toLowerCase();
-	} else if (inputName === "completed") {
-		searchQuery = completedLeadsSearch.value.toLowerCase();
-	}
-	const leads = document.querySelectorAll(leadsClass);
-	leads.forEach(function(lead) {
-		const text = lead.getAttribute('phone').toLowerCase();
-		if (text.includes(searchQuery)) {
-			lead.style.display = '';
-		} else {
-			lead.style.display = 'none';
-		}
-	});
-};
