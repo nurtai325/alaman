@@ -1,3 +1,4 @@
+const readyLeads = document.getElementById("ready")
 const drop = (event) => {
 	event.preventDefault();
 	let taskID = event.dataTransfer.getData("text");
@@ -17,7 +18,7 @@ const drop = (event) => {
 				let task = document.getElementById(taskID)
 				task.classList.remove('bg-orange-500');
 				task.classList.add('bg-green-500');
-				event.target.appendChild(task);
+				readyLeads.insertBefore(task, readyLeads.firstChild);
 			}
 		})
 		.catch(error => {
