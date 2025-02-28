@@ -35,6 +35,7 @@ func main() {
 				continue
 			}
 			if lead.ID != 0 {
+				fmt.Println("exists", phone)
 				continue
 			}
 			newLead, err := q.InsertLead(context.Background(), phone)
