@@ -6,7 +6,6 @@ import (
 	"log"
 	"mime"
 	"os"
-	"strings"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types/events"
@@ -59,14 +58,7 @@ func LeadEventsHandler(*whatsmeow.Client) func(any) {
 				return
 			}
 		}
-		switch {
-		case strings.Contains(text, "Аламан туралы білгім келеді"):
-			leadCh <- e.Info.Sender.User
-		case strings.Contains(text, "https://www.instagram.com/p/DGYSW_RgJYz/"):
-			leadCh <- e.Info.Sender.User
-		case strings.Contains(text, "Инстадан көрдім! Аламан өнімдері бойынша"):
-			leadCh <- e.Info.Sender.User
-		}
+		leadCh <- e.Info.Sender.User
 	}
 }
 

@@ -21,7 +21,7 @@ func ListenNewLeads(s *Service) {
 			log.Println(err)
 			continue
 		}
-		if lead.Id != 0 || lead.CreatedAt.After(time.Now().AddDate(0, 0, -7)) {
+		if lead.Id != 0 {
 			continue
 		}
 		_, err = s.InsertLead(context.Background(), phone)

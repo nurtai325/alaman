@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/auth"
 	"github.com/nurtai325/alaman/internal/config"
@@ -23,28 +26,34 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		var numbers = []string{"+77077938373"}
 		q := repository.New(pool)
-		for range 500 {
-			_, err := q.InsertLead(context.Background(), "+77777777777")
-			if err != nil {
-				panic(err)
+		for _, phone := range numbers {
+			lead, err := q.GetLeadByPhone(context.Background(), phone)
+			if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+				log.Panic(err)
+				continue
 			}
-		}
-		leads, err := q.GetNewLeads(context.Background())
-		if err != nil {
-			panic(err)
-		}
-		for i := range 250 {
-			_, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
-				ID: leads[i].ID,
+			if lead.ID != 0 {
+				continue
+			}
+			newLead, err := q.InsertLead(context.Background(), phone)
+			if err != nil {
+				log.Panic(err)
+				continue
+			}
+			_, err = q.AssignLead(context.Background(), repository.AssignLeadParams{
+				ID: newLead.ID,
 				UserID: pgtype.Int4{
-					Int32: 1,
 					Valid: true,
+					Int32: 1,
 				},
 			})
 			if err != nil {
-				panic(err)
+				log.Panic(err)
+				continue
 			}
+			fmt.Println("inserted", phone)
 		}
 		return
 	}
