@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Alaman</title>
+	<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+	<link rel="stylesheet" href="/assets/index.css" />
+</head>
+
+<body>
+	<div class="flex h-screen w-screen">
+		<div>
+			{{ template "sidebar" .BarsData }}
+		</div>
+		<div class="w-full overflow-auto">
+			<div>
+				{{ template "navbar" . }}
+			</div>
+			<div class="bg-gray-50 h-[92.5%]">
+				{{ block "content" . }}{{ end }}
+			</div>
+		</div>
+	</div>
+	{{ template "modal" . }}
+	<script src="/assets/js/layout.js"></script>
+	<script src="/assets/js/modal.js"></script>
+	<script src="/assets/htmx.js"></script>
+</body>
+
+</html>
