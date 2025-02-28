@@ -43,6 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
 let element;
 const openLeadModal = (id) => {
 	document.getElementById("leads-modal-id").value = id
+	let now = new Date();
+	let year = now.getFullYear();
+	let month = String(now.getMonth() + 1).padStart(2, '0');
+	let day = String(now.getDate()).padStart(2, '0');
+	let hours = String(now.getHours()).padStart(2, '0');
+	let minutes = String(now.getMinutes()).padStart(2, '0');
+
+	let datetimeNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+	document.getElementById('payment-at').value = datetimeNow;
 	openModal()
 }
 let now = new Date();
