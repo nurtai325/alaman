@@ -20,7 +20,7 @@ type app struct {
 	accessLog *log.Logger
 }
 
-func New(mux *http.ServeMux, templates *template.Template, service *service.Service, infoLog, accessLog, errLog *log.Logger) *app {
+func NewApp(mux *http.ServeMux, templates *template.Template, service *service.Service, infoLog, accessLog, errLog *log.Logger) *app {
 	return &app{
 		mux:       mux,
 		templates: templates,

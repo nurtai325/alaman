@@ -139,7 +139,6 @@ func (s *Service) ConnectAllWh() error {
 		return err
 	}
 	for _, leadWh := range leadWhs {
-		log.Println(leadWh.Jid)
 		_, err := wh.Connect(leadWh.Jid, wh.LeadEventsHandler)
 		if err != nil {
 			log.Println(err)

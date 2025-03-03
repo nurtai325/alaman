@@ -39,7 +39,6 @@ func main() {
 	accessLog, err := openLog("access", 0)
 	errLog, err := openLog("error", 0)
 	log.SetOutput(errLog.Writer())
-
 	templates := template.Must(template.ParseGlob("./views/*.html"))
 	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports", "leadwhs", "chats")
 	conf, err := config.New()
@@ -62,9 +61,8 @@ func main() {
 	}
 	go service.ListenNewLeads(newService)
 	go service.ListenNewMessages(newService)
-	app := api.New(http.NewServeMux(), templates, newService, infoLog, accessLog, errLog)
+	app := api.NewApp(http.NewServeMux(), templates, newService, infoLog, accessLog, errLog)
 	go auth.Cleanup()
-
 	err = app.Run(conf)
 	if err != nil {
 		panic(err)
