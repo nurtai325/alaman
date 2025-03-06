@@ -177,6 +177,7 @@ func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			app.error(w, err)
 		}
+		return
 	}
 	users, err := app.service.GetUsers(r.Context(), 0, pagesLimit)
 	if err != nil {
@@ -191,20 +192,6 @@ func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
 			Users: users,
 			Page:  lead.Page,
 		})
-	}
-	if r.Header.Get(acceptHeader) == jsonContentType {
-		resp, err := json.Marshal(newLeadsWithUsers)
-		if err != nil {
-			app.error(w, err)
-			return
-		}
-		w.Header().Add(contentTypeHeader, jsonContentType)
-		_, err = w.Write(resp)
-		if err != nil {
-			app.error(w, err)
-			return
-		}
-		return
 	}
 	app.execute(w, tLeadsNewCells, "", newLeadsWithUsers)
 }
@@ -228,17 +215,6 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(assignedLeads) != 0 && search == "" {
 		assignedLeads[len(assignedLeads)-1].Page = page + 1
-	}
-	if r.Header.Get(acceptHeader) == jsonContentType {
-		resp, err := json.Marshal(assignedLeads)
-		if err != nil {
-			app.error(w, err)
-		}
-		w.Header().Add(contentTypeHeader, jsonContentType)
-		_, err = w.Write(resp)
-		if err != nil {
-			app.error(w, err)
-		}
 	}
 	if r.Header.Get(acceptHeader) == jsonContentType {
 		resp, err := json.Marshal(assignedLeads)
@@ -287,6 +263,7 @@ func (app *app) handleLeadsInDeliveryGet(w http.ResponseWriter, r *http.Request)
 		if err != nil {
 			app.error(w, err)
 		}
+		return
 	}
 	app.execute(w, tLeadsInDeliveryCells, "", inDeliveryLeads)
 }
@@ -321,6 +298,7 @@ func (app *app) handleLeadsCompletedGet(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			app.error(w, err)
 		}
+		return
 	}
 	app.execute(w, tLeadsCompletedCells, "", completedLeads)
 }
@@ -499,6 +477,20 @@ func (app *app) handleLeadsSell(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		app.error(w, err)
+		return
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(lead)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
 		return
 	}
 	w.Header().Add("HX-Trigger", "closeModal")

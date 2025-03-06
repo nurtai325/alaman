@@ -44,7 +44,7 @@ func LeadEventsHandler(*whatsmeow.Client) func(any) {
 		if !ok {
 			return
 		}
-		if e.Info.IsFromMe || e.Info.IsGroup {
+		if e.Info.IsGroup {
 			return
 		}
 		if e.Info.Type != "text" {
