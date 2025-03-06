@@ -39,7 +39,7 @@ type Lead struct {
 	PaymentAt          time.Time    `json:"payment_at"`
 	PaymentAtFormatted string       `json:"payment_at_formatted"`
 	CreatedAt          time.Time    `json:"created_at"`
-	Page               int
+	Page               int          `json:"page"`
 }
 
 type saleType string

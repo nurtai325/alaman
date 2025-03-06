@@ -192,6 +192,20 @@ func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
 			Page:  lead.Page,
 		})
 	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(newLeadsWithUsers)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		return
+	}
 	app.execute(w, tLeadsNewCells, "", newLeadsWithUsers)
 }
 
@@ -225,6 +239,20 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			app.error(w, err)
 		}
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(assignedLeads)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		return
 	}
 	app.execute(w, tLeadsAssignedCells, "", assignedLeads)
 }
