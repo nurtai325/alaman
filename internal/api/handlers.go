@@ -15,7 +15,7 @@ func (app *app) registerHandlers() {
 	app.register("POST /logout", app.handleLogout, true)
 	app.register("GET /empty", app.handleEmpty, true)
 
-	app.register("GET /users", app.handleUsersGet, true)
+	app.register("GET /users", app.handleUsersGet, false)
 	app.register("POST /users", app.handleUsersPost, true)
 	app.register("PUT /users/{id}", app.handleUsersPut, true)
 	app.register("GET /users/{id}/edit", app.handleUsersEdit, true)

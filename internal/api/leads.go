@@ -321,6 +321,7 @@ func (app *app) handleLeadsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		app.errorHx(w, tAlert, leadCellErrors, ErrChooseUser.Error())
+		app.error(w, errors.New(phone))
 		return
 	}
 	if r.Header.Get(acceptHeader) == jsonContentType {
