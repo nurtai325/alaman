@@ -48,7 +48,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 	var completedLeads []service.Lead
 	user := auth.GetUser(r)
 	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetNewLeads(r.Context(), 0, 8, "")
+		leads, err := app.service.GetNewLeads(r.Context(), 0, 10, "")
 		if err != nil {
 			app.error(w, err)
 			return
@@ -59,7 +59,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetAssignedLeads(r.Context(), 0, 9, "")
+		leads, err := app.service.GetAssignedLeads(r.Context(), 0, 10, "")
 		if err != nil {
 			app.error(w, err)
 			return
@@ -77,7 +77,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		assignedLeads = leads
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetInDeliveryLeads(r.Context(), 0, 3, "")
+		leads, err := app.service.GetInDeliveryLeads(r.Context(), 0, 6, "")
 		if err != nil {
 			app.error(w, err)
 			return
@@ -95,7 +95,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		inDeliveryLeads = leads
 	}
 	if user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
-		leads, err := app.service.GetCompletedLeads(r.Context(), 0, 3, "")
+		leads, err := app.service.GetCompletedLeads(r.Context(), 0, 6, "")
 		if err != nil {
 			app.error(w, err)
 			return
@@ -159,7 +159,7 @@ func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	search := r.FormValue("search")
-	newLeads, err := app.service.GetNewLeads(r.Context(), page, 8, search)
+	newLeads, err := app.service.GetNewLeads(r.Context(), page, 10, search)
 	if err != nil {
 		app.error(w, err)
 		return
@@ -208,7 +208,7 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	search := r.FormValue("search")
-	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 9, search)
+	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 10, search)
 	if err != nil {
 		app.error(w, err)
 		return
@@ -245,7 +245,7 @@ func (app *app) handleLeadsInDeliveryGet(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	search := r.FormValue("search")
-	inDeliveryLeads, err := app.service.GetInDeliveryLeads(r.Context(), page, 3, search)
+	inDeliveryLeads, err := app.service.GetInDeliveryLeads(r.Context(), page, 6, search)
 	if err != nil {
 		app.error(w, err)
 		return
@@ -280,7 +280,7 @@ func (app *app) handleLeadsCompletedGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	search := r.FormValue("search")
-	completedLeads, err := app.service.GetCompletedLeads(r.Context(), page, 3, search)
+	completedLeads, err := app.service.GetCompletedLeads(r.Context(), page, 6, search)
 	if err != nil {
 		app.error(w, err)
 		return
@@ -546,5 +546,19 @@ func (app *app) handleLeadsProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p, err := app.service.GetProduct(r.Context(), productId)
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(p)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		return
+	}
 	app.execute(w, tLeadsProduct, "", p)
 }

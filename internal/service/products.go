@@ -13,14 +13,14 @@ var (
 )
 
 type Product struct {
-	Id         int
-	Name       string
-	InStock    int
-	Price      int
-	StockPrice int
-	Code       string
-	SaleCount  int
-	CreatedAt  time.Time
+	Id         int       `json:"id"`
+	Name       string    `json:"name"`
+	InStock    int       `json:"in_stock"`
+	Price      int       `json:"price"`
+	StockPrice int       `json:"stock_price"`
+	Code       string    `json:"code"`
+	SaleCount  int       `json:"sale_count"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func getSProduct(p repository.Product) Product {
