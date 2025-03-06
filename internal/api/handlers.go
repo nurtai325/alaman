@@ -21,7 +21,7 @@ func (app *app) registerHandlers() {
 	app.register("GET /users/{id}/edit", app.handleUsersEdit, true)
 	app.register("DELETE /users/{id}", app.handleUsersDelete, true)
 
-	app.register("GET /products", app.handleProductsGet, true)
+	app.register("GET /products", app.handleProductsGet, false)
 	app.register("POST /products", app.handleProductsPost, true)
 	app.register("PUT /products/{id}", app.handleProductsPut, true)
 	app.register("GET /products/{id}/edit", app.handleProductsEdit, true)

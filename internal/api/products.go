@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -25,6 +26,20 @@ func (app *app) handleProductsGet(w http.ResponseWriter, r *http.Request) {
 	products, err := app.service.GetProducts(r.Context(), 0, pagesLimit)
 	if err != nil {
 		app.error(w, err)
+		return
+	}
+	if r.Header.Get(acceptHeader) == jsonContentType {
+		resp, err := json.Marshal(products)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		_, err = w.Write(resp)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
 		return
 	}
 	app.execute(w, tProducts, "/pages/products", layoutData{
