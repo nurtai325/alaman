@@ -178,10 +178,14 @@ func (s *Service) GetAssignedLeads(ctx context.Context, page, limit int, search 
 	return sLeads, nil
 }
 
-func (s *Service) GetAssignedLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
-	leads, err := s.queries.GetAssignedLeadsByUser(ctx, pgtype.Int4{
-		Int32: int32(userId),
-		Valid: true,
+func (s *Service) GetAssignedLeadsUser(ctx context.Context, userId, offset, limit int) ([]Lead, error) {
+	leads, err := s.queries.GetAssignedLeadsByUser(ctx, repository.GetAssignedLeadsByUserParams{
+		UserID: pgtype.Int4{
+			Int32: int32(userId),
+			Valid: true,
+		},
+		Offset: int64(offset),
+		Limit:  int64(limit),
 	})
 	if err != nil {
 		return nil, err
@@ -290,10 +294,14 @@ func (s *Service) GetInDeliveryLeads(ctx context.Context, page, limit int, searc
 	return sLeads, nil
 }
 
-func (s *Service) GetInDeliveryLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
-	leads, err := s.queries.GetInDeliveryLeadsByUser(ctx, pgtype.Int4{
-		Int32: int32(userId),
-		Valid: true,
+func (s *Service) GetInDeliveryLeadsUser(ctx context.Context, userId, offset, limit int) ([]Lead, error) {
+	leads, err := s.queries.GetInDeliveryLeadsByUser(ctx, repository.GetInDeliveryLeadsByUserParams{
+		UserID: pgtype.Int4{
+			Int32: int32(userId),
+			Valid: true,
+		},
+		Offset: int64(offset),
+		Limit:  int64(limit),
 	})
 	if err != nil {
 		return nil, err
@@ -422,10 +430,14 @@ func (s *Service) GetCompletedLeads(ctx context.Context, page, limit int, search
 	return sLeads, nil
 }
 
-func (s *Service) GetCompletedLeadsUser(ctx context.Context, userId int) ([]Lead, error) {
-	leads, err := s.queries.GetCompletedLeadsByUser(ctx, pgtype.Int4{
-		Int32: int32(userId),
-		Valid: true,
+func (s *Service) GetCompletedLeadsUser(ctx context.Context, userId, offset, limit int) ([]Lead, error) {
+	leads, err := s.queries.GetCompletedLeadsByUser(ctx, repository.GetCompletedLeadsByUserParams{
+		UserID: pgtype.Int4{
+			Int32: int32(userId),
+			Valid: true,
+		},
+		Offset: int64(offset),
+		Limit:  int64(limit),
 	})
 	if err != nil {
 		return nil, err

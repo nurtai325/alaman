@@ -2,7 +2,7 @@
 SELECT * FROM leads AS l
 WHERE user_id IS NULL
 ORDER BY created_at DESC
-LIMIT $2 
+LIMIT $2
 OFFSET $1;
 
 -- name: GetNewLeadsSearch :many
@@ -16,13 +16,13 @@ WHERE user_id IS NULL;
 
 -- name: GetLeadByPhone :one
 SELECT * FROM leads 
-WHERE phone = $1 
+WHERE phone = $1
 ORDER BY created_at DESC
 LIMIT 1;
 
 -- name: GetLead :one
 SELECT * FROM leads 
-WHERE id = $1 
+WHERE id = $1
 LIMIT 1;
 
 -- name: GetAssignedLeads :many
@@ -30,7 +30,7 @@ SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC
-LIMIT $2 
+LIMIT $2
 OFFSET $1;
 
 -- name: GetAssignedLeadsSearch :many
@@ -44,7 +44,9 @@ ORDER BY created_at DESC;
 SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL AND user_id = $1
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $3
+OFFSET $2;
 
 -- name: GetInDeliveryLeads :many
 SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
@@ -52,7 +54,7 @@ INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
 ORDER BY sold_at DESC
-LIMIT $2 
+LIMIT $2
 OFFSET $1;
 
 -- name: GetInDeliveryLeadsSearch :many
@@ -67,7 +69,9 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND user_id = $1
-ORDER BY sold_at DESC;
+ORDER BY sold_at DESC
+LIMIT $3
+OFFSET $2;
 
 -- name: GetCompletedLeads :many
 SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
@@ -75,7 +79,7 @@ INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
 ORDER BY sold_at DESC
-LIMIT $2 
+LIMIT $2
 OFFSET $1;
 
 -- name: GetCompletedLeadsSearch :many
@@ -90,7 +94,9 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND user_id = $1
-ORDER BY sold_at DESC;
+ORDER BY sold_at DESC
+LIMIT $3
+OFFSET $2;
 
 -- name: InsertLead :one
 INSERT INTO leads(phone)

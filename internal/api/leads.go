@@ -69,7 +69,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			assignedLeads[len(assignedLeads)-1].Page = 1
 		}
 	} else {
-		leads, err := app.service.GetAssignedLeadsUser(r.Context(), user.Id)
+		leads, err := app.service.GetAssignedLeadsUser(r.Context(), user.Id, 0, 10)
 		if err != nil {
 			app.error(w, err)
 			return
@@ -87,7 +87,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			inDeliveryLeads[len(inDeliveryLeads)-1].Page = 1
 		}
 	} else {
-		leads, err := app.service.GetInDeliveryLeadsUser(r.Context(), user.Id)
+		leads, err := app.service.GetInDeliveryLeadsUser(r.Context(), user.Id, 0, 6)
 		if err != nil {
 			app.error(w, err)
 			return
@@ -105,7 +105,7 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			completedLeads[len(completedLeads)-1].Page = 1
 		}
 	} else {
-		leads, err := app.service.GetCompletedLeadsUser(r.Context(), user.Id)
+		leads, err := app.service.GetCompletedLeadsUser(r.Context(), user.Id, 0, 6)
 		if err != nil {
 			app.error(w, err)
 			return
@@ -208,10 +208,22 @@ func (app *app) handleLeadsAssignedGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	search := r.FormValue("search")
-	assignedLeads, err := app.service.GetAssignedLeads(r.Context(), page, 10, search)
-	if err != nil {
-		app.error(w, err)
-		return
+	var assignedLeads []service.Lead
+	user := auth.GetUser(r)
+	if search != "" || user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetAssignedLeads(r.Context(), page, 10, search)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		assignedLeads = leads
+	} else {
+		leads, err := app.service.GetAssignedLeadsUser(r.Context(), user.Id, page, 10)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		assignedLeads = leads
 	}
 	if len(assignedLeads) != 0 && search == "" {
 		assignedLeads[len(assignedLeads)-1].Page = page + 1
@@ -245,10 +257,22 @@ func (app *app) handleLeadsInDeliveryGet(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	search := r.FormValue("search")
-	inDeliveryLeads, err := app.service.GetInDeliveryLeads(r.Context(), page, 6, search)
-	if err != nil {
-		app.error(w, err)
-		return
+	var inDeliveryLeads []service.Lead
+	user := auth.GetUser(r)
+	if search != "" || user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetInDeliveryLeads(r.Context(), page, 6, search)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		inDeliveryLeads = leads
+	} else {
+		leads, err := app.service.GetInDeliveryLeadsUser(r.Context(), user.Id, page, 6)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		inDeliveryLeads = leads
 	}
 	if len(inDeliveryLeads) != 0 && search == "" {
 		inDeliveryLeads[len(inDeliveryLeads)-1].Page = page + 1
@@ -280,10 +304,22 @@ func (app *app) handleLeadsCompletedGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	search := r.FormValue("search")
-	completedLeads, err := app.service.GetCompletedLeads(r.Context(), page, 6, search)
-	if err != nil {
-		app.error(w, err)
-		return
+	var completedLeads []service.Lead
+	user := auth.GetUser(r)
+	if search != "" || user.Role == auth.AdminRole || user.Role == auth.RopRole {
+		leads, err := app.service.GetCompletedLeads(r.Context(), page, 6, search)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		completedLeads = leads
+	} else {
+		leads, err := app.service.GetCompletedLeadsUser(r.Context(), user.Id, page, 6)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		completedLeads = leads
 	}
 	if len(completedLeads) != 0 && search == "" {
 		completedLeads[len(completedLeads)-1].Page = page + 1
