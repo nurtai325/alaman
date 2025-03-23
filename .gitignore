@@ -2,6 +2,7 @@
 .git
 logs
 temp.js
+temp.json
 temp
 tailwind.js
 cert

@@ -55,7 +55,6 @@ func LeadEventsHandler(*whatsmeow.Client) func(any) {
 			text = e.Message.GetExtendedTextMessage().GetText()
 			if text == "" {
 				log.Printf("message conversation is nil %+v", e)
-				return
 			}
 		}
 		leadCh <- e.Info.Sender.User
@@ -164,6 +163,8 @@ func storeMedia(evt *events.Message, client *whatsmeow.Client) (string, error) {
 	case evt.Message.VideoMessage != nil:
 		video := evt.Message.GetVideoMessage()
 		if video != nil {
+			// WARNING: temporary decision before transfering to different host. don't save videos
+			return "", nil
 			data, err := client.Download(video)
 			if err != nil {
 				return "", fmt.Errorf("Failed to download video: %v", err)

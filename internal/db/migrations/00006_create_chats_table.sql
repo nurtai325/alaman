@@ -3,7 +3,7 @@
 CREATE TABLE chats(
 	id SERIAL PRIMARY KEY,
 	lead_id INT NOT NULL,
-	user_id INT NOT NULL,
+	user_id INT,
 	FOREIGN KEY(lead_id)
 	REFERENCES leads(id),
 	FOREIGN KEY(user_id)
