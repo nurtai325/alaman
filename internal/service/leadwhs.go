@@ -148,12 +148,12 @@ func (s *Service) ConnectAllWh() error {
 	if err != nil {
 		return err
 	}
-	for i, user := range users {
+	for _, user := range users {
 		client, err := wh.Connect(user.Jid, wh.ChatEventsHandler(user.Id))
 		if err != nil {
 			log.Println(err)
 		}
-		if i == len(users)-1 {
+		if user.Name == "whatsapp" {
 			wh.SetDefaultClient(client)
 		}
 	}
