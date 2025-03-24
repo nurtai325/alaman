@@ -49,11 +49,11 @@ func SendMessage(ctx context.Context, from, to, text string, isGroup bool) error
 			return err
 		}
 	}
-	fmt.Println(jid)
 	_, err := defaultClient.SendMessage(ctx, jid, &waE2E.Message{
 		Conversation: &text,
 	})
 	if err != nil {
+		fmt.Println(jid)
 		return err
 	}
 	return nil
