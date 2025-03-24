@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/nurtai325/alaman/internal/config"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -38,18 +37,18 @@ func InitContainer(dbConn *sql.DB) error {
 }
 
 func SendMessage(ctx context.Context, from, to, text string, isGroup bool) error {
-	jid := types.NewJID(to, types.DefaultUserServer)
-	if isGroup {
-		conf, err := config.New()
-		if err != nil {
-			return err
-		}
-		jid, err = types.ParseJID(conf.TABYS_GROUP_ID)
-		if err != nil {
-			return err
-		}
-	}
-	_, err := defaultClient.SendMessage(ctx, jid, &waE2E.Message{
+	// jid := types.NewJID(to, types.DefaultUserServer)
+	// if isGroup {
+	// 	conf, err := config.New()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	jid, err = types.ParseJID(conf.TABYS_GROUP_ID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	_, err := defaultClient.SendMessage(ctx, types.NewJID("77052505839", types.DefaultUserServer), &waE2E.Message{
 		Conversation: &text,
 	})
 	if err != nil {
