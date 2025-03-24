@@ -48,12 +48,13 @@ func SendMessage(ctx context.Context, from, to, text string, isGroup bool) error
 		if err != nil {
 			return err
 		}
+		jid.Server = types.GroupServer
 	}
 	_, err := defaultClient.SendMessage(ctx, jid, &waE2E.Message{
 		Conversation: &text,
 	})
 	if err != nil {
-		fmt.Println(jid)
+		fmt.Printf("%+v\n", jid)
 		return err
 	}
 	return nil
