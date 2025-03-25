@@ -1,6 +1,7 @@
 package api
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -127,7 +128,8 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 		app.error(w, err)
 		return
 	}
-	app.execute(w, tLeads, "/pages/leads", layoutData{
+	dir := "/pages/leads"
+	data := layoutData{
 		BarsData: barsData{
 			Page:     "leads",
 			PageName: "Лидтер",
@@ -144,7 +146,30 @@ func (app *app) handleLeadsGet(w http.ResponseWriter, r *http.Request) {
 			Role:          string(user.Role),
 			NewLeadsCount: count,
 		},
-	})
+	}
+	t, err := app.templates.Clone()
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	if dir != "" {
+		path := fmt.Sprintf("./views%s/%s", dir, tLeads)
+		t, err = t.ParseFiles(path)
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+	}
+	w.Header().Add("Content-Encoding", "gzip")
+	compressedW := gzip.NewWriter(w)
+	err = t.ExecuteTemplate(compressedW, string(tLeads), data)
+	if err != nil {
+		app.error(w, err)
+	}
+	err = compressedW.Close()
+	if err != nil {
+		app.error(w, err)
+	}
 }
 
 func (app *app) handleLeadsNewGet(w http.ResponseWriter, r *http.Request) {
