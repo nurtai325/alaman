@@ -41,7 +41,7 @@
 						<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
 							<option class="hidden" disabled selected value></option>
 							{{ range $users }}
-							<option class="text-center text-sm" value="{{ .Id }}">
+							<option class="text-center text-xs" value="{{ .Id }}">
 								{{ .Name }}
 							</option>
 							{{ end }}
