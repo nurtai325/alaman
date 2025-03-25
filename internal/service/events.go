@@ -52,7 +52,10 @@ func ListenNewMessages(s *Service) {
 			}
 			chat, err = s.queries.InsertChat(context.Background(), repository.InsertChatParams{
 				LeadID: lead.ID,
-				UserID: int32(msg.UserId),
+				UserID: pgtype.Int4{
+					Int32: int32(msg.UserId),
+					Valid: true,
+				},
 			})
 			if err != nil {
 				log.Println(err)

@@ -56,7 +56,7 @@ func (s *Service) GetChats(ctx context.Context, offset, limit int) ([]Chat, erro
 			UserPhone:  chat.UserPhone,
 			UserName:   chat.UserName,
 			LeadId:     int(chat.LeadID),
-			UserId:     int(chat.UserID),
+			UserId:     int(chat.UserID.Int32),
 			UpdatedAt:  chat.UpdatedAt.Time,
 			UpdatedAtF: chat.UpdatedAt.Time.Format("15:04"),
 			CreatedAt:  chat.CreatedAt.Time,
@@ -76,7 +76,7 @@ func (s *Service) GetChat(ctx context.Context, id int) (Chat, error) {
 		UserPhone:  chat.UserPhone,
 		UserName:   chat.UserName,
 		LeadId:     int(chat.LeadID),
-		UserId:     int(chat.UserID),
+		UserId:     int(chat.UserID.Int32),
 		UpdatedAt:  chat.UpdatedAt.Time,
 		UpdatedAtF: chat.UpdatedAt.Time.Format("15:04"),
 		CreatedAt:  chat.CreatedAt.Time,
@@ -99,7 +99,7 @@ func getSChat(chat repository.Chat) Chat {
 	return Chat{
 		Id:        int(chat.ID),
 		LeadId:    int(chat.LeadID),
-		UserId:    int(chat.UserID),
+		UserId:    int(chat.UserID.Int32),
 		UpdatedAt: chat.UpdatedAt.Time,
 		CreatedAt: chat.CreatedAt.Time,
 	}
@@ -108,7 +108,10 @@ func getSChat(chat repository.Chat) Chat {
 func (s *Service) InsertChat(ctx context.Context, leadId, userId int) (Chat, error) {
 	chat, err := s.queries.InsertChat(ctx, repository.InsertChatParams{
 		LeadID: int32(leadId),
-		UserID: int32(userId),
+		UserID: pgtype.Int4{
+			Int32: int32(userId),
+			Valid: true,
+		},
 	})
 	if err != nil {
 		return Chat{}, err
