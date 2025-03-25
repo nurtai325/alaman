@@ -8,7 +8,8 @@ OFFSET $1;
 -- name: GetNewLeadsSearch :many
 SELECT * FROM leads AS l
 WHERE user_id IS NULL AND phone LIKE $1
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT 9;
 
 -- name: GetNewLeadsCount :one
 SELECT COUNT(*) FROM leads AS l
@@ -37,7 +38,8 @@ OFFSET $1;
 SELECT l.*, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL AND l.phone LIKE $1
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT 9;
 
 
 -- name: GetAssignedLeadsByUser :many
@@ -62,7 +64,8 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND l.phone LIKE $1
-ORDER BY sold_at DESC;
+ORDER BY sold_at DESC
+LIMIT 9;
 
 -- name: GetInDeliveryLeadsByUser :many
 SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
@@ -87,7 +90,8 @@ SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM 
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND l.phone LIKE $1
-ORDER BY sold_at DESC;
+ORDER BY sold_at DESC
+LIMIT 9;
 
 -- name: GetCompletedLeadsByUser :many
 SELECT l.*, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l

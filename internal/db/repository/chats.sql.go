@@ -63,7 +63,7 @@ LIMIT 1
 type GetChatRow struct {
 	ID        int32
 	LeadID    int32
-	UserID    int32
+	UserID    pgtype.Int4
 	UpdatedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 	UserName  string
@@ -123,7 +123,7 @@ type GetChatsParams struct {
 type GetChatsRow struct {
 	ID        int32
 	LeadID    int32
-	UserID    int32
+	UserID    pgtype.Int4
 	UpdatedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 	UserName  string
@@ -249,7 +249,7 @@ RETURNING id, lead_id, user_id, updated_at, created_at
 
 type InsertChatParams struct {
 	LeadID int32
-	UserID int32
+	UserID pgtype.Int4
 }
 
 func (q *Queries) InsertChat(ctx context.Context, arg InsertChatParams) (Chat, error) {

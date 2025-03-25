@@ -186,6 +186,7 @@ SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.cr
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL AND l.phone LIKE $1
 ORDER BY created_at DESC
+LIMIT 9
 `
 
 type GetAssignedLeadsSearchRow struct {
@@ -369,6 +370,7 @@ INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND l.phone LIKE $1
 ORDER BY sold_at DESC
+LIMIT 9
 `
 
 type GetCompletedLeadsSearchRow struct {
@@ -612,6 +614,7 @@ INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND l.phone LIKE $1
 ORDER BY sold_at DESC
+LIMIT 9
 `
 
 type GetInDeliveryLeadsSearchRow struct {
@@ -770,6 +773,7 @@ const getNewLeadsSearch = `-- name: GetNewLeadsSearch :many
 SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
 WHERE user_id IS NULL AND phone LIKE $1
 ORDER BY created_at DESC
+LIMIT 9
 `
 
 func (q *Queries) GetNewLeadsSearch(ctx context.Context, phone string) ([]Lead, error) {

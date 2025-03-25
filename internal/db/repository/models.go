@@ -11,7 +11,7 @@ import (
 type Chat struct {
 	ID        int32
 	LeadID    int32
-	UserID    int32
+	UserID    pgtype.Int4
 	UpdatedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 }
