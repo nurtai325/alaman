@@ -29,7 +29,7 @@
 			<div class="flex w-full mt-2 pl-6">
 				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
 				<input class="px-2 rounded-lg text-lg form-control" type="search" name="search" hx-get="/leads/new"
-					hx-trigger="input changed delay:500ms, keyup[key=='Enter']" hx-target="#new" />
+					hx-trigger="input changed delay:400ms, keyup[key=='Enter']" hx-target="#new" />
 			</div>
 			<div id="new">
 				{{ range .New }}
@@ -72,7 +72,7 @@
 			<div class="flex w-full mt-2 pl-6">
 				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
 				<input class="px-2 rounded-lg text-lg form-control" type="search" name="search" hx-get="/leads/assigned"
-					hx-trigger="input changed delay:500ms, keyup[key=='Enter']" hx-target="#assigned" />
+					hx-trigger="input changed delay:400ms, keyup[key=='Enter']" hx-target="#assigned" />
 			</div>
 			<div id="assigned">
 				{{ range .Assigned }}
@@ -91,7 +91,7 @@
 			<div class="flex w-full mt-2 pl-6">
 				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
 				<input class="px-2 rounded-lg text-lg form-control" type="search" name="search" hx-get="/leads/indelivery"
-					hx-trigger="input changed delay:500ms, keyup[key=='Enter']" hx-target="#in-progress" />
+					hx-trigger="input changed delay:400ms, keyup[key=='Enter']" hx-target="#in-progress" />
 			</div>
 			<div id="in-progress">
 				{{ range .InDelivery }}
@@ -111,7 +111,7 @@
 			<div class="flex w-full mt-2 pl-6">
 				<img class="mr-1" src="/assets/icons/search.svg" width="20" height="20" />
 				<input class="px-2 rounded-lg text-lg form-control" type="search" name="search" hx-get="/leads/completed"
-					hx-trigger="input changed delay:500ms, keyup[key=='Enter']" hx-target="#ready" />
+					hx-trigger="input changed delay:400ms, keyup[key=='Enter']" hx-target="#ready" />
 			</div>
 			<div id="ready">
 				{{ range .Completed }}
