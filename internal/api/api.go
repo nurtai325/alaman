@@ -51,5 +51,18 @@ func (app *app) register(pattern string, handler http.HandlerFunc, secured bool)
 func (app *app) Run(conf config.Config) error {
 	app.registerHandlers()
 	app.infoLog.Printf("started http server on port: %s", conf.PORT)
-	return http.ListenAndServeTLS(fmt.Sprintf(":%s", conf.PORT), "cert/certificate.crt", "cert/private.key", app.mux)
+	errCh := make(chan error)
+	go func() {
+		err := http.ListenAndServeTLS(fmt.Sprintf(":%s", conf.PORT), "cert/certificate.crt", "cert/private.key", app.mux)
+		if err != nil {
+			errCh <- err
+		}
+	}()
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf(":%d", 80), app.mux)
+		if err != nil {
+			errCh <- err
+		}
+	}()
+	return <-errCh
 }
