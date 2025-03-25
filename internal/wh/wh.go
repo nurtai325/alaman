@@ -54,7 +54,6 @@ func SendMessage(ctx context.Context, from, to, text string, isGroup bool) error
 		Conversation: &text,
 	})
 	if err != nil {
-		fmt.Printf("%+v\n", jid)
 		return err
 	}
 	return nil
