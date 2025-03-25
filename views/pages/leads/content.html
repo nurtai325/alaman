@@ -38,10 +38,17 @@
 					class="lead-cell new-lead-cell pl-6 task mx-4 my-3 bg-blue-500 p-4 rounded-2xl text-lg text-white">
 					<div>{{ .Phone }}</div>
 					<div class="flex mt-1 mb-1">
-						<select class="bg-white text-black rounded-sm mr-2" name="user_id" required>
-							<option class="hidden" disabled selected value></option>
+						<style>
+						select {
+						-webkit-appearance: none;  /* Removes the arrow in Chrome, Safari, Edge, and Opera */
+						-moz-appearance: none;     /* Removes the arrow in Firefox */
+						appearance: none;          /* Standard way to remove it */
+						}
+						</style>
+						<select class="bg-white text-black rounded-sm mr-2 p-0" name="user_id" required>
+							<option class="hidden m-0 p-0" disabled selected value></option>
 							{{ range $users }}
-							<option class="text-center text-xs" value="{{ .Id }}">
+							<option class="text-center text-sm m-0 p-0" value="{{ .Id }}">
 								{{ .Name }}
 							</option>
 							{{ end }}
@@ -116,6 +123,6 @@
 	<span id="lead-cell-errors"></span>
 </div>
 <script>
-	let newLeadsCount = {{ .NewLeadsCount}}
+let newLeadsCount = {{ .NewLeadsCount}}
 </script>
 {{ end }}
