@@ -52,7 +52,7 @@ func main() {
 	}
 	defer pool.Close()
 	q := repository.New(pool)
-	fullLead, err := q.GetFullLead(context.Background(), 0)
+	fullLead, err := q.GetFullLead(context.Background(), 5002)
 	if err != nil {
 		panic(err)
 	}
