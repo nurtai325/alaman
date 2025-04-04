@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
@@ -45,13 +46,13 @@ Loop:
 				continue Loop
 			}
 		}
-		// _, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
-		// 	ID:     lead.ID,
-		// 	UserID: pgtype.Int4{Valid: true, Int32: 7},
-		// })
-		// if err != nil {
-		// 	panic(err)
-		// }
+		_, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
+			ID:     lead.ID,
+			UserID: pgtype.Int4{Valid: true, Int32: 7},
+		})
+		if err != nil {
+			panic(err)
+		}
 		j++
 		fmt.Printf("%d. would assign: %s\n", j, lead.Phone)
 	}
