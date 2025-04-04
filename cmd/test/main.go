@@ -79,7 +79,7 @@ func main() {
 	rowsLen := len(rows)
 	fmt.Printf("got %d leads from the database\n", rowsLen)
 	falseFound := 0
-	i := rowsLen - 1
+	i := rowsLen - 1 - 400
 	for sent := 0; sent < 500; {
 		fmt.Println(rows[i].Phone)
 		if rows[i].Phone != "+77777777777" {
