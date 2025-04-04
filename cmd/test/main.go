@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
