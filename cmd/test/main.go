@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/nurtai325/alaman/internal/config"
@@ -39,11 +38,11 @@ func main() {
 		panic(err)
 	}
 	j := 0
+Loop:
 	for _, lead := range leads {
 		for _, newLead := range needed {
 			if lead.Phone == newLead {
-				os.Exit(1)
-				continue
+				continue Loop
 			}
 		}
 		// _, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
