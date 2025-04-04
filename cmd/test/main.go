@@ -3,12 +3,47 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
 )
+
+func main() {
+	conf, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+	pool, err := db.New(conf)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
+	q := repository.New(pool)
+	rows, err := q.GetAssignedLeads(context.Background(), repository.GetAssignedLeadsParams{
+		Offset: 0,
+		Limit:  100000,
+	})
+	if err != nil {
+		panic(err)
+	}
+	rowsLen := len(rows)
+	fmt.Printf("got %d leads from the database\n", rowsLen)
+	selected := make(map[int]string, 200)
+	j := 200
+	for i := 0; i < j && i <= rowsLen; i++ {
+		n := rand.Intn(rowsLen)
+		lead := rows[n]
+		if lead.Phone == "+77777777777" || selected[int(lead.ID)] != "" {
+			j--
+			continue
+		}
+		selected[int(lead.ID)] = lead.Phone
+		fmt.Println(lead.Phone)
+	}
+}
 
 type Lead struct {
 	Id                 int          `json:"id"`
@@ -41,7 +76,7 @@ type SaleItem struct {
 	SaleCount   int     `json:"sale_count"`
 }
 
-func main() {
+func Some() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
