@@ -5,12 +5,50 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
 )
 
 func main() {
+	conf, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+	pool, err := db.New(conf)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
+	q := repository.New(pool)
+	needed := []string{}
+	leads, err := q.GetNewLeads(context.Background(), repository.GetNewLeadsParams{
+		Offset: 0,
+		Limit:  100000,
+	})
+	if err != nil {
+		panic(err)
+	}
+	for i, lead := range leads {
+		for _, newLead := range needed {
+			if lead.Phone == newLead {
+				continue
+			}
+		}
+		// _, err := q.AssignLead(context.Background(), repository.AssignLeadParams{
+		// 	ID:     lead.ID,
+		// 	UserID: pgtype.Int4{Valid: true, Int32: 7},
+		// })
+		// if err != nil {
+		// 	panic(err)
+		// }
+		fmt.Println("%d. would assign: %s", i, lead.Phone)
+	}
+
+}
+
+func Some1() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
