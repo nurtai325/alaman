@@ -37,7 +37,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	for i, lead := range leads {
+	j := 0
+	for _, lead := range leads {
 		for _, newLead := range needed {
 			if lead.Phone == newLead {
 				continue
@@ -50,7 +51,8 @@ func main() {
 		// if err != nil {
 		// 	panic(err)
 		// }
-		fmt.Printf("%d. would assign: %s\n", i, lead.Phone)
+		j++
+		fmt.Printf("%d. would assign: %s\n", j, lead.Phone)
 	}
 
 }
