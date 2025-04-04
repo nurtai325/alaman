@@ -78,18 +78,11 @@ func main() {
 	}
 	rowsLen := len(rows)
 	fmt.Printf("got %d leads from the database\n", rowsLen)
-	falseFound := 0
-	i := rowsLen - 1 - 500
-	for sent := 0; sent < 500; {
-		fmt.Println(rows[i].Phone)
-		if rows[i].Phone != "+77777777777" {
-			sent++
-			i--
-		} else {
-			falseFound++
+	for _, row := range rows {
+		if row.Phone != "+77777777777" {
+			fmt.Println(row.Phone)
 		}
 	}
-	fmt.Printf("false found count: %d\n", falseFound)
 }
 
 type Lead struct {
