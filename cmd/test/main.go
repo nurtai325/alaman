@@ -31,17 +31,13 @@ func main() {
 	}
 	rowsLen := len(rows)
 	fmt.Printf("got %d leads from the database\n", rowsLen)
-	selected := make(map[int]string, 200)
-	j := 200
-	for i := 0; i < j && i <= rowsLen; i++ {
-		n := rand.Intn(rowsLen)
-		lead := rows[n]
-		if lead.Phone == "+77777777777" || selected[int(lead.ID)] != "" {
-			j--
-			continue
+	i := rowsLen - 1
+	for sent := 0; sent < 400; {
+		if rows[i].Phone != "+77777777777" {
+			fmt.Println(rows[i].Phone)
+			sent++
+			i--
 		}
-		selected[int(lead.ID)] = lead.Phone
-		fmt.Println(lead.Phone)
 	}
 }
 
