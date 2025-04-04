@@ -11,7 +11,7 @@ import (
 	"github.com/nurtai325/alaman/internal/db/repository"
 )
 
-func main() {
+func Some1() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ Loop:
 
 }
 
-func Some1() {
+func main() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
@@ -81,7 +81,7 @@ func Some1() {
 	fmt.Printf("got %d leads from the database\n", rowsLen)
 	i := rowsLen - 1
 	for sent := 0; sent < 400; {
-		if rows[i].Phone != "+77777777777" {
+		if rows[i].Phone == "+77777777777" {
 			fmt.Println(rows[i].Phone)
 			sent++
 			i--
