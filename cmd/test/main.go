@@ -70,7 +70,7 @@ func main() {
 	defer pool.Close()
 	q := repository.New(pool)
 	rows, err := q.GetAssignedLeads(context.Background(), repository.GetAssignedLeadsParams{
-		Offset: 400,
+		Offset: 500,
 		Limit:  100000,
 	})
 	if err != nil {
