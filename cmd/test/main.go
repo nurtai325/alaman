@@ -21,7 +21,15 @@ func main() {
 	}
 	defer pool.Close()
 	q := repository.New(pool)
-	needed := []string{}
+	needed := []string{
+		"+77478778628",
+		"+77018638855",
+		"+77024635948",
+		"+77782148869",
+		"+77018338948",
+		"+77018008079",
+		"+77753536757",
+	}
 	leads, err := q.GetNewLeads(context.Background(), repository.GetNewLeadsParams{
 		Offset: 0,
 		Limit:  100000,
