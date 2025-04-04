@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/nurtai325/alaman/internal/config"
