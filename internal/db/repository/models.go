@@ -105,4 +105,5 @@ type User struct {
 	Role      string
 	Jid       pgtype.Text
 	CreatedAt pgtype.Timestamptz
+	Deleted   bool
 }
