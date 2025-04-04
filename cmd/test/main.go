@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nurtai325/alaman/internal/config"
 	"github.com/nurtai325/alaman/internal/db"
 	"github.com/nurtai325/alaman/internal/db/repository"
@@ -43,7 +42,7 @@ func main() {
 		// if err != nil {
 		// 	panic(err)
 		// }
-		fmt.Println("%d. would assign: %s", i, lead.Phone)
+		fmt.Printf("%d. would assign: %s\n", i, lead.Phone)
 	}
 
 }
