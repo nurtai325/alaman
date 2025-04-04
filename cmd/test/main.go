@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/nurtai325/alaman/internal/config"
@@ -41,6 +42,7 @@ func main() {
 	for _, lead := range leads {
 		for _, newLead := range needed {
 			if lead.Phone == newLead {
+				os.Exit(1)
 				continue
 			}
 		}
