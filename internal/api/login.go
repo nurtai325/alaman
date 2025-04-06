@@ -31,6 +31,11 @@ func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	sessionCookie, err := app.service.Login(r.Context(), phone, password)
 	if err != nil {
+		if r.Header.Get("Device") == "app" {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(err.Error()))
+			return
+		}
 		if errors.Is(err, service.ErrInternal) {
 			app.error(w, err)
 			return
@@ -39,6 +44,10 @@ func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, sessionCookie)
+	if r.Header.Get("Device") == "app" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	redirect(w, "/")
 	return
 }
