@@ -11,6 +11,7 @@ func (app *app) registerHandlers() {
 	app.register("/", app.handleRoot, true)
 	app.register("/dashboard", app.handleDashBoard, true)
 	app.register("GET /login", app.handleLogin, false)
+	app.register("GET /logged", app.handleLogged, false)
 	app.register("POST /login", app.handleLogin, false)
 	app.register("POST /logout", app.handleLogout, true)
 	app.register("GET /empty", app.handleEmpty, true)

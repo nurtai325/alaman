@@ -8,6 +8,14 @@ import (
 	"github.com/nurtai325/alaman/internal/service"
 )
 
+func (app *app) handleLogged(w http.ResponseWriter, r *http.Request) {
+	if auth.IsLogged(r) {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
 func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		app.execute(w, tLogin, "", layoutData{
