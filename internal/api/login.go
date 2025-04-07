@@ -63,7 +63,23 @@ func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, sessionCookie)
 	if r.Header.Get("Device") == "app" {
-		w.WriteHeader(http.StatusOK)
+		r.Header.Add("Cookie", sessionCookie.String())
+		user := auth.GetUser(r)
+		data, err := json.Marshal(struct {
+			Id   int    `json:"id"`
+			Name string `json:"name"`
+			Role string `json:"role"`
+		}{
+			Id:   user.Id,
+			Name: user.Name,
+			Role: string(user.Role),
+		})
+		if err != nil {
+			app.error(w, err)
+			return
+		}
+		w.Header().Add(contentTypeHeader, jsonContentType)
+		w.Write(data)
 		return
 	}
 	redirect(w, "/")
