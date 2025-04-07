@@ -11,6 +11,7 @@ build
 tailwindcss
 assets/index.css
 assets/reports
+assets/leads
 assets/wh-media
 assets/qr
 ./server
