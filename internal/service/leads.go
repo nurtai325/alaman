@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -38,6 +40,8 @@ type Lead struct {
 	DeliveryTypeName   string       `json:"delivery_type_name"`
 	PaymentAt          time.Time    `json:"payment_at"`
 	PaymentAtFormatted string       `json:"payment_at_formatted"`
+	FirstPhoto         string       `json:"first_photo"`
+	SecondPhoto        string       `json:"second_photo"`
 	CreatedAt          time.Time    `json:"created_at"`
 	Page               int          `json:"page"`
 }
@@ -76,14 +80,16 @@ func getSaleTypeName(val saleType) string {
 
 func getSLead(lead repository.Lead) Lead {
 	return Lead{
-		Id:        int(lead.ID),
-		Name:      lead.Name.String,
-		Address:   lead.Address.String,
-		Phone:     lead.Phone,
-		Completed: lead.Completed,
-		UserId:    int(lead.UserID.Int32),
-		SaleId:    int(lead.SaleID.Int32),
-		CreatedAt: lead.CreatedAt.Time,
+		Id:          int(lead.ID),
+		Name:        lead.Name.String,
+		Address:     lead.Address.String,
+		Phone:       lead.Phone,
+		Completed:   lead.Completed,
+		UserId:      int(lead.UserID.Int32),
+		SaleId:      int(lead.SaleID.Int32),
+		FirstPhoto:  lead.FirstPhoto,
+		SecondPhoto: lead.SecondPhoto,
+		CreatedAt:   lead.CreatedAt.Time,
 	}
 }
 
@@ -385,6 +391,8 @@ func (s *Service) GetCompletedLeads(ctx context.Context, page, limit int, search
 				DeliveryType:       deliveryType(lead.DeliveryType.String),
 				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
 				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+				FirstPhoto:         lead.FirstPhoto,
+				SecondPhoto:        lead.SecondPhoto,
 			})
 		}
 	} else {
@@ -424,6 +432,8 @@ func (s *Service) GetCompletedLeads(ctx context.Context, page, limit int, search
 				DeliveryType:       deliveryType(lead.DeliveryType.String),
 				PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
 				DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+				FirstPhoto:         lead.FirstPhoto,
+				SecondPhoto:        lead.SecondPhoto,
 			})
 		}
 	}
@@ -474,6 +484,8 @@ func (s *Service) GetCompletedLeadsUser(ctx context.Context, userId, offset, lim
 			DeliveryType:       deliveryType(lead.DeliveryType.String),
 			PaymentAtFormatted: lead.PaymentAt.Time.Format(dateTimeFormat),
 			DeliveryTypeName:   getDeliveryTypeName(deliveryType(lead.DeliveryType.String)),
+			FirstPhoto:         lead.FirstPhoto,
+			SecondPhoto:        lead.SecondPhoto,
 		})
 	}
 	return sLeads, nil
@@ -514,8 +526,32 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 	return getSLead(lead), nil
 }
 
-func (s *Service) CompleteLead(ctx context.Context, id int) error {
-	_, err := s.queries.CompleteLead(ctx, int32(id))
+func (s *Service) CompleteLead(ctx context.Context, id int, firstPhoto, secondPhoto io.Reader) error {
+	firstPhotoName := fmt.Sprintf("assets/leads/%d_first_%d.jpg", id, time.Now().UnixNano())
+	f1, err := os.Create(firstPhotoName)
+	if err != nil {
+		return err
+	}
+	defer f1.Close()
+	_, err = io.Copy(f1, firstPhoto)
+	if err != nil {
+		return err
+	}
+	secondPhotoName := fmt.Sprintf("assets/leads/%d_second_%d.jpg", id, time.Now().UnixNano())
+	f2, err := os.Create(secondPhotoName)
+	if err != nil {
+		return err
+	}
+	defer f2.Close()
+	_, err = io.Copy(f2, secondPhoto)
+	if err != nil {
+		return err
+	}
+	_, err = s.queries.CompleteLead(ctx, repository.CompleteLeadParams{
+		ID:          int32(id),
+		FirstPhoto:  firstPhotoName,
+		SecondPhoto: secondPhotoName,
+	})
 	return err
 }
 

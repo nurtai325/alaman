@@ -17,15 +17,17 @@ type Chat struct {
 }
 
 type Lead struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
+	ID          int32
+	Name        pgtype.Text
+	Address     pgtype.Text
+	Phone       string
+	Completed   bool
+	UserID      pgtype.Int4
+	SaleID      pgtype.Int4
+	CreatedAt   pgtype.Timestamptz
+	SoldAt      pgtype.Timestamptz
+	FirstPhoto  string
+	SecondPhoto string
 }
 
 type LeadWh struct {

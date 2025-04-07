@@ -15,7 +15,7 @@ const assignLead = `-- name: AssignLead :one
 UPDATE leads
 SET user_id = $2
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo
 `
 
 type AssignLeadParams struct {
@@ -36,19 +36,27 @@ func (q *Queries) AssignLead(ctx context.Context, arg AssignLeadParams) (Lead, e
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
 
 const completeLead = `-- name: CompleteLead :one
 UPDATE leads
-SET completed = true
+SET completed = true, first_photo = $2, second_photo = $3
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo
 `
 
-func (q *Queries) CompleteLead(ctx context.Context, id int32) (Lead, error) {
-	row := q.db.QueryRow(ctx, completeLead, id)
+type CompleteLeadParams struct {
+	ID          int32
+	FirstPhoto  string
+	SecondPhoto string
+}
+
+func (q *Queries) CompleteLead(ctx context.Context, arg CompleteLeadParams) (Lead, error) {
+	row := q.db.QueryRow(ctx, completeLead, arg.ID, arg.FirstPhoto, arg.SecondPhoto)
 	var i Lead
 	err := row.Scan(
 		&i.ID,
@@ -60,12 +68,14 @@ func (q *Queries) CompleteLead(ctx context.Context, id int32) (Lead, error) {
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
 
 const getAssignedLeads = `-- name: GetAssignedLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL
 ORDER BY created_at DESC
@@ -79,16 +89,18 @@ type GetAssignedLeadsParams struct {
 }
 
 type GetAssignedLeadsRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID          int32
+	Name        pgtype.Text
+	Address     pgtype.Text
+	Phone       string
+	Completed   bool
+	UserID      pgtype.Int4
+	SaleID      pgtype.Int4
+	CreatedAt   pgtype.Timestamptz
+	SoldAt      pgtype.Timestamptz
+	FirstPhoto  string
+	SecondPhoto string
+	UserName    string
 }
 
 func (q *Queries) GetAssignedLeads(ctx context.Context, arg GetAssignedLeadsParams) ([]GetAssignedLeadsRow, error) {
@@ -110,6 +122,8 @@ func (q *Queries) GetAssignedLeads(ctx context.Context, arg GetAssignedLeadsPara
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -123,7 +137,7 @@ func (q *Queries) GetAssignedLeads(ctx context.Context, arg GetAssignedLeadsPara
 }
 
 const getAssignedLeadsByUser = `-- name: GetAssignedLeadsByUser :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL AND user_id = $1
 ORDER BY created_at DESC
@@ -138,16 +152,18 @@ type GetAssignedLeadsByUserParams struct {
 }
 
 type GetAssignedLeadsByUserRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID          int32
+	Name        pgtype.Text
+	Address     pgtype.Text
+	Phone       string
+	Completed   bool
+	UserID      pgtype.Int4
+	SaleID      pgtype.Int4
+	CreatedAt   pgtype.Timestamptz
+	SoldAt      pgtype.Timestamptz
+	FirstPhoto  string
+	SecondPhoto string
+	UserName    string
 }
 
 func (q *Queries) GetAssignedLeadsByUser(ctx context.Context, arg GetAssignedLeadsByUserParams) ([]GetAssignedLeadsByUserRow, error) {
@@ -169,6 +185,8 @@ func (q *Queries) GetAssignedLeadsByUser(ctx context.Context, arg GetAssignedLea
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -182,7 +200,7 @@ func (q *Queries) GetAssignedLeadsByUser(ctx context.Context, arg GetAssignedLea
 }
 
 const getAssignedLeadsSearch = `-- name: GetAssignedLeadsSearch :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 WHERE user_id IS NOT NULL AND sale_id IS NULL AND l.phone LIKE $1
 ORDER BY created_at DESC
@@ -190,16 +208,18 @@ LIMIT 9
 `
 
 type GetAssignedLeadsSearchRow struct {
-	ID        int32
-	Name      pgtype.Text
-	Address   pgtype.Text
-	Phone     string
-	Completed bool
-	UserID    pgtype.Int4
-	SaleID    pgtype.Int4
-	CreatedAt pgtype.Timestamptz
-	SoldAt    pgtype.Timestamptz
-	UserName  string
+	ID          int32
+	Name        pgtype.Text
+	Address     pgtype.Text
+	Phone       string
+	Completed   bool
+	UserID      pgtype.Int4
+	SaleID      pgtype.Int4
+	CreatedAt   pgtype.Timestamptz
+	SoldAt      pgtype.Timestamptz
+	FirstPhoto  string
+	SecondPhoto string
+	UserName    string
 }
 
 func (q *Queries) GetAssignedLeadsSearch(ctx context.Context, phone string) ([]GetAssignedLeadsSearchRow, error) {
@@ -221,6 +241,8 @@ func (q *Queries) GetAssignedLeadsSearch(ctx context.Context, phone string) ([]G
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 		); err != nil {
 			return nil, err
@@ -234,7 +256,7 @@ func (q *Queries) GetAssignedLeadsSearch(ctx context.Context, phone string) ([]G
 }
 
 const getCompletedLeads = `-- name: GetCompletedLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true
@@ -258,6 +280,8 @@ type GetCompletedLeadsRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -283,6 +307,8 @@ func (q *Queries) GetCompletedLeads(ctx context.Context, arg GetCompletedLeadsPa
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -299,7 +325,7 @@ func (q *Queries) GetCompletedLeads(ctx context.Context, arg GetCompletedLeadsPa
 }
 
 const getCompletedLeadsByUser = `-- name: GetCompletedLeadsByUser :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND user_id = $1
@@ -324,6 +350,8 @@ type GetCompletedLeadsByUserRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -349,6 +377,8 @@ func (q *Queries) GetCompletedLeadsByUser(ctx context.Context, arg GetCompletedL
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -365,7 +395,7 @@ func (q *Queries) GetCompletedLeadsByUser(ctx context.Context, arg GetCompletedL
 }
 
 const getCompletedLeadsSearch = `-- name: GetCompletedLeadsSearch :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = true AND l.phone LIKE $1
@@ -383,6 +413,8 @@ type GetCompletedLeadsSearchRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -408,6 +440,8 @@ func (q *Queries) GetCompletedLeadsSearch(ctx context.Context, phone string) ([]
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -424,7 +458,7 @@ func (q *Queries) GetCompletedLeadsSearch(ctx context.Context, phone string) ([]
 }
 
 const getFullLead = `-- name: GetFullLead :one
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, u.phone AS user_phone, s.full_sum, s.delivery_cost, s.loan_cost, s.delivery_type, s.payment_at, s.type AS sale_type
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, u.phone AS user_phone, s.full_sum, s.delivery_cost, s.loan_cost, s.delivery_type, s.payment_at, s.type AS sale_type
 FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
@@ -442,6 +476,8 @@ type GetFullLeadRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	UserPhone    string
 	FullSum      float32
@@ -465,6 +501,8 @@ func (q *Queries) GetFullLead(ctx context.Context, id int32) (GetFullLeadRow, er
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 		&i.UserName,
 		&i.UserPhone,
 		&i.FullSum,
@@ -478,7 +516,7 @@ func (q *Queries) GetFullLead(ctx context.Context, id int32) (GetFullLeadRow, er
 }
 
 const getInDeliveryLeads = `-- name: GetInDeliveryLeads :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false
@@ -502,6 +540,8 @@ type GetInDeliveryLeadsRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -527,6 +567,8 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context, arg GetInDeliveryLeads
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -543,7 +585,7 @@ func (q *Queries) GetInDeliveryLeads(ctx context.Context, arg GetInDeliveryLeads
 }
 
 const getInDeliveryLeadsByUser = `-- name: GetInDeliveryLeadsByUser :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND user_id = $1
@@ -568,6 +610,8 @@ type GetInDeliveryLeadsByUserRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -593,6 +637,8 @@ func (q *Queries) GetInDeliveryLeadsByUser(ctx context.Context, arg GetInDeliver
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -609,7 +655,7 @@ func (q *Queries) GetInDeliveryLeadsByUser(ctx context.Context, arg GetInDeliver
 }
 
 const getInDeliveryLeadsSearch = `-- name: GetInDeliveryLeadsSearch :many
-SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
+SELECT l.id, l.name, l.address, l.phone, l.completed, l.user_id, l.sale_id, l.created_at, l.sold_at, l.first_photo, l.second_photo, u.name AS user_name, s.full_sum, s.delivery_type, s.payment_at FROM leads AS l
 INNER JOIN users u ON l.user_id = u.id
 INNER JOIN sales s ON l.sale_id = s.id
 WHERE user_id IS NOT NULL AND sale_id IS NOT NULL AND completed = false AND l.phone LIKE $1
@@ -627,6 +673,8 @@ type GetInDeliveryLeadsSearchRow struct {
 	SaleID       pgtype.Int4
 	CreatedAt    pgtype.Timestamptz
 	SoldAt       pgtype.Timestamptz
+	FirstPhoto   string
+	SecondPhoto  string
 	UserName     string
 	FullSum      float32
 	DeliveryType pgtype.Text
@@ -652,6 +700,8 @@ func (q *Queries) GetInDeliveryLeadsSearch(ctx context.Context, phone string) ([
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 			&i.UserName,
 			&i.FullSum,
 			&i.DeliveryType,
@@ -668,7 +718,7 @@ func (q *Queries) GetInDeliveryLeadsSearch(ctx context.Context, phone string) ([
 }
 
 const getLead = `-- name: GetLead :one
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo FROM leads 
 WHERE id = $1
 LIMIT 1
 `
@@ -686,12 +736,14 @@ func (q *Queries) GetLead(ctx context.Context, id int32) (Lead, error) {
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
 
 const getLeadByPhone = `-- name: GetLeadByPhone :one
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads 
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo FROM leads 
 WHERE phone = $1
 ORDER BY created_at DESC
 LIMIT 1
@@ -710,12 +762,14 @@ func (q *Queries) GetLeadByPhone(ctx context.Context, phone string) (Lead, error
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
 
 const getNewLeads = `-- name: GetNewLeads :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo FROM leads AS l
 WHERE user_id IS NULL
 ORDER BY created_at DESC
 LIMIT $2
@@ -746,6 +800,8 @@ func (q *Queries) GetNewLeads(ctx context.Context, arg GetNewLeadsParams) ([]Lea
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 		); err != nil {
 			return nil, err
 		}
@@ -770,7 +826,7 @@ func (q *Queries) GetNewLeadsCount(ctx context.Context) (int64, error) {
 }
 
 const getNewLeadsSearch = `-- name: GetNewLeadsSearch :many
-SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at FROM leads AS l
+SELECT id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo FROM leads AS l
 WHERE user_id IS NULL AND phone LIKE $1
 ORDER BY created_at DESC
 LIMIT 9
@@ -795,6 +851,8 @@ func (q *Queries) GetNewLeadsSearch(ctx context.Context, phone string) ([]Lead, 
 			&i.SaleID,
 			&i.CreatedAt,
 			&i.SoldAt,
+			&i.FirstPhoto,
+			&i.SecondPhoto,
 		); err != nil {
 			return nil, err
 		}
@@ -843,7 +901,7 @@ func (q *Queries) GetSaleItems(ctx context.Context, saleID int32) ([]SaleItem, e
 const insertLead = `-- name: InsertLead :one
 INSERT INTO leads(phone)
 VALUES ($1)
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo
 `
 
 func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
@@ -859,6 +917,8 @@ func (q *Queries) InsertLead(ctx context.Context, phone string) (Lead, error) {
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
@@ -946,7 +1006,7 @@ const sellLead = `-- name: SellLead :one
 UPDAte leads
 SET sale_id = $2, sold_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo
 `
 
 type SellLeadParams struct {
@@ -967,6 +1027,8 @@ func (q *Queries) SellLead(ctx context.Context, arg SellLeadParams) (Lead, error
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }
@@ -975,7 +1037,7 @@ const setLeadInfo = `-- name: SetLeadInfo :one
 UPDATE leads
 SET name = $2, address = $3
 WHERE id = $1
-RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at
+RETURNING id, name, address, phone, completed, user_id, sale_id, created_at, sold_at, first_photo, second_photo
 `
 
 type SetLeadInfoParams struct {
@@ -997,6 +1059,8 @@ func (q *Queries) SetLeadInfo(ctx context.Context, arg SetLeadInfoParams) (Lead,
 		&i.SaleID,
 		&i.CreatedAt,
 		&i.SoldAt,
+		&i.FirstPhoto,
+		&i.SecondPhoto,
 	)
 	return i, err
 }

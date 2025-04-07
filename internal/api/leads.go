@@ -463,7 +463,17 @@ func (app *app) handleLeadsComplete(w http.ResponseWriter, r *http.Request) {
 		app.error(w, fmt.Errorf("%w: %s", service.ErrInvalidId, idStr))
 		return
 	}
-	err = app.service.CompleteLead(r.Context(), id)
+	firstPhoto, _, err := r.FormFile("first")
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	secondPhoto, _, err := r.FormFile("second")
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	err = app.service.CompleteLead(r.Context(), id, firstPhoto, secondPhoto)
 	if err != nil {
 		app.error(w, err)
 		return

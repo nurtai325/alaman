@@ -149,6 +149,6 @@ WHERE s.sale_id = $1;
 
 -- name: CompleteLead :one
 UPDATE leads
-SET completed = true
+SET completed = true, first_photo = $2, second_photo = $3
 WHERE id = $1
 RETURNING *;

@@ -137,6 +137,10 @@
 	<div class="font-bold">{{ .DeliveryTypeName }}</div>
 	<div class="font-light mt-3">Төлем уақыты:</div>
 	<div class="font-bold">{{ .PaymentAtFormatted }}</div>
+	<div class="mt-4">
+		<a href="{{ .FirstPhoto }}" target="_blank" class="text-blue-600 underline mr-4">1-фото</a>
+		<a href="{{ .SecondPhoto }}" target="_blank" class="text-blue-600 underline">2-фото</a>
+	</div>
 </div>
 {{ end }}
 
