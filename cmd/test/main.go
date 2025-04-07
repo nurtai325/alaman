@@ -30,7 +30,7 @@ func main() {
 		panic(err)
 	}
 	for _, user := range users {
-		fmt.Printf("%d,%s\n", user.ID, user.Name)
+		fmt.Printf("%d,%s,%s\n", user.ID, user.Name, user.Phone)
 	}
 }
 
