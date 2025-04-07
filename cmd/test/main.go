@@ -11,6 +11,29 @@ import (
 	"github.com/nurtai325/alaman/internal/db/repository"
 )
 
+func main() {
+	conf, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+	pool, err := db.New(conf)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
+	q := repository.New(pool)
+	users, err := q.GetUsers(context.Background(), repository.GetUsersParams{
+		Offset: 0,
+		Limit:  100,
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, user := range users {
+		fmt.Printf("%d,%s\n", user.ID, user.Name)
+	}
+}
+
 func Some1() {
 	conf, err := config.New()
 	if err != nil {
@@ -58,7 +81,7 @@ Loop:
 	}
 }
 
-func main() {
+func Some2() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
