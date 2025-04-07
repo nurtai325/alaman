@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -9,11 +10,27 @@ import (
 )
 
 func (app *app) handleLogged(w http.ResponseWriter, r *http.Request) {
-	if auth.IsLogged(r) {
-		w.WriteHeader(http.StatusOK)
-	} else {
+	if !auth.IsLogged(r) {
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+	user := auth.GetUser(r)
+	data, err := json.Marshal(struct {
+		Id   int    `json:"id"`
+		Name string `json:"name"`
+		Role string `json:"role"`
+	}{
+		Id:   user.Id,
+		Name: user.Name,
+		Role: string(user.Role),
+	})
+	if err != nil {
+		app.error(w, err)
+		return
+	}
+	w.Header().Add(contentTypeHeader, jsonContentType)
+	w.Write(data)
+	return
 }
 
 func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +43,7 @@ func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.error(w, err)
+		return
 	}
 	phone := r.FormValue("phone")
 	password := r.FormValue("password")
