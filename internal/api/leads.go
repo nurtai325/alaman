@@ -284,7 +284,7 @@ func (app *app) handleLeadsInDeliveryGet(w http.ResponseWriter, r *http.Request)
 	search := r.FormValue("search")
 	var inDeliveryLeads []service.Lead
 	user := auth.GetUser(r)
-	if search != "" || user.Role == auth.AdminRole || user.Role == auth.RopRole {
+	if search != "" || user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
 		leads, err := app.service.GetInDeliveryLeads(r.Context(), page, 6, search)
 		if err != nil {
 			app.error(w, err)
@@ -331,7 +331,7 @@ func (app *app) handleLeadsCompletedGet(w http.ResponseWriter, r *http.Request) 
 	search := r.FormValue("search")
 	var completedLeads []service.Lead
 	user := auth.GetUser(r)
-	if search != "" || user.Role == auth.AdminRole || user.Role == auth.RopRole {
+	if search != "" || user.Role == auth.AdminRole || user.Role == auth.LogistRole || user.Role == auth.RopRole {
 		leads, err := app.service.GetCompletedLeads(r.Context(), page, 6, search)
 		if err != nil {
 			app.error(w, err)
