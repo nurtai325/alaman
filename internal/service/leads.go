@@ -527,7 +527,6 @@ func (s *Service) AssignLead(ctx context.Context, id, userId int) (Lead, error) 
 }
 
 func (s *Service) CompleteLead(ctx context.Context, id int, firstPhoto, secondPhoto io.Reader) error {
-	fmt.Println("inside service")
 	firstPhotoName := fmt.Sprintf("assets/leads/%d_first_%d.jpg", id, time.Now().UnixNano())
 	f1, err := os.Create(firstPhotoName)
 	if err != nil {
@@ -538,7 +537,6 @@ func (s *Service) CompleteLead(ctx context.Context, id int, firstPhoto, secondPh
 	if err != nil {
 		return err
 	}
-	fmt.Println("first photo")
 	secondPhotoName := fmt.Sprintf("assets/leads/%d_second_%d.jpg", id, time.Now().UnixNano())
 	f2, err := os.Create(secondPhotoName)
 	if err != nil {
@@ -549,7 +547,6 @@ func (s *Service) CompleteLead(ctx context.Context, id int, firstPhoto, secondPh
 	if err != nil {
 		return err
 	}
-	fmt.Println("first photo")
 	_, err = s.queries.CompleteLead(ctx, repository.CompleteLeadParams{
 		ID:          int32(id),
 		FirstPhoto:  firstPhotoName,
@@ -558,7 +555,6 @@ func (s *Service) CompleteLead(ctx context.Context, id int, firstPhoto, secondPh
 	if err != nil {
 		return err
 	}
-	fmt.Println("completed lead")
 	return err
 }
 
