@@ -12,6 +12,10 @@ import (
 )
 
 func main() {
+	Some2()
+}
+
+func Some3() {
 	conf, err := config.New()
 	if err != nil {
 		panic(err)
