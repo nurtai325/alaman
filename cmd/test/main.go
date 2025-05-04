@@ -97,7 +97,7 @@ func Some2() {
 	defer pool.Close()
 	q := repository.New(pool)
 	rows, err := q.GetAssignedLeads(context.Background(), repository.GetAssignedLeadsParams{
-		Offset: 0,
+		Offset: 4600,
 		Limit:  100000,
 	})
 	if err != nil {
