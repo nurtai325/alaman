@@ -23,6 +23,8 @@ func ListenNewLeads(s *Service) {
 		}
 		if lead.Id != 0 {
 			continue
+		} else if lead.CreatedAt.After(time.Now().Add(-time.Hour * 24 * 7 * 2)) {
+			continue
 		}
 		_, err = s.InsertLead(context.Background(), phone)
 		if err != nil {
