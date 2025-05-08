@@ -12,7 +12,31 @@ import (
 )
 
 func main() {
-	Some2()
+	Some4()
+}
+
+func Some4() {
+	conf, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+	pool, err := db.New(conf)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
+	rows, err := pool.Query(context.Background(), "select phone from leads where created_at < '2025.04.21' order by created_at;")
+	if err != nil {
+		panic(err)
+	}
+	for rows.Next() {
+		var phone string
+		err := rows.Scan(&phone)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(phone)
+	}
 }
 
 func Some3() {
