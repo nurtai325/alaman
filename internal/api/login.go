@@ -89,5 +89,5 @@ func (app *app) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (app *app) handleLogout(w http.ResponseWriter, r *http.Request) {
 	emptyCookie := auth.DeleteSession(r)
 	http.SetCookie(w, emptyCookie)
-	redirect(w, "/login")
+	redirect(w, "/")
 }
