@@ -10,6 +10,8 @@ import (
 func (app *app) handleRoot(w http.ResponseWriter, r *http.Request) {
 	if auth.GetUser(r).Role == auth.AdminRole {
 		app.handleDashBoard(w, r)
+	} else if auth.GetUser(r).Id == 0 {
+		app.execute(w, "index.html", "", nil)
 	} else {
 		app.handleLeadsGet(w, r)
 	}

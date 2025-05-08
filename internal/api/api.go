@@ -40,8 +40,8 @@ func (app *app) register(pattern string, handler http.HandlerFunc, secured bool)
 			}
 		}()
 		app.accessLog.Printf("%s %v %s", r.Method, r.URL, r.Header.Get("User-Agent"))
-		if secured && !auth.IsLogged(r) {
-			http.Redirect(w, r, "/login", http.StatusFound)
+		if secured && !auth.IsLogged(r) && r.URL.Path != "/" {
+			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
 		handler(w, r)
