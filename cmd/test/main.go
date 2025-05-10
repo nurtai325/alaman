@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	Some4()
+	Some()
 }
 
 func Some4() {
