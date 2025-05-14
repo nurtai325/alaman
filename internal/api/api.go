@@ -41,6 +41,7 @@ func (app *app) register(pattern string, handler http.HandlerFunc, secured bool)
 		}()
 		app.accessLog.Printf("%s %v %s", r.Method, r.URL, r.Header.Get("User-Agent"))
 		if secured && !auth.IsLogged(r) && r.URL.Path != "/" {
+			w.Header().Add("HX-Redirect", "/")
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
