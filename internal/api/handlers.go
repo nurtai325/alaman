@@ -56,4 +56,6 @@ func (app *app) registerHandlers() {
 
 	app.register("GET /chats", app.handleChatsGet, true)
 	app.register("GET /messages/{id}", app.handleMessagesGet, true)
+
+	app.register("GET /orders/{id}", app.handleOrdersGet, false)
 }

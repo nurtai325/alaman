@@ -1,0 +1,110 @@
+{{ block "orders-content" . }}
+<div class="bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen flex flex-col items-center">
+
+	<!-- "Басты бетке" Button Moved to Top Center -->
+	<div class="w-full max-w-lg mt-6 flex justify-center">
+		<a href="/"
+			class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition">
+			<svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+			</svg>
+			Басты бетке
+		</a>
+	</div>
+
+	<!-- Order Status Card -->
+	<main class="w-full max-w-lg mt-8 px-3">
+		<div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+			<!-- Header Info -->
+			<div class="flex items-start justify-between pb-4 border-b">
+				<div>
+					<h2 class="text-xl font-bold text-gray-900 mb-1">{{ .Name }}</h2>
+					<span class="inline-block bg-blue-100 text-blue-800 text-sm px-2 rounded">{{ .SaleTypeName }}</span>
+				</div>
+				<div class="flex flex-col items-end">
+					<span class="text-xs font-medium text-gray-500">Тапсырыс №{{ .Id }}</span>
+					{{ if .Completed }}
+					<span
+						class="mt-1 px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-semibold">Аяқталды</span>
+					{{ else }}
+					<span
+						class="mt-1 px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold">Өңделуде</span>
+					{{ end }}
+				</div>
+			</div>
+
+			<!-- Contact Info -->
+			<div class="mt-4 text-sm text-gray-700 flex flex-col gap-2 border-b pb-4">
+				<div><span class="font-semibold">Клиент:</span> {{ .UserName }}</div>
+				<div><span class="font-semibold">Телефон:</span> <a href="tel:{{ .Phone }}"
+						class="text-blue-600 hover:underline">{{ .Phone }}</a></div>
+				<div><span class="font-semibold">Мекенжай:</span> {{ .Address }}</div>
+				<div><span class="font-semibold">Жеткізу түрі:</span> {{ .DeliveryTypeName }}</div>
+				<div><span class="font-semibold">Төлеу күні:</span> {{ .PaymentAtFormatted }}</div>
+			</div>
+
+			<!-- Ordered Items -->
+			<div class="mt-4">
+				<h3 class="font-semibold text-base text-gray-800 border-b pb-2 mb-2">Тауарлар:</h3>
+				<ul class="divide-y">
+					{{ range .Items }}
+					<li class="flex items-center justify-between py-3">
+						<span>
+							<span class="font-semibold">{{ .ProductName }}</span>
+							<span class="block text-xs text-gray-500">Саны: {{ .Quantity }}</span>
+						</span>
+						<span class="text-right">
+							<span class="text-sm text-gray-700 font-medium">{{ printf "%.0f" .Price }}₸</span>
+						</span>
+					</li>
+					{{ end }}
+				</ul>
+			</div>
+
+			<!-- Cost Summary -->
+			<div class="mt-6 bg-gray-50 rounded-lg p-4">
+				<ul class="text-sm text-gray-700 space-y-2">
+					<li class="flex justify-between">
+						<span>Тауарлардың бағасы:</span>
+						<span>{{ printf "%.0f" .FullPrice }}₸</span>
+					</li>
+					<li class="flex justify-between">
+						<span>Жеткізу құны:</span>
+						<span>{{ printf "%.0f" .DeliveryCost }}₸</span>
+					</li>
+					{{ if gt .LoanCost 0.0 }}
+					<li class="flex justify-between">
+						<span>Несие бойынша төлем:</span>
+						<span>{{ printf "%.0f" .LoanCost }}₸</span>
+					</li>
+					{{ end }}
+					<li class="flex justify-between font-bold text-lg pt-2 border-t mt-2">
+						<span>Жалпы:</span>
+						<span>{{ printf "%.0f" .FullPrice }}₸</span>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Uploaded Photos -->
+			{{ if or .FirstPhoto .SecondPhoto }}
+			<div class="mt-4">
+				<h4 class="text-sm font-semibold mb-1 text-gray-700">Жүктелген фотосуреттер:</h4>
+				<div class="flex gap-3">
+					{{ if .FirstPhoto }}
+					<img src="{{ .FirstPhoto }}" alt="Фотосурет 1" class="h-20 w-20 object-cover rounded-lg border">
+					{{ end }}
+					{{ if .SecondPhoto }}
+					<img src="{{ .SecondPhoto }}" alt="Фотосурет 2" class="h-20 w-20 object-cover rounded-lg border">
+					{{ end }}
+				</div>
+			</div>
+			{{ end }}
+
+			<!-- Order Created At -->
+			<div class="mt-4 text-right text-xs text-gray-400">
+				Тапсырыс берілген күні: {{ .CreatedAt.Format "02.01.2006 15:04" }}
+			</div>
+		</div>
+	</main>
+</div>
+{{ end }}

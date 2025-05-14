@@ -41,7 +41,7 @@ func main() {
 	errLog, err := openLog("error", 0)
 	log.SetOutput(errLog.Writer())
 	templates := template.Must(template.ParseGlob("./views/*.html"))
-	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports", "leadwhs", "chats")
+	templates = parseTemplPages(templates, "users", "dashboard", "products", "leads", "reports", "leadwhs", "chats", "orders")
 	conf, err := config.New()
 	if err != nil {
 		panic(err)

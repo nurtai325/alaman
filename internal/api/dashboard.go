@@ -48,6 +48,8 @@ func getPage(r *http.Request) []string {
 		return adminPages
 	} else if user.Role == auth.RopRole {
 		return ropPages
+	} else if user.Id == 0 {
+		return []string{"orders"}
 	} else {
 		return normPages
 	}

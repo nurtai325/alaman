@@ -138,3 +138,15 @@ taskElements.forEach((taskElement) => {
 		toRemove.remove();
 	});
 });
+function copyOrderLink(id) {
+    const url = `https://alaman.live/orders/${id}`;
+    navigator.clipboard.writeText(url).then(function() {
+        // Optional: Provide user feedback (e.g. change button text)
+        const btn = document.getElementById(`copy-btn-${id}`);
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = 'Көшірілді!';
+            setTimeout(()=>btn.textContent=original, 1500);
+        }
+    });
+}

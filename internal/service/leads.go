@@ -30,6 +30,7 @@ type Lead struct {
 	Phone              string       `json:"phone"`
 	Completed          bool         `json:"completed"`
 	SaleType           saleType     `json:"sale_type"`
+	SaleTypeName       string       `json:"sale_type_name"`
 	FullPrice          float32      `json:"full_price"`
 	DeliveryCost       float32      `json:"delivery_cost"`
 	LoanCost           float32      `json:"loan_cost"`

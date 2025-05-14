@@ -22,6 +22,8 @@ const (
 	tUserRow     templateName = "user-row"
 	tUserRowEdit templateName = "user-row-edit"
 
+	tOrders templateName = "orders.html"
+
 	tProducts       templateName = "products.html"
 	tProductRow     templateName = "product-row"
 	tProductRowEdit templateName = "product-row-edit"

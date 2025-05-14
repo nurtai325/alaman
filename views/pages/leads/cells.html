@@ -97,6 +97,16 @@
 	<div class="font-bold">{{ .DeliveryTypeName }}</div>
 	<div class="font-light mt-3">Төлем уақыты:</div>
 	<div class="font-bold">{{ .PaymentAtFormatted }}</div>
+	<div class="font-bold">{{ .PaymentAtFormatted }}</div>
+	<button
+		id="copy-btn-{{ .Id }}"
+		onclick="copyOrderLink('{{ .Id }}')" 
+		class="bg-blue-600 group mt-6 inline-flex items-center gap-2 px-2 py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-medium rounded-2xl shadow-lg hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200"
+		title="Сілтемені көшіріп алу"
+	>
+		<span class="text-lg">📋</span>
+		<span>Сілтемені көшіру</span>
+	</button>
 </div>
 {{ end }}
 
@@ -141,6 +151,15 @@
 		<a href="{{ .FirstPhoto }}" target="_blank" class="text-blue-600 underline mr-4">1-фото</a>
 		<a href="{{ .SecondPhoto }}" target="_blank" class="text-blue-600 underline">2-фото</a>
 	</div>
+	<button
+		id="copy-btn-{{ .Id }}"
+		onclick="copyOrderLink('{{ .Id }}')" 
+		class="bg-blue-600 group mt-6 inline-flex items-center gap-2 px-2 py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-medium rounded-2xl shadow-lg hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200"
+		title="Сілтемені көшіріп алу"
+	>
+		<span class="text-lg">📋</span>
+		<span>Сілтемені көшіру</span>
+	</button>
 </div>
 {{ end }}
 
